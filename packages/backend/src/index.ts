@@ -1,3 +1,4 @@
+import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { authRoutes } from './presentation/http/routes/auth.routes';
@@ -106,7 +107,7 @@ async function startServer() {
     const port = process.env.PORT || 3001;
     console.log(`Servidor rodando na porta ${port}`);
 
-    return Bun.serve({
+    serve({
       fetch: app.fetch,
       port: Number(port),
     });

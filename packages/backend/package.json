@@ -12,6 +12,7 @@
     "format": "bunx prettier --write ."
   },
   "dependencies": {
+    "@hono/node-server": "^1.19.7",
     "@types/node": "^20.11.0",
     "@types/node-cron": "^3.0.11",
     "bcrypt": "^5.1.1",
