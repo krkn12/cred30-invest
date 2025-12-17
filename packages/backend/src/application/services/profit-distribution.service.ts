@@ -18,7 +18,23 @@ export const distributeProfits = async (pool: Pool | PoolClient): Promise<any> =
         const totalQuotas = parseInt(totalQuotasResult.rows[0].count);
 
         if (totalQuotas === 0) {
-            return { success: false, message: 'Não há cotas ativas para distribuir dividendos' };
+            // Se não há cotas, todo o lucro vai para o caixa operacional
+            const profitToTransfer = parseFloat(config.profit_pool);
+
+            if (profitToTransfer > 0) {
+                await pool.query(
+                    'UPDATE system_config SET system_balance = system_balance + $1, profit_pool = 0',
+                    [profitToTransfer]
+                );
+
+                return {
+                    success: true,
+                    message: `Não há cotas ativas. Lucro de R$ ${profitToTransfer.toFixed(2)} transferido para o Caixa Operacional.`,
+                    data: { transferredToBalance: profitToTransfer }
+                };
+            }
+
+            return { success: false, message: 'Não há cotas ativas e sem lucro para distribuir.' };
         }
 
         const profit = parseFloat(config.profit_pool);
