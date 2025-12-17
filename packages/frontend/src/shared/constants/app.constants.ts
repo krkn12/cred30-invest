@@ -3,7 +3,7 @@ export const QUOTA_PRICE = 50;
 export const VESTING_PERIOD_MS = 365 * 24 * 60 * 60 * 1000;
 
 // API Constants
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Status Constants
 export const TRANSACTION_STATUS = {

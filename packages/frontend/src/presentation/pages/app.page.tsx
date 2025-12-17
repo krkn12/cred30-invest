@@ -2170,8 +2170,7 @@ export default function App() {
   const handlePayInstallment = async (id: string, amount: number, useBalance: boolean): Promise<void> => {
     try {
       // Chamar a API de pagamento de parcela
-      const API_BASE_URL = (globalThis as any).import.meta.env?.VITE_API_URL || 'http://localhost:3001/api';
-      const response = await fetch(`${API_BASE_URL}/loans/repay-installment`, {
+      const response = await fetch('/api/loans/repay-installment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

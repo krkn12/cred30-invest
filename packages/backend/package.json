@@ -4,10 +4,10 @@
   "description": "Backend para plataforma fintech Cred30",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "bun run --watch src/index.ts",
-    "build": "bun build src/index.ts --target=node --outdir=dist",
-    "start": "bun run src/index.ts",
-    "start:prod": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "echo 'No build needed for tsx'",
+    "start": "tsx src/index.ts",
+    "start:prod": "tsx src/index.ts",
     "lint": "bunx eslint . --ext .ts",
     "format": "bunx prettier --write ."
   },
@@ -20,6 +20,7 @@
     "jsonwebtoken": "^9.0.3",
     "node-cron": "^4.2.1",
     "pg": "^8.16.3",
+    "tsx": "4.21.0",
     "uuid": "^13.0.0",
     "zod": "^3.25.76"
   },

@@ -5,12 +5,9 @@ services:
     runtime: node
     plan: free
     buildCommand: |
-      curl -fsSL https://bun.sh/install | bash
-      export PATH="$HOME/.bun/bin:$PATH"
-      cd packages/backend && bun install
+      cd packages/backend && npm install
     startCommand: |
-      export PATH="$HOME/.bun/bin:$PATH"
-      cd packages/backend && bun run src/index.ts
+      cd packages/backend && npm start
     envVars:
       - key: DATABASE_URL
         sync: false

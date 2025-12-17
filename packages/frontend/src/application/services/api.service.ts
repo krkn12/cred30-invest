@@ -1,14 +1,5 @@
-// URL base da API - detecta se está acessando via ngrok
-const getApiBaseUrl = () => {
-  const currentUrl = window.location.origin;
-  if (currentUrl.includes('ngrok-free.app')) {
-    // Se estiver acessando via ngrok, usa a mesma URL base para a API
-    return currentUrl + '/api';
-  }
-  return (import.meta as any).env.VITE_API_URL || 'http://localhost:3001/api';
-};
-
-const API_BASE_URL = getApiBaseUrl();
+// URL base da API - usa caminho relativo (proxy Vite redireciona para backend)
+const API_BASE_URL = '/api';
 
 // Tipos para respostas da API
 interface ApiResponse<T> {
