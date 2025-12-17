@@ -8,7 +8,7 @@ import { executeInTransaction, updateUserBalance, createTransaction } from '../.
 const gamesRoutes = new Hono();
 
 // Configuração do Caça-Níquel
-const SLOT_COST = 0.10; // R$ 0,10
+const SLOT_COST = 0.05; // R$ 0,05 (20 rodadas = R$ 1,00)
 const POINTS_TO_REAL = 1000; // 1000 pontos = R$ 1,00
 
 // Tabela de Prêmios (Símbolos e Pesos)
