@@ -25,7 +25,8 @@ app.use('*', cors({
     'http://127.0.0.1:3003',
     'https://33efd838e74b.ngrok-free.app',
     'https://cred30-prod-app-2025.web.app',
-    'https://cred30-prod-app-2025.firebaseapp.com'
+    'https://cred30-prod-app-2025.firebaseapp.com',
+    'https://cred30-backend.onrender.com'
   ],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
