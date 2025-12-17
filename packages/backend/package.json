@@ -6,11 +6,13 @@
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "build": "bun build src/index.ts --target=node --outdir=dist",
-    "start": "bun run dist/index.js",
+    "start": "bun run src/index.ts",
+    "start:prod": "node dist/index.js",
     "lint": "bunx eslint . --ext .ts",
     "format": "bunx prettier --write ."
   },
   "dependencies": {
+    "@types/node": "^20.11.0",
     "@types/node-cron": "^3.0.11",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",

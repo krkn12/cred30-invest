@@ -125,3 +125,16 @@ test-results.xml
 
 # Turbo
 .turbo/
+
+# Firebase
+.firebase/
+
+# Scripts de desenvolvimento (não subir para produção)
+scripts/development/
+
+# Arquivos de teste locais
+test-*.js
+*.cache
+
+# Ngrok
+.last_ngrok_url
