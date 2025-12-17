@@ -750,20 +750,13 @@ adminRoutes.post('/approve-payment', adminMiddleware, auditMiddleware('APPROVE_P
           [principalAmount]
         );
 
-        // Aplicar regra 85/15 para os juros
-        const interestForProfit = totalInterest * 0.85; // 85% dos juros vai para o lucro
-        const interestForOperational = totalInterest * 0.15; // 15% dos juros vai para o caixa operacional
+        // Enviar 100% dos juros para o pool (a divisão 85/15 ocorre na distribuição diária)
+        const interestForProfit = totalInterest;
 
-        // Adicionar 85% dos juros ao pool de lucros
+        // Adicionar juros ao pool de lucros
         await client.query(
           'UPDATE system_config SET profit_pool = profit_pool + $1',
           [interestForProfit]
-        );
-
-        // Adicionar 15% dos juros ao caixa operacional
-        await client.query(
-          'UPDATE system_config SET system_balance = system_balance + $1',
-          [interestForOperational]
         );
 
         // Marcar empréstimo como PAGO
@@ -772,12 +765,9 @@ adminRoutes.post('/approve-payment', adminMiddleware, auditMiddleware('APPROVE_P
           ['PAID', metadata.loanId]
         );
 
-        console.log('DEBUG - Pagamento completo processado (regra 85/15):', {
+        console.log('DEBUG - Pagamento completo processado (100% juros para pool):', {
           principalReturned: principalAmount,
           totalInterest,
-          interestForProfit,
-          interestForOperational,
-          totalToOperational: principalAmount + interestForOperational,
           totalToProfit: interestForProfit
         });
 
@@ -789,26 +779,13 @@ adminRoutes.post('/approve-payment', adminMiddleware, auditMiddleware('APPROVE_P
         const principalPortion = installmentAmount * (principalAmount / totalRepayment);
         const interestPortion = installmentAmount - principalPortion;
 
-        // Aplicar regra 85/15 para os juros da parcela
-        const interestForProfit = interestPortion * 0.85; // 85% dos juros vai para o lucro
-        const interestForOperational = interestPortion * 0.15; // 15% dos juros vai para o caixa operacional
+        // Enviar 100% dos juros da parcela para o pool
+        const interestForProfit = interestPortion;
 
         // Devolver parte do principal ao caixa operacional
         await client.query(
           'UPDATE system_config SET system_balance = system_balance + $1',
           [principalPortion]
-        );
-
-        // Adicionar 15% dos juros ao caixa operacional
-        await client.query(
-          'UPDATE system_config SET system_balance = system_balance + $1',
-          [interestForOperational]
-        );
-
-        // Adicionar 85% dos juros ao pool de lucros
-        await client.query(
-          'UPDATE system_config SET profit_pool = profit_pool + $1',
-          [interestForProfit]
         );
 
         console.log('DEBUG - Parcela processada (regra 85/15):', {

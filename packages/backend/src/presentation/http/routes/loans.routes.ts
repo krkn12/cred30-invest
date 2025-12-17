@@ -352,28 +352,28 @@ loanRoutes.post('/repay-installment', authMiddleware, async (c) => {
       [loanId, installmentAmount, true, new Date()]
     );
 
+    // Separar principal e juros da parcela atual (Proporcional)
+    const principalPortion = installmentAmount * (parseFloat(loan.amount) / parseFloat(loan.total_repayment));
+    const interestPortion = installmentAmount - principalPortion;
+
+    // Devolver principal ao sistema a cada parcela
+    await pool.query(
+      'UPDATE system_config SET system_balance = system_balance + $1',
+      [principalPortion]
+    );
+
+    // Adicionar juros ao pool de lucros a cada parcela
+    await pool.query(
+      'UPDATE system_config SET profit_pool = profit_pool + $1',
+      [interestPortion]
+    );
+
     // Verificar se todas as parcelas foram pagas
     if (newPaidAmount >= parseFloat(loan.total_repayment)) {
       // Marcar empréstimo como PAGO
       await pool.query(
         'UPDATE loans SET status = $1 WHERE id = $2',
         ['PAID', loanId]
-      );
-
-      // Separar principal e juros da parcela atual
-      const principalPortion = installmentAmount * (parseFloat(loan.amount) / parseFloat(loan.total_repayment));
-      const interestPortion = installmentAmount - principalPortion;
-
-      // Devolver principal ao sistema
-      await pool.query(
-        'UPDATE system_config SET system_balance = system_balance + $1',
-        [principalPortion]
-      );
-
-      // Adicionar juros ao pool de lucros
-      await pool.query(
-        'UPDATE system_config SET profit_pool = profit_pool + $1',
-        [interestPortion]
       );
     }
 
