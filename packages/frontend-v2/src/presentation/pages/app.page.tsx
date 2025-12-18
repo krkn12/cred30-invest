@@ -42,6 +42,8 @@ const AdminView = ({ state, onRefresh, onLogout }: {
   }, [state]);
   const [newBalance, setNewBalance] = useState('');
   const [newProfit, setNewProfit] = useState('');
+  const [newManualCost, setNewManualCost] = useState('');
+  const [manualCostDescription, setManualCostDescription] = useState('');
   const [showDistributeModal, setShowDistributeModal] = useState(false);
 
   const parseCurrencyInput = (val: string) => {
@@ -66,6 +68,30 @@ const AdminView = ({ state, onRefresh, onLogout }: {
 
       // Mensagem atualizada para refletir a distribuição automática
       alert(`R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} adicionado com sucesso! O valor foi acumulado e será distribuído automaticamente à meia-noite (00:00).`);
+    } catch (e: any) {
+      alert(`Erro: ${e.message}`);
+    }
+  };
+
+  const handleUpdateManualCost = async () => {
+    try {
+      const val = parseCurrencyInput(newManualCost);
+      if (isNaN(val) || val <= 0) throw new Error("Valor inválido");
+
+      const response = await apiService.post('/admin/manual-cost', {
+        amount: val,
+        description: manualCostDescription || 'Custo manual'
+      });
+
+      if (response.success) {
+        clearAllCache();
+        onRefresh();
+        setNewManualCost('');
+        setManualCostDescription('');
+        alert(`Custo de R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} registrado com sucesso e deduzido do caixa operacional.`);
+      } else {
+        alert('Erro: ' + response.message);
+      }
     } catch (e: any) {
       alert(`Erro: ${e.message}`);
     }
@@ -410,6 +436,17 @@ const AdminView = ({ state, onRefresh, onLogout }: {
           <p className="text-3xl font-bold">{formatCurrency(state.stats?.totalGatewayCosts ?? 0)}</p>
           <p className="text-xs opacity-75 mt-1">Taxas pagas ao Mercado Pago</p>
         </div>
+
+        <div className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-2xl p-6 text-white border border-orange-500/30 shadow-lg">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+              <Coins size={24} className="text-white" />
+            </div>
+            <span className="text-sm font-medium opacity-90">Custos Manuais</span>
+          </div>
+          <p className="text-3xl font-bold">{formatCurrency(state.stats?.totalManualCosts ?? 0)}</p>
+          <p className="text-xs opacity-75 mt-1">Lançados manualmente</p>
+        </div>
       </div>
 
       <AdminStoreManager />
@@ -550,6 +587,50 @@ const AdminView = ({ state, onRefresh, onLogout }: {
                 ℹ️ Não há cotas ativas no sistema
               </p>
             )}
+          </div>
+        </div>
+
+        {/* Manual Cost Control */}
+        <div className="bg-gradient-to-br from-surface to-surfaceHighlight rounded-2xl p-6 border border-surfaceHighlight shadow-xl">
+          <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+            <div className="w-10 h-10 bg-orange-500/20 rounded-xl flex items-center justify-center">
+              <ArrowDownLeft className="text-orange-400" size={20} />
+            </div>
+            Lançar Custos Adicionais
+          </h3>
+          <div className="bg-gradient-to-r from-background to-surfaceHighlight rounded-xl p-6 mb-6 border border-surfaceHighlight/50">
+            <p className="text-sm text-zinc-400 mb-2 font-medium">Total de Custos Manuais</p>
+            <p className="text-3xl font-bold text-orange-400">{formatCurrency(state.stats?.totalManualCosts ?? 0)}</p>
+            <p className="text-xs text-zinc-500 mt-2">Estes custos são deduzidos do caixa operacional.</p>
+          </div>
+          <div className="space-y-4">
+            <div className="relative">
+              <label className="text-xs text-zinc-400 block mb-2 font-medium">Valor do Custo (Ex: 50,00)</label>
+              <input
+                type="text"
+                placeholder="0,00"
+                value={newManualCost}
+                onChange={(e) => setNewManualCost(e.target.value)}
+                className="w-full bg-background border border-surfaceHighlight rounded-xl px-4 py-4 text-white outline-none focus:border-orange-500 transition text-lg font-medium"
+              />
+            </div>
+            <div className="relative">
+              <label className="text-xs text-zinc-400 block mb-2 font-medium">Descrição (Opcional)</label>
+              <input
+                type="text"
+                placeholder="Ex: Servidor, Manutenção, etc."
+                value={manualCostDescription}
+                onChange={(e) => setManualCostDescription(e.target.value)}
+                className="w-full bg-background border border-surfaceHighlight rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500 transition text-sm"
+              />
+            </div>
+            <button
+              onClick={handleUpdateManualCost}
+              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-black font-bold py-4 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] flex items-center justify-center gap-2"
+            >
+              <ArrowDownLeft size={18} />
+              Lançar Custo
+            </button>
           </div>
         </div>
       </div>

@@ -389,6 +389,7 @@ export const initializeDatabase = async () => {
         loan_interest_rate DECIMAL(5,2) DEFAULT 0.2,
         penalty_rate DECIMAL(5,2) DEFAULT 0.4,
         vesting_period_ms BIGINT DEFAULT 31536000000,
+        total_manual_costs DECIMAL(15,2) DEFAULT 0,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -405,6 +406,20 @@ export const initializeDatabase = async () => {
     if (!totalGatewayCostsColumnExists.rows[0].exists) {
       await client.query('ALTER TABLE system_config ADD COLUMN total_gateway_costs DECIMAL(15,2) DEFAULT 0');
       console.log('Coluna total_gateway_costs adicionada à tabela system_config');
+    }
+
+    // Verificar se a coluna total_manual_costs existe na tabela system_config
+    const totalManualCostsColumnExists = await client.query(`
+      SELECT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_name = 'system_config' AND column_name = 'total_manual_costs'
+      );
+    `);
+
+    if (!totalManualCostsColumnExists.rows[0].exists) {
+      await client.query('ALTER TABLE system_config ADD COLUMN total_manual_costs DECIMAL(15,2) DEFAULT 0');
+      console.log('Coluna total_manual_costs adicionada à tabela system_config');
     }
 
     // Verificar se a coluna updated_at existe na tabela system_config

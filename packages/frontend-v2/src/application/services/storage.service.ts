@@ -1,6 +1,6 @@
 import { User, Quota, Loan, Transaction, AppState } from '../../domain/types/common.types';
 import { apiService } from './api.service';
-import { QUOTA_PRICE, LOAN_INTEREST_RATE, PENALTY_RATE, VESTING_PERIOD_MS, ADMIN_PIX_KEY } from '../../shared/constants/app.constants';
+import { QUOTA_PRICE, LOAN_INTEREST_RATE, PENALTY_RATE, VESTING_PERIOD_MS } from '../../shared/constants/app.constants';
 
 // Função para converter dados da API para o formato esperado pelo frontend
 const convertApiUserToUser = (apiUser: any): User => {
@@ -143,6 +143,7 @@ export const loadState = async (): Promise<AppState> => {
 
           if (stats) {
             stats.totalGatewayCosts = dashboard.data?.systemConfig?.total_gateway_costs || dashboard.systemConfig?.total_gateway_costs || 0;
+            stats.totalManualCosts = dashboard.data?.systemConfig?.total_manual_costs || dashboard.systemConfig?.total_manual_costs || 0;
           }
 
           // DEBUG: Verificar valores extraídos

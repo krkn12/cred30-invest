@@ -76,6 +76,7 @@ export interface AppState {
     totalLoaned?: number;
     totalToReceive?: number;
     totalGatewayCosts?: number;
+    totalManualCosts?: number;
   };
 }
 

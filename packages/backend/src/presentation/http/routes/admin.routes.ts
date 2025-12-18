@@ -112,6 +112,7 @@ adminRoutes.get('/dashboard', adminMiddleware, async (c) => {
     config.profit_pool = parseFloat(String(config.profit_pool || 0));
     config.quota_price = parseFloat(String(config.quota_price || 0));
     config.total_gateway_costs = parseFloat(String(config.total_gateway_costs || 0));
+    config.total_manual_costs = parseFloat(String(config.total_manual_costs || 0));
 
     // DEBUG: Verificar se há algum valor salvo no banco que possa estar sobrescrevendo
     const dbBalanceResult = await pool.query('SELECT system_balance FROM system_config LIMIT 1');
@@ -1097,5 +1098,81 @@ adminRoutes.post('/clear-admins', adminMiddleware, async (c) => {
 });
 
 
+
+// Simular aprovação de pagamento via Mercado Pago (Apenas Sandbox)
+adminRoutes.post('/simulate-mp-payment', adminMiddleware, async (c) => {
+  try {
+    const body = await c.req.json();
+    const { paymentId, transactionId } = simulateMpSchema.parse(body);
+
+    console.log(`[ADMIN] Simulando aprovação MP para Pagamento ${paymentId}, Transação ${transactionId}`);
+
+    // 1. Tentar aprovar no Mercado Pago de verdade (só funciona em Sandbox)
+    try {
+      await simulatePaymentApproval(parseInt(paymentId));
+      console.log(`[ADMIN] Status atualizado no Mercado Pago para 'approved'`);
+    } catch (mpError: any) {
+      console.warn(`[ADMIN] Aviso: Não foi possível atualizar no Mercado Pago: ${mpError.message}`);
+    }
+
+    // 2. Forçar aprovação interna (mesma lógica do Webhook)
+    const pool = getDbPool(c);
+    const result = await executeInTransaction(pool, async (client: PoolClient) => {
+      return await processTransactionApproval(client, transactionId, 'APPROVE');
+    });
+
+    if (!result.success) {
+      return c.json({ success: false, message: result.error || 'Erro ao processar aprovação interna' }, 400);
+    }
+
+    return c.json({
+      success: true,
+      message: 'Simulação realizada com sucesso! Transação aprovada e Mercado Pago atualizado.'
+    });
+
+  } catch (error: any) {
+    console.error('Erro na simulação administrativa:', error);
+    return c.json({ success: false, message: error.message || 'Erro interno do servidor' }, 500);
+  }
+});
+
+// Adicionar custo manual ao sistema
+adminRoutes.post('/manual-cost', adminMiddleware, auditMiddleware('ADD_MANUAL_COST', 'SYSTEM_CONFIG'), async (c) => {
+  try {
+    const body = await c.req.json();
+    const amount = parseFloat(body.amount);
+
+    if (isNaN(amount) || amount <= 0) {
+      return c.json({ success: false, message: 'Valor inválido' }, 400);
+    }
+
+    const pool = getDbPool(c);
+
+    await executeInTransaction(pool, async (client) => {
+      // 1. Deduzir do caixa operacional e adicionar aos custos manuais
+      await client.query(
+        'UPDATE system_config SET system_balance = system_balance - $1, total_manual_costs = total_manual_costs + $1',
+        [amount]
+      );
+
+      // 2. Registrar no log de auditoria
+      const user = c.get('user');
+      await client.query(
+        `INSERT INTO admin_logs (admin_id, action, entity_type, new_values, created_at)
+         VALUES ($1, 'MANUAL_COST_ADD', 'SYSTEM_CONFIG', $2, $3)`,
+        [user.id, JSON.stringify({ addedCost: amount, description: body.description || 'Custo manual' }), new Date()]
+      );
+    });
+
+    return c.json({
+      success: true,
+      message: `Custo de R$ ${amount.toFixed(2)} registrado com sucesso e deduzido do caixa operacional.`,
+      data: { addedCost: amount }
+    });
+  } catch (error) {
+    console.error('Erro ao adicionar custo manual:', error);
+    return c.json({ success: false, message: 'Erro interno do servidor' }, 500);
+  }
+});
 
 export { adminRoutes };
