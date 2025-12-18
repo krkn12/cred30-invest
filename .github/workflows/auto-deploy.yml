@@ -1,0 +1,42 @@
+name: Auto Deploy (Push & Schedule)
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  schedule:
+    # Executa a cada 4 horas (00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC)
+    - cron: '0 */4 * * *'
+  workflow_dispatch: # Permite execução manual
+
+jobs:
+  deploy-frontend:
+    name: Build and Deploy Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Frontend
+        run: npm run build:frontend
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_CRED30_PROD_APP_2025 }}'
+          channelId: live
+          projectId: cred30-prod-app-2025
+
+  # O Render já faz o deploy automático do Backend ao detectar pushes no master.
+  # Se desejar forçar um redeploy via Action a cada 4 horas, poderíamos adicionar um curl aqui.
