@@ -100,20 +100,18 @@ export const initializeDatabase = async () => {
         await client.query('DROP TABLE IF EXISTS transactions CASCADE');
       } else {
         // Se a tabela existe, verificar se tem as colunas necessárias
-        const columnsExist = await client.query(`
+        // Verificar individualmente as colunas críticas e adicionar se faltarem (mais seguro que DROP TABLE)
+        const scoreColumn = await client.query(`
           SELECT column_name FROM information_schema.columns
-          WHERE table_schema = 'public'
-          AND table_name = 'users'
-          AND column_name IN ('secret_phrase', 'pix_key', 'is_admin')
+          WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'score'
         `);
 
-        // Se não tiver todas as colunas, recriar a tabela
-        if (columnsExist.rows.length < 3) {
-          await client.query('DROP TABLE users CASCADE');
-        } else {
-          // Se já tem as colunas, não recriar a tabela
-          console.log('Tabela users já existe com as colunas necessárias');
+        if (scoreColumn.rows.length === 0) {
+          console.log('Adicionando coluna score à tabela users...');
+          await client.query('ALTER TABLE users ADD COLUMN score INTEGER DEFAULT 300');
         }
+
+        console.log('Tabela users verificada e atualizada com sucesso');
       }
     }
 
@@ -130,6 +128,7 @@ export const initializeDatabase = async () => {
         referral_code VARCHAR(10) UNIQUE,
         referred_by VARCHAR(10),
         is_admin BOOLEAN DEFAULT FALSE,
+        score INTEGER DEFAULT 300,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);

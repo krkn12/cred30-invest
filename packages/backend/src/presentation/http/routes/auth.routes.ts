@@ -45,7 +45,7 @@ authRoutes.post('/login', async (c) => {
     // Buscar usuário no banco
     console.log('Buscando usuário com email:', validatedData.email);
     const result = await pool.query(
-      'SELECT id, name, email, password_hash, secret_phrase, pix_key, referral_code, is_admin, balance, created_at FROM users WHERE email = $1',
+      'SELECT id, name, email, password_hash, secret_phrase, pix_key, referral_code, is_admin, balance, score, created_at FROM users WHERE email = $1',
       [validatedData.email]
     );
 
@@ -94,6 +94,7 @@ authRoutes.post('/login', async (c) => {
           joinedAt: user.created_at,
           referralCode: user.referral_code,
           isAdmin: user.is_admin,
+          score: user.score,
         },
         token,
       },
@@ -173,9 +174,9 @@ authRoutes.post('/register', async (c) => {
     const referralCode = generateReferralCode();
 
     const result = await pool.query(
-      `INSERT INTO users (name, email, password_hash, secret_phrase, pix_key, balance, referral_code, is_admin)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING id, name, email, pix_key, balance, created_at, referral_code, is_admin`,
+      `INSERT INTO users (name, email, password_hash, secret_phrase, pix_key, balance, referral_code, is_admin, score)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING id, name, email, pix_key, balance, score, created_at, referral_code, is_admin`,
       [
         validatedData.name,
         validatedData.email,
@@ -184,7 +185,8 @@ authRoutes.post('/register', async (c) => {
         validatedData.pixKey,
         0,
         referralCode,
-        isFirstUser // Define como administrador se for o primeiro usuário
+        isFirstUser, // Define como administrador se for o primeiro usuário
+        300
       ]
     );
 

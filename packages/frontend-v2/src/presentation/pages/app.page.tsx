@@ -15,7 +15,7 @@ import { Wallet, TrendingUp, AlertTriangle, ArrowRight, DollarSign, Calendar, Lo
 
 // --- Admin Component ---
 
-const AdminDashboard = ({ state, onRefresh, onLogout }: {
+const AdminView = ({ state, onRefresh, onLogout }: {
   state: AppState,
   onRefresh: () => void,
   onLogout: () => void,
@@ -275,14 +275,14 @@ const AdminDashboard = ({ state, onRefresh, onLogout }: {
     }
   };
 
-  const handleFixPix = async (loanId?: string, userEmail?: string) => {
+  const handleFixPix = async (loanId: string) => {
+    const newPix = prompt("Digite a nova Chave PIX:");
+    if (!newPix) return;
     try {
-      const id = loanId || '1';
-      const email = userEmail || 'josiassm701@gmail.com';
-      await fixLoanPix(id, email);
+      await fixLoanPix(loanId, newPix);
       clearAllCache();
       onRefresh();
-      alert("PIX do empréstimo atualizado com sucesso!");
+      alert("Chave PIX atualizada com sucesso!");
     } catch (e: any) {
       alert(`Erro ao atualizar PIX: ${e.message}`);
     }
@@ -675,7 +675,7 @@ const AdminDashboard = ({ state, onRefresh, onLogout }: {
                     <p className="text-xs text-zinc-500">Pagar: {formatCurrency(l.totalRepayment)} em {l.installments}x</p>
                   </div>
                   <div className="flex gap-2 ml-4">
-                    <button title="Corrigir PIX" onClick={() => handleFixPix(l.id, l.user_email)} className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30"><RefreshCw size={20} /></button>
+                    <button title="Corrigir PIX" onClick={() => handleFixPix(l.id)} className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30"><RefreshCw size={20} /></button>
                     <button title="Aprovar" onClick={() => handleAction(l.id, 'LOAN', 'APPROVE')} className="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30"><Check size={20} /></button>
                     <button title="Rejeitar" onClick={() => handleAction(l.id, 'LOAN', 'REJECT')} className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30"><XIcon size={20} /></button>
                   </div>
@@ -950,7 +950,7 @@ const Dashboard = ({ state, onBuyQuota, onReinvest, onRefer, onVip, onLogout }: 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-black font-bold text-2xl">
-              {user.name.charAt(0).toUpperCase()}
+              {user.name ? user.name.charAt(0).toUpperCase() : '?'}
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white">{user.name}</h2>
@@ -958,18 +958,35 @@ const Dashboard = ({ state, onBuyQuota, onReinvest, onRefer, onVip, onLogout }: 
                 <span className={`px-3 py-1 rounded-full text-sm font-bold ${vipLevel === 'Ouro' ? 'bg-yellow-500 text-black' : vipLevel === 'Prata' ? 'bg-zinc-400 text-black' : 'bg-orange-600 text-white'}`}>
                   {vipLevel}
                 </span>
+                <span className="px-3 py-1 rounded-full text-sm font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center gap-1">
+                  <Star size={14} fill="currentColor" /> {user.score || 0}
+                </span>
                 <span className="text-zinc-400 text-sm">Membro desde {user.joinedAt ? new Date(user.joinedAt).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : 'Data não disponível'}</span>
               </div>
               <p className="text-zinc-400 text-sm mt-1">Código: {user.referralCode}</p>
             </div>
           </div>
-          <div className="flex gap-2">
-            <button title="Configurações" onClick={() => setShowSettings(true)} className="text-zinc-400 hover:text-white p-2 bg-surfaceHighlight rounded-lg">
-              <Settings size={20} />
-            </button>
-            <button title="Sair" onClick={onLogout} className="text-zinc-400 hover:text-white p-2 bg-surfaceHighlight rounded-lg">
-              <LogOut size={20} />
-            </button>
+          <div className="flex flex-col items-end gap-2">
+            <div className="text-right hidden sm:block">
+              <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Score de Crédito</p>
+              <div className="flex items-center gap-2">
+                <div className="w-24 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-1000 ${(user.score || 0) > 700 ? 'bg-emerald-500' : (user.score || 0) > 400 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                    style={{ width: `${Math.min(((user.score || 0) / 1000) * 100, 100)}%` }}
+                  ></div>
+                </div>
+                <span className="text-sm font-bold text-white">{user.score || 0}</span>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button title="Configurações" onClick={() => setShowSettings(true)} className="text-zinc-400 hover:text-white p-2 bg-surfaceHighlight rounded-lg">
+                <Settings size={20} />
+              </button>
+              <button title="Sair" onClick={onLogout} className="text-zinc-400 hover:text-white p-2 bg-surfaceHighlight rounded-lg">
+                <LogOut size={20} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -2033,6 +2050,16 @@ const SettingsView = ({ user, onSimulateTime, onLogout }: { user: User, onSimula
             <p className="text-white border-b border-surfaceHighlight pb-2">{user.pixKey}</p>
           </div>
           <div>
+            <label className="text-xs text-zinc-500">Score de Crédito</label>
+            <div className="flex items-center gap-2 border-b border-surfaceHighlight pb-2">
+              <Star size={16} className="text-primary-400" fill="currentColor" />
+              <p className="text-white font-bold">{user.score || 0}</p>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-surfaceHighlight text-zinc-400">
+                {(user.score || 0) > 700 ? 'Excelente' : (user.score || 0) > 400 ? 'Bom' : 'Regular'}
+              </span>
+            </div>
+          </div>
+          <div>
             <label className="text-xs text-zinc-500">Código de Indicação</label>
             <div className="flex items-center gap-2">
               <p className="text-primary-400 font-bold text-xl">{user.referralCode}</p>
@@ -2049,7 +2076,7 @@ const SettingsView = ({ user, onSimulateTime, onLogout }: { user: User, onSimula
       </button>
     </div>
   );
-}
+};
 
 // --- Main App ---
 
@@ -2188,7 +2215,7 @@ export default function App() {
       <>
         <UpdateNotification />
         <Routes>
-          <Route path="/admin" element={<AdminDashboard state={state} onRefresh={refreshState} onLogout={handleLogout} />} />
+          <Route path="/admin" element={<AdminView state={state} onRefresh={refreshState} onLogout={handleLogout} />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Routes>
       </>

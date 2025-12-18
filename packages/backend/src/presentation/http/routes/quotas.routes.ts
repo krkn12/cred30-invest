@@ -6,6 +6,7 @@ import { QUOTA_PRICE, VESTING_PERIOD_MS, PENALTY_RATE } from '../../../shared/co
 import { Quota } from '../../../domain/entities/quota.entity';
 import { UserContext } from '../../../shared/types/hono.types';
 import { executeInTransaction, lockUserBalance, updateUserBalance, createTransaction } from '../../../domain/services/transaction.service';
+import { updateScore, SCORE_REWARDS } from '../../../application/services/score.service';
 import { financialRateLimit } from '../middleware/rate-limit.middleware';
 
 // Função auxiliar para registrar auditoria financeira
@@ -41,13 +42,13 @@ quotaRoutes.get('/', authMiddleware, async (c) => {
   try {
     const user = c.get('user') as UserContext;
     const pool = getDbPool(c);
-    
+
     // Buscar cotas do usuário
     const result = await pool.query(
       'SELECT id, user_id, purchase_price, current_value, purchase_date FROM quotas WHERE user_id = $1',
       [user.id]
     );
-    
+
     // Formatar cotas para resposta
     const formattedQuotas = result.rows.map(quota => ({
       id: quota.id,
@@ -57,7 +58,7 @@ quotaRoutes.get('/', authMiddleware, async (c) => {
       currentValue: parseFloat(quota.current_value),
       yieldRate: 1.001, // Taxa fixa por enquanto
     }));
-    
+
     return c.json({
       success: true,
       data: {
@@ -75,12 +76,12 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
   try {
     const body = await c.req.json();
     const { quantity, useBalance } = buyQuotaSchema.parse(body);
-    
+
     const user = c.get('user') as UserContext;
     const pool = getDbPool(c);
-    
+
     const cost = quantity * QUOTA_PRICE;
-    
+
     // Validar limites
     if (quantity > 100) {
       return c.json({
@@ -88,14 +89,14 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
         message: 'Quantidade máxima por compra é 100 cotas'
       }, 400);
     }
-    
+
     if (cost > 50000) {
       return c.json({
         success: false,
         message: 'Valor máximo por compra é R$ 50.000,00'
       }, 400);
     }
-    
+
     // Executar operação dentro de transação ACID
     const result = await executeInTransaction(pool, async (client) => {
       // Se estiver usando saldo, verificar e bloquear
@@ -104,13 +105,13 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
         if (!balanceCheck.success) {
           throw new Error(balanceCheck.error);
         }
-        
+
         // Deduzir saldo
         const updateResult = await updateUserBalance(client, user.id, cost, 'debit');
         if (!updateResult.success) {
           throw new Error(updateResult.error);
         }
-        
+
         // Criar cotas imediatamente (compra com saldo)
         for (let i = 0; i < quantity; i++) {
           await client.query(
@@ -119,7 +120,7 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
             [user.id, QUOTA_PRICE, QUOTA_PRICE, new Date()]
           );
         }
-        
+
         // Criar transação APROVADA (compra com saldo)
         const transactionResult = await createTransaction(
           client,
@@ -130,11 +131,14 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
           'APPROVED',
           { quantity, useBalance }
         );
-        
+
         if (!transactionResult.success) {
           throw new Error(transactionResult.error);
         }
-        
+
+        // 5. Atualizar Score por investimento
+        await updateScore(client, user.id, SCORE_REWARDS.QUOTA_PURCHASE * quantity, `Compra de ${quantity} cotas`);
+
         return {
           transactionId: transactionResult.transactionId,
           cost,
@@ -152,11 +156,11 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
           'PENDING',
           { quantity, useBalance }
         );
-        
+
         if (!transactionResult.success) {
           throw new Error(transactionResult.error);
         }
-        
+
         return {
           transactionId: transactionResult.transactionId,
           cost,
@@ -165,18 +169,18 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
         };
       }
     });
-    
+
     if (!result.success) {
       return c.json({
         success: false,
         message: result.error
       }, 400);
     }
-    
+
     const message = result.data?.immediateApproval
       ? `Compra de ${result.data?.quantity} cota(s) aprovada imediatamente!`
       : 'Solicitação de compra enviada! Aguarde a aprovação do administrador.';
-    
+
     return c.json({
       success: true,
       message,
@@ -191,7 +195,7 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
     if (error instanceof z.ZodError) {
       return c.json({ success: false, message: 'Dados inválidos', errors: error.errors }, 400);
     }
-    
+
     return c.json({
       success: false,
       message: error instanceof Error ? error.message : 'Erro interno do servidor'
@@ -204,47 +208,47 @@ quotaRoutes.post('/sell', authMiddleware, async (c) => {
   try {
     const body = await c.req.json();
     const { quotaId } = sellQuotaSchema.parse(body);
-    
+
     const user = c.get('user') as UserContext;
     const pool = getDbPool(c);
-    
+
     // Verificar se o usuário tem empréstimos ativos
     const activeLoansResult = await pool.query(
       "SELECT COUNT(*) FROM loans WHERE user_id = $1 AND status IN ('PENDING', 'APPROVED', 'PAYMENT_PENDING')",
       [user.id]
     );
-    
+
     const activeLoans = parseInt(activeLoansResult.rows[0].count);
-    
+
     if (activeLoans > 0) {
       return c.json({
         success: false,
         message: 'Operação bloqueada: Você possui empréstimos em aberto. Quite seus débitos antes de vender cotas.'
       }, 400);
     }
-    
+
     // Buscar cota
     const quotaResult = await pool.query(
       'SELECT * FROM quotas WHERE id = $1 AND user_id = $2',
       [quotaId, user.id]
     );
-    
+
     if (quotaResult.rows.length === 0) {
       return c.json({ success: false, message: 'Cota não encontrada' }, 404);
     }
-    
+
     const quota = quotaResult.rows[0];
-    
+
     // Calcular valor de resgate
     const now = Date.now();
     const timeDiff = now - new Date(quota.purchase_date).getTime();
     const isEarlyExit = timeDiff < VESTING_PERIOD_MS;
-    
+
     const originalAmount = parseFloat(quota.purchase_price);
     let finalAmount = originalAmount;
     let penaltyAmount = 0;
     let profitAmount = 0;
-    
+
     if (isEarlyExit) {
       penaltyAmount = originalAmount * PENALTY_RATE;
       finalAmount = originalAmount - penaltyAmount;
@@ -252,7 +256,7 @@ quotaRoutes.post('/sell', authMiddleware, async (c) => {
       // Isso transforma a penalidade em receita para o sistema
       profitAmount = penaltyAmount; // 100% da multa vai para o lucro de juros
     }
-    
+
     // Registrar auditoria antes da transação
     const systemStateBefore = await pool.query(`
       SELECT
@@ -281,13 +285,13 @@ quotaRoutes.post('/sell', authMiddleware, async (c) => {
         'DELETE FROM quotas WHERE id = $1 AND user_id = $2',
         [quotaId, user.id]
       );
-      
+
       // Adicionar valor ao saldo do usuário
       await client.query(
         'UPDATE users SET balance = balance + $1 WHERE id = $2',
         [finalAmount, user.id]
       );
-      
+
       // Adicionar multa ao lucro de juros (se houver multa)
       if (profitAmount > 0) {
         await client.query(
@@ -295,7 +299,7 @@ quotaRoutes.post('/sell', authMiddleware, async (c) => {
           [profitAmount]
         );
       }
-      
+
       // Criar transação de venda
       await client.query(
         `INSERT INTO transactions (user_id, type, amount, description, status, metadata)
@@ -330,7 +334,7 @@ quotaRoutes.post('/sell', authMiddleware, async (c) => {
       newOperationalCash: systemStateAfter.rows[0]?.operational_cash
     };
     logFinancialAudit('VENDA_COTA_APOS', user.id, auditAfter);
-    
+
     return c.json({
       success: true,
       message: 'Cota resgatada com sucesso! Valor creditado no saldo.',
@@ -343,7 +347,7 @@ quotaRoutes.post('/sell', authMiddleware, async (c) => {
     if (error instanceof z.ZodError) {
       return c.json({ success: false, message: 'Dados inválidos', errors: error.errors }, 400);
     }
-    
+
     console.error('Erro ao vender cota:', error);
     return c.json({ success: false, message: 'Erro interno do servidor' }, 500);
   }
@@ -354,48 +358,48 @@ quotaRoutes.post('/sell-all', authMiddleware, async (c) => {
   try {
     const user = c.get('user') as UserContext;
     const pool = getDbPool(c);
-    
+
     // Verificar se o usuário tem empréstimos ativos
     const activeLoansResult = await pool.query(
       "SELECT COUNT(*) FROM loans WHERE user_id = $1 AND status IN ('PENDING', 'APPROVED', 'PAYMENT_PENDING')",
       [user.id]
     );
-    
+
     const activeLoans = parseInt(activeLoansResult.rows[0].count);
-    
+
     if (activeLoans > 0) {
       return c.json({
         success: false,
         message: 'Operação bloqueada: Você possui empréstimos em aberto. Quite seus débitos antes de vender cotas.'
       }, 400);
     }
-    
+
     // Buscar todas as cotas do usuário
     const userQuotasResult = await pool.query(
       'SELECT * FROM quotas WHERE user_id = $1',
       [user.id]
     );
-    
+
     const userQuotas = userQuotasResult.rows;
-    
+
     if (userQuotas.length === 0) {
       return c.json({ success: false, message: 'Você não possui cotas para vender' }, 400);
     }
-    
+
     // Calcular valores
     let totalReceived = 0;
     let totalPenalty = 0;
     let totalProfit = 0;
     const now = Date.now();
-    
+
     for (const quota of userQuotas) {
       const timeDiff = now - new Date(quota.purchase_date).getTime();
       const isEarlyExit = timeDiff < VESTING_PERIOD_MS;
-      
+
       const originalAmount = parseFloat(quota.purchase_price);
       let amount = originalAmount;
       let penalty = 0;
-      
+
       if (isEarlyExit) {
         penalty = originalAmount * PENALTY_RATE;
         amount = originalAmount - penalty;
@@ -404,10 +408,10 @@ quotaRoutes.post('/sell-all', authMiddleware, async (c) => {
         // Não adicionamos ao lucro de juros, pois isso criaria dinheiro do nada
         totalPenalty += penalty;
       }
-      
+
       totalReceived += amount;
     }
-    
+
     // Registrar auditoria antes da transação
     const systemStateBefore = await pool.query(`
       SELECT
@@ -435,13 +439,13 @@ quotaRoutes.post('/sell-all', authMiddleware, async (c) => {
         'DELETE FROM quotas WHERE user_id = $1',
         [user.id]
       );
-      
+
       // Adicionar valor ao saldo do usuário
       await client.query(
         'UPDATE users SET balance = balance + $1 WHERE id = $2',
         [totalReceived, user.id]
       );
-      
+
       // CORREÇÃO: Não adicionamos multas ao lucro de juros, pois isso criaria dinheiro do nada
       // As multas são penalidades reais que reduzem o dinheiro em circulação
       // if (totalProfit > 0) {
@@ -450,7 +454,7 @@ quotaRoutes.post('/sell-all', authMiddleware, async (c) => {
       //     [totalProfit]
       //   );
       // }
-      
+
       // Criar transação de venda
       await client.query(
         `INSERT INTO transactions (user_id, type, amount, description, status, metadata)
@@ -485,7 +489,7 @@ quotaRoutes.post('/sell-all', authMiddleware, async (c) => {
       newOperationalCash: systemStateAfter.rows[0]?.operational_cash
     };
     logFinancialAudit('VENDA_TODAS_COTAS_APOS', user.id, auditAfter);
-    
+
     return c.json({
       success: true,
       message: `Resgate total realizado! R$ ${totalReceived.toFixed(2)} creditados.`,

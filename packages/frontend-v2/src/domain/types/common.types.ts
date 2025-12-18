@@ -7,6 +7,7 @@ export interface User {
   joinedAt: string;
   referralCode: string;
   isAdmin?: boolean;
+  score?: number;
   secretPhrase?: string;
 }
 

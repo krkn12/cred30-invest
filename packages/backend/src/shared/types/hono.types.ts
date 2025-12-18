@@ -7,6 +7,7 @@ export interface UserContext {
   joinedAt: number; // Timestamp em milissegundos
   referralCode: string;
   isAdmin: boolean;
+  score: number;
   pixKey?: string; // Adicionado para compatibilidade
 }
 

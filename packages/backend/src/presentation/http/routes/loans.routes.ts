@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { getDbPool } from '../../../infrastructure/database/postgresql/connection/pool';
 import { LOAN_INTEREST_RATE, ONE_MONTH_MS, PENALTY_RATE } from '../../../shared/constants/business.constants';
+import { updateScore, SCORE_REWARDS } from '../../../application/services/score.service';
 
 const loanRoutes = new Hono();
 
@@ -110,6 +111,24 @@ loanRoutes.post('/request', authMiddleware, async (c) => {
 
     const user = c.get('user');
     const pool = getDbPool(c);
+
+    // Verificar se o usuário já tem empréstimos em atraso
+    const lateLoansResult = await pool.query(
+      `SELECT id FROM loans 
+       WHERE user_id = $1 AND status = 'APPROVED' AND due_date < NOW()`,
+      [user.id]
+    );
+
+    if (lateLoansResult.rows.length > 0) {
+      // Aplicar penalidade de score por atraso (se ainda não foi aplicada hoje, por exemplo, 
+      // mas aqui aplicaremos a cada tentativa de novo empréstimo como aviso)
+      await updateScore(pool, user.id, -50, 'Tentativa de novo empréstimo com parcelas em atraso');
+
+      return c.json({
+        success: false,
+        message: 'Você possui empréstimos em atraso. Regularize sua situação para solicitar novos créditos.'
+      }, 400);
+    }
 
     // DEBUG: Log para verificar o valor do PIX recebido
     console.log('DEBUG - PIX recebido na solicitação:', {
@@ -375,6 +394,16 @@ loanRoutes.post('/repay-installment', authMiddleware, async (c) => {
         'UPDATE loans SET status = $1 WHERE id = $2',
         ['PAID', loanId]
       );
+
+      // Atualizar Score por pagamento de empréstimo (Recompensa)
+      const isLate = new Date() > new Date(loan.due_date);
+      if (isLate) {
+        // Se estiver atrasado, poderia haver uma lógica de penalidade aqui, 
+        // mas a recompensa de "pagamento em dia" certamente não se aplica.
+        // Por enquanto, apenas não damos a recompensa se estiver muito atrasado.
+      } else {
+        await updateScore(pool, user.id, SCORE_REWARDS.LOAN_PAYMENT_ON_TIME, 'Pagamento integral de empréstimo em dia');
+      }
     }
 
     // Criar transação de pagamento APROVADA

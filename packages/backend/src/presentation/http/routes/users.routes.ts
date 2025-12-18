@@ -80,7 +80,7 @@ userRoutes.put('/profile', authMiddleware, async (c) => {
       UPDATE users
       SET ${updateFields.join(', ')}
       WHERE id = $${paramIndex}
-      RETURNING id, name, email, pix_key, balance, created_at, referral_code, is_admin
+      RETURNING id, name, email, pix_key, balance, score, created_at, referral_code, is_admin
     `;
 
     const result = await pool.query(updateQuery, updateValues);

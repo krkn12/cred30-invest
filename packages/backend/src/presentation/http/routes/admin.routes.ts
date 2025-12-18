@@ -13,6 +13,7 @@ import {
 } from '../../../shared/constants/business.constants';
 import { executeInTransaction, updateUserBalance, createTransaction, updateTransactionStatus } from '../../../domain/services/transaction.service';
 import { distributeProfits } from '../../../application/services/profit-distribution.service';
+import { updateScore, SCORE_REWARDS } from '../../../application/services/score.service';
 
 interface PaymentApprovalResult {
   success: boolean;
@@ -395,6 +396,9 @@ adminRoutes.post('/process-action', adminMiddleware, auditMiddleware('PROCESS_AC
               );
             }
 
+            // Atualizar Score por investimento (Aprovado pelo Admin)
+            await updateScore(client, transaction.user_id, SCORE_REWARDS.QUOTA_PURCHASE * qty, `Compra de ${qty} cotas (Aprovada)`);
+
             // Adicionar ao saldo do sistema APENAS se a compra foi via PIX
             // Se foi via saldo, o dinheiro já está no sistema
             if (!metadata.useBalance) {
@@ -438,6 +442,9 @@ adminRoutes.post('/process-action', adminMiddleware, auditMiddleware('PROCESS_AC
                   'UPDATE loans SET status = $1 WHERE id = $2',
                   ['PAID', metadata.loanId]
                 );
+
+                // Atualizar Score por pagamento de empréstimo
+                await updateScore(client, transaction.user_id, SCORE_REWARDS.LOAN_PAYMENT_ON_TIME, 'Pagamento integral de empréstimo');
 
                 // Separar principal e juros
                 const principal = parseFloat(loan.amount);

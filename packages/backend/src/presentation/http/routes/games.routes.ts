@@ -4,6 +4,7 @@ import { authMiddleware } from '../middleware/auth.middleware';
 import { getDbPool } from '../../../infrastructure/database/postgresql/connection/pool';
 import { UserContext } from '../../../shared/types/hono.types';
 import { executeInTransaction, updateUserBalance, createTransaction } from '../../../domain/services/transaction.service';
+import { updateScore, SCORE_REWARDS } from '../../../application/services/score.service';
 
 const gamesRoutes = new Hono();
 
@@ -125,6 +126,9 @@ gamesRoutes.post('/slot/spin', authMiddleware, async (c) => {
                 `Pacote 20 Rodadas`,
                 'APPROVED'
             );
+
+            // 5. Atualizar Score por participação
+            await updateScore(client, user.id, SCORE_REWARDS.GAME_PARTICIPATION, 'Participação no Caça-Níquel');
 
             return {
                 batchResults: results,
