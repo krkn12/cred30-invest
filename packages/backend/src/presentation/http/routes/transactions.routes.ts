@@ -91,8 +91,18 @@ transactionRoutes.post('/withdraw', authMiddleware, async (c) => {
       }, 400);
     }
 
-    // Calcular taxa de saque (2% ou R$ 5,00, o que for maior)
-    const fee = Math.max(5, amount * 0.02);
+    // Buscar valor total de cotas ativas do cliente
+    const quotasResult = await pool.query(
+      "SELECT COALESCE(SUM(current_value), 0) as total_quota_value FROM quotas WHERE user_id = $1 AND status = 'ACTIVE'",
+      [user.id]
+    );
+    const totalQuotaValue = parseFloat(quotasResult.rows[0].total_quota_value);
+
+    // Calcular taxa de saque: se o valor da cota for maior que o saque, o saque é grátis
+    let fee = 0;
+    if (totalQuotaValue < amount) {
+      fee = Math.max(5, amount * 0.02);
+    }
     const netAmount = amount - fee;
 
     // Executar operação dentro de transação ACID

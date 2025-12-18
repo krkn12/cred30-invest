@@ -2103,18 +2103,23 @@ const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalance, cur
   );
 };
 
-const WithdrawView = ({ balance, onRequest, currentUser }: {
+const WithdrawView = ({ balance, onRequest, currentUser, totalQuotaValue }: {
   balance: number,
   onRequest: (val: number, key: string) => void,
-  currentUser: User | null
+  currentUser: User | null,
+  totalQuotaValue: number
 }) => {
   const [val, setVal] = useState('');
 
   // Quick amount options
   const quickAmounts = [50, 100, 200, 500];
   const isValidAmount = val && parseFloat(val) > 0 && parseFloat(val) <= balance;
-  const fee = isValidAmount ? Math.max(5, parseFloat(val) * 0.02) : 0; // 2% fee, minimum R$5
-  const netAmount = isValidAmount ? parseFloat(val) - fee : 0;
+
+  // Taxa de saque: Grátis se Valor Total de Cotas >= Valor do Saque
+  const withdrawalAmount = parseFloat(val) || 0;
+  const isFree = totalQuotaValue >= withdrawalAmount;
+  const fee = (isValidAmount && !isFree) ? Math.max(5, withdrawalAmount * 0.02) : 0;
+  const netAmount = isValidAmount ? withdrawalAmount - fee : 0;
 
   return (
     <div className="max-w-md mx-auto space-y-6">
@@ -2179,8 +2184,10 @@ const WithdrawView = ({ balance, onRequest, currentUser }: {
             {isValidAmount && (
               <div className="mt-3 p-3 bg-zinc-800/50 rounded-lg text-xs space-y-1">
                 <div className="flex justify-between">
-                  <span className="text-zinc-400">Taxa de saque (2%)</span>
-                  <span className="text-zinc-300">{fee.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                  <span className="text-zinc-400">Taxa de saque ({isFree ? 'Grátis' : '2%'})</span>
+                  <span className={isFree ? 'text-emerald-400' : 'text-zinc-300'}>
+                    {isFree ? 'R$ 0,00' : fee.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </span>
                 </div>
                 <div className="flex justify-between font-bold">
                   <span className="text-white">Você receberá</span>
@@ -2211,7 +2218,10 @@ const WithdrawView = ({ balance, onRequest, currentUser }: {
             <span>Processamento em até 24h úteis</span>
           </p>
           <p className="text-xs text-zinc-400 mt-2">
-            Taxa mínima de R$ 5,00 ou 2% do valor do saque, o que for maior.
+            Taxa mínima de R$ 5,00 ou 2% do valor do saque.
+          </p>
+          <p className="text-xs text-emerald-400/80 mt-2">
+            💡 <strong>Benefício VIP:</strong> Se o valor das suas cotas for maior ou igual ao saque, a taxa é <strong>ZERO</strong>!
           </p>
           <p className="text-xs text-zinc-400 mt-2">
             <strong>Importante:</strong> Você está sacando do seu saldo disponível na conta.
@@ -2606,6 +2616,10 @@ export default function App() {
                   balance={state.currentUser.balance}
                   onRequest={handleWithdraw}
                   currentUser={state.currentUser}
+                  totalQuotaValue={state.quotas
+                    .filter(q => q.userId === state.currentUser!.id)
+                    .reduce((acc, q) => acc + (q.currentValue || 0), 0)
+                  }
                 />
               } />
               <Route path="*" element={<Navigate to="/app/dashboard" replace />} />

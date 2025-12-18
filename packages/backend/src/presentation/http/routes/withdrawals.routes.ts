@@ -17,16 +17,26 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
   try {
     const body = await c.req.json();
     const { amount, pixKey } = withdrawalSchema.parse(body);
-    
+
     const user = c.get('user');
     const pool = getDbPool(c);
-    
-    // Calcular taxa de saque (2% ou R$ 5,00, o que for maior)
-    const feePercentage = 0.02;
-    const feeFixed = 5.00;
-    const feeAmount = Math.max(amount * feePercentage, feeFixed);
+
+    // Buscar valor total de cotas ativas do cliente
+    const quotasResult = await pool.query(
+      "SELECT COALESCE(SUM(current_value), 0) as total_quota_value FROM quotas WHERE user_id = $1 AND status = 'ACTIVE'",
+      [user.id]
+    );
+    const totalQuotaValue = parseFloat(quotasResult.rows[0].total_quota_value);
+
+    // Calcular taxa de saque: se o valor da cota for maior que o saque, o saque é grátis
+    let feeAmount = 0;
+    if (totalQuotaValue < amount) {
+      const feePercentage = 0.02;
+      const feeFixed = 5.00;
+      feeAmount = Math.max(amount * feePercentage, feeFixed);
+    }
     const netAmount = amount - feeAmount;
-    
+
     // Buscar empréstimos aprovados do cliente
     const loansResult = await pool.query(
       `SELECT COALESCE(SUM(total_repayment), 0) as total_loan_amount
@@ -34,7 +44,7 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
        WHERE user_id = $1 AND status IN ('APPROVED', 'PAYMENT_PENDING')`,
       [user.id]
     );
-    
+
     // Buscar saques já aprovados do cliente
     const withdrawalsResult = await pool.query(
       `SELECT COALESCE(SUM(amount), 0) as total_withdrawn
@@ -42,11 +52,11 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
        WHERE user_id = $1 AND type = 'WITHDRAWAL' AND status = 'APPROVED'`,
       [user.id]
     );
-    
+
     const totalLoanAmount = parseFloat(loansResult.rows[0].total_loan_amount);
     const totalWithdrawnAmount = parseFloat(withdrawalsResult.rows[0].total_withdrawn);
     const availableCredit = totalLoanAmount - totalWithdrawnAmount;
-    
+
     // Validar se o cliente tem limite disponível
     if (amount > availableCredit) {
       return c.json({
@@ -60,7 +70,7 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
         }
       }, 400);
     }
-    
+
     // Executar dentro de transação para consistência
     const result = await executeInTransaction(pool, async (client) => {
       // Criar transação de saque pendente
@@ -80,11 +90,11 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
           type: 'CREDIT_WITHDRAWAL' // Tipo especial para saque de crédito
         }
       );
-      
+
       if (!transactionResult.success) {
         throw new Error(transactionResult.error);
       }
-      
+
       return {
         transactionId: transactionResult.transactionId,
         amount,
@@ -93,7 +103,7 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
         availableCredit
       };
     });
-    
+
     return c.json({
       success: true,
       message: 'Solicitação de saque enviada! Aguarde aprovação do administrador.',
@@ -110,7 +120,7 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
     if (error instanceof z.ZodError) {
       return c.json({ success: false, message: 'Dados inválidos', errors: error.errors }, 400);
     }
-    
+
     console.error('Erro ao solicitar saque:', error);
     return c.json({ success: false, message: 'Erro interno do servidor' }, 500);
   }
@@ -121,7 +131,7 @@ withdrawalRoutes.get('/', authMiddleware, async (c) => {
   try {
     const user = c.get('user');
     const pool = getDbPool(c);
-    
+
     // Buscar saques do usuário
     const result = await pool.query(
       `SELECT id, amount, status, description, created_at, metadata
@@ -130,7 +140,7 @@ withdrawalRoutes.get('/', authMiddleware, async (c) => {
        ORDER BY created_at DESC`,
       [user.id]
     );
-    
+
     // Formatar saques para resposta
     const formattedWithdrawals = result.rows.map(withdrawal => ({
       id: withdrawal.id,
@@ -140,7 +150,7 @@ withdrawalRoutes.get('/', authMiddleware, async (c) => {
       requestDate: new Date(withdrawal.created_at).getTime(),
       metadata: withdrawal.metadata
     }));
-    
+
     return c.json({
       success: true,
       data: {
@@ -158,7 +168,7 @@ withdrawalRoutes.get('/credit-limit', authMiddleware, async (c) => {
   try {
     const user = c.get('user');
     const pool = getDbPool(c);
-    
+
     // Buscar empréstimos aprovados do cliente
     const loansResult = await pool.query(
       `SELECT COALESCE(SUM(total_repayment), 0) as total_loan_amount
@@ -166,7 +176,7 @@ withdrawalRoutes.get('/credit-limit', authMiddleware, async (c) => {
        WHERE user_id = $1 AND status IN ('APPROVED', 'PAYMENT_PENDING')`,
       [user.id]
     );
-    
+
     // Buscar saques já aprovados do cliente
     const withdrawalsResult = await pool.query(
       `SELECT COALESCE(SUM(amount), 0) as total_withdrawn
@@ -174,12 +184,12 @@ withdrawalRoutes.get('/credit-limit', authMiddleware, async (c) => {
        WHERE user_id = $1 AND type = 'WITHDRAWAL' AND status = 'APPROVED'`,
       [user.id]
     );
-    
+
     const totalLoanAmount = parseFloat(loansResult.rows[0].total_loan_amount);
     const totalWithdrawnAmount = parseFloat(withdrawalsResult.rows[0].total_withdrawn);
     const availableCredit = totalLoanAmount - totalWithdrawnAmount;
     const creditUtilizationRate = totalLoanAmount > 0 ? (totalWithdrawnAmount / totalLoanAmount) * 100 : 0;
-    
+
     return c.json({
       success: true,
       data: {
