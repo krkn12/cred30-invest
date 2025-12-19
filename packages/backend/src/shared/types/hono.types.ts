@@ -9,6 +9,7 @@ export interface UserContext {
   isAdmin: boolean;
   score: number;
   pixKey?: string; // Adicionado para compatibilidade
+  twoFactorEnabled?: boolean;
 }
 
 // Estender o tipo de variáveis do Hono

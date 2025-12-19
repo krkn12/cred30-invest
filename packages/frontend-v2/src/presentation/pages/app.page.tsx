@@ -418,6 +418,7 @@ export default function App() {
                       await changePassword(oldPass, newPass);
                       setShowSuccess({ isOpen: true, title: 'Sucesso', message: 'Senha alterada com sucesso!' });
                     }}
+                    onRefresh={refreshState}
                   />
                 </Suspense>
               } />

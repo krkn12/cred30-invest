@@ -4,12 +4,13 @@ import { User } from '../../../domain/types/common.types';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { get2FASetup, verify2FA } from '../../../application/services/storage.service';
 
-export const SettingsView = ({ user, onSimulateTime, onLogout, onDeleteAccount, onChangePassword }: {
+export const SettingsView = ({ user, onSimulateTime, onLogout, onDeleteAccount, onChangePassword, onRefresh }: {
     user: User,
     onSimulateTime: () => void,
     onLogout: () => void,
     onDeleteAccount: () => void,
-    onChangePassword: (oldPass: string, newPass: string) => Promise<void>
+    onChangePassword: (oldPass: string, newPass: string) => Promise<void>,
+    onRefresh?: () => void
 }) => {
     const [showConfirmDelete, setShowConfirmDelete] = React.useState(false);
     const [showChangePassword, setShowChangePassword] = React.useState(false);
@@ -46,7 +47,8 @@ export const SettingsView = ({ user, onSimulateTime, onLogout, onDeleteAccount, 
                 setTimeout(() => {
                     setShow2FASetup(false);
                     setSuccessMessage('');
-                    window.location.reload(); // Recarregar para atualizar status do 2FA
+                    if (onRefresh) onRefresh();
+                    else window.location.reload();
                 }, 1500);
             }
         } catch (err: any) {
