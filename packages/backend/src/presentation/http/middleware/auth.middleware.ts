@@ -6,15 +6,19 @@ import { UserContext } from '../../../shared/types/hono.types';
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
   try {
     const authHeader = c.req.header('Authorization');
+    let token = '';
 
-    console.log('authMiddleware - Header:', authHeader);
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    } else {
+      // Tentar pegar do query param (usado em EventSource/SSE)
+      token = c.req.query('token') || '';
+    }
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
       console.log('authMiddleware - Token não fornecido');
       return c.json({ success: false, message: 'Token não fornecido' }, 401);
     }
-
-    const token = authHeader.substring(7); // Remove "Bearer " do início
 
     console.log('authMiddleware - Token extraído:', token.substring(0, 20) + '...');
 

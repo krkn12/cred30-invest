@@ -119,9 +119,25 @@ export default function App() {
     const handleAuthExpired = () => setState(prev => ({ ...prev, currentUser: null }));
     window.addEventListener('auth-expired', handleAuthExpired);
 
+    // Configurar Notificações em Tempo Real (SSE)
+    let cleanupNotifications: (() => void) | undefined;
+    if (state.currentUser) {
+      cleanupNotifications = apiService.listenToNotifications((notif) => {
+        // Mostrar aviso de sucesso para o usuário
+        setShowSuccess({
+          isOpen: true,
+          title: 'Notificação',
+          message: notif.message || 'Status atualizado com sucesso!'
+        });
+        // Atualizar o estado global para refletir as mudanças (saldo, etc)
+        refreshState();
+      });
+    }
+
     return () => {
       clearInterval(interval);
       window.removeEventListener('auth-expired', handleAuthExpired);
+      if (cleanupNotifications) cleanupNotifications();
     };
   }, [state.currentUser?.id]); // Reinicia se o usuário mudar
 

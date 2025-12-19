@@ -3,6 +3,7 @@ import { QUOTA_PRICE } from '../../shared/constants/business.constants';
 import { calculateGatewayCost } from '../../shared/utils/financial.utils';
 import { updateScore, SCORE_REWARDS } from '../../application/services/score.service';
 import { logAudit } from '../../application/services/audit.service';
+import { notificationService } from '../../application/services/notification.service';
 
 export interface TransactionResult<T = any> {
   success: boolean;
@@ -387,6 +388,14 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
     newValues: { status: 'APPROVED', type: transaction.type }
   });
 
+  // Notificar usuário em tempo real
+  notificationService.notifyUser(transaction.user_id, 'TRANSACTION_STATUS_CHANGED', {
+    id: transaction.id,
+    type: transaction.type,
+    status: 'APPROVED',
+    message: `Sua transação de ${transaction.type} foi aprovada!`
+  });
+
   return { success: true, status: 'APPROVED' };
 };
 
@@ -450,6 +459,14 @@ export const processLoanApproval = async (client: PoolClient, id: string, action
       creditedToBalance: true
     }
   );
+
+  // Notificar usuário em tempo real
+  notificationService.notifyUser(loan.user_id, 'LOAN_STATUS_CHANGED', {
+    id: id,
+    status: 'APPROVED',
+    amount: loan.amount,
+    message: `Seu empréstimo de R$ ${parseFloat(loan.amount).toFixed(2)} foi aprovado e creditado!`
+  });
 
   return { success: true, status: 'APPROVED' };
 };

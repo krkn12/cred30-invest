@@ -2,6 +2,7 @@
 import cron from 'node-cron';
 import { Pool } from 'pg';
 import { distributeProfits } from './application/services/profit-distribution.service';
+import { backupDatabase } from './application/services/backup.service';
 
 /**
  * Inicializa os agendadores de tarefas (Cron Jobs)
@@ -9,9 +10,7 @@ import { distributeProfits } from './application/services/profit-distribution.se
 export const initializeScheduler = (pool: Pool) => {
     console.log('Inicializando agendador de tarefas...');
 
-    // Distribuir lucros diariamente às 00:00 (Meia-noite)
-    // Formato Cron: Minuto Hora Dia Mês DiaDaSemana
-    // 0 0 * * * = Executar todo dia à meia-noite
+    // 1. Distribuir lucros diariamente às 00:00 (Meia-noite)
     cron.schedule('0 0 * * *', async () => {
         console.log('🕒 [CRON] Iniciando distribuição diária de lucros...');
         try {
@@ -26,13 +25,18 @@ export const initializeScheduler = (pool: Pool) => {
         }
     });
 
-    // Exemplo: Distribuição Semanal (Todo domingo à meia-noite)
-    // Para ativar semanalmente em vez de diariamente, basta descomentar e ajustar
-    /*
-    cron.schedule('0 0 * * 0', async () => {
-       // Lógica de distribuição semanal
+    // 2. Realizar Backup de dados diariamente às 01:00 (Madrugada)
+    cron.schedule('0 1 * * *', async () => {
+        console.log('🕒 [CRON] Iniciando backup automático dos dados...');
+        try {
+            const result = await backupDatabase(pool);
+            if (result.success) {
+                console.log(`✅ [CRON] Backup realizado: ${result.filePath}`);
+            }
+        } catch (error) {
+            console.error('❌ [CRON] Erro fatal no backup automático:', error);
+        }
     });
-    */
 
-    console.log('✅ Agendador de tarefas inicializado: Distribuição de lucros configurada para 00:00 diariamente.');
+    console.log('✅ Agendador de tarefas inicializado: Distribuição (00:00) e Backup (01:00) configurados.');
 };

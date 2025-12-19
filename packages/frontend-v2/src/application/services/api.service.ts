@@ -520,14 +520,40 @@ class ApiService {
     });
   }
 
-  // Verificar se o usuário está autenticado
-  isAuthenticated(): boolean {
-    return !!this.token;
-  }
+  // Notificações em tempo real (SSE)
+  listenToNotifications(onNotification: (data: any) => void): () => void {
+    if (!this.token) return () => { };
 
-  // Obter token atual
-  getToken(): string | null {
-    return this.token;
+    const url = `${API_BASE_URL}/notifications/stream?token=${this.token}`;
+    const eventSource = new EventSource(url);
+
+    eventSource.addEventListener('TRANSACTION_STATUS_CHANGED', (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        onNotification(data);
+      } catch (e) {
+        console.error('Erro ao processar notificação SSE:', e);
+      }
+    });
+
+    eventSource.addEventListener('LOAN_STATUS_CHANGED', (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        onNotification(data);
+      } catch (e) {
+        console.error('Erro ao processar notificação SSE:', e);
+      }
+    });
+
+    eventSource.onerror = (error) => {
+      console.error('Erro na conexão SSE:', error);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+      console.log('Conexão SSE fechada');
+    };
   }
 }
 
