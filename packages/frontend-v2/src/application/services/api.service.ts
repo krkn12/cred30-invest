@@ -447,6 +447,14 @@ class ApiService {
     return response.data;
   }
 
+  // Obter limite de crédito disponível (Estilo Nubank)
+  async getAvailableLimit(): Promise<{ totalLimit: number; activeDebt: number; remainingLimit: number }> {
+    const response = await this.request<any>('/loans/available-limit', {
+      method: 'GET',
+    });
+    return response.data;
+  }
+
   // Obter carteira de crédito do cliente
   async getCreditPortfolio(userId: string): Promise<any> {
     const response = await this.request<any>(`/ admin / credit - portfolio / ${userId}`);

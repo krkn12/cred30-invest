@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { DollarSign, AlertTriangle, X as XIcon, CheckCircle2, ShieldCheck, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { DollarSign, AlertTriangle, X as XIcon, CheckCircle2, ShieldCheck, Clock, TrendingUp } from 'lucide-react';
 import { Loan, User } from '../../../domain/types/common.types';
+import { apiService } from '../../../application/services/api.service';
 
 interface LoansViewProps {
     loans: Loan[];
@@ -18,6 +19,21 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
     const [payMethod, setPayMethod] = useState<'pix' | 'card'>('pix');
     const [viewDetailsId, setViewDetailsId] = useState<string | null>(null);
     const [installmentModalData, setInstallmentModalData] = useState<{ loanId: string, installmentAmount: number } | null>(null);
+
+    // Limite de Crédito (Nubank Style)
+    const [creditLimit, setCreditLimit] = useState<{ totalLimit: number; activeDebt: number; remainingLimit: number } | null>(null);
+
+    useEffect(() => {
+        const fetchLimit = async () => {
+            try {
+                const data = await apiService.getAvailableLimit();
+                setCreditLimit(data);
+            } catch (e) {
+                console.error('Erro ao buscar limite de crédito:', e);
+            }
+        };
+        fetchLimit();
+    }, []);
 
     const interestRate = 0.20; // 20%
     const totalRepay = amount * (1 + interestRate);
@@ -57,6 +73,29 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
                         </div>
                     </div>
 
+                    {/* Limite de Crédito Card (Nubank Style) */}
+                    {creditLimit && (
+                        <div className="bg-gradient-to-r from-emerald-500/10 to-primary-500/10 border border-emerald-500/30 rounded-2xl p-4 mb-6">
+                            <div className="flex items-center gap-2 mb-2">
+                                <TrendingUp className="text-emerald-400" size={18} />
+                                <span className="text-sm font-medium text-emerald-400">Seu Limite de Crédito</span>
+                            </div>
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-2xl font-bold text-white">{creditLimit.remainingLimit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                <span className="text-xs text-zinc-400">de {creditLimit.totalLimit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                            </div>
+                            <div className="w-full h-2 bg-background rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-gradient-to-r from-emerald-500 to-primary-500 transition-all"
+                                    style={{ width: `${Math.max(0, Math.min(100, (creditLimit.remainingLimit / creditLimit.totalLimit) * 100))}%` }}
+                                />
+                            </div>
+                            {creditLimit.activeDebt > 0 && (
+                                <p className="text-xs text-zinc-500 mt-2">Você tem {creditLimit.activeDebt.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} em dívidas ativas.</p>
+                            )}
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Simulation Inputs */}
                         <div className="space-y-6">
@@ -93,8 +132,8 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
                                             key={m}
                                             onClick={() => setMonths(m)}
                                             className={`py-3 rounded-xl text-sm font-bold border transition ${months === m
-                                                    ? 'bg-primary-500 text-black border-primary-500'
-                                                    : 'bg-background border-surfaceHighlight text-zinc-400 hover:border-zinc-600'
+                                                ? 'bg-primary-500 text-black border-primary-500'
+                                                : 'bg-background border-surfaceHighlight text-zinc-400 hover:border-zinc-600'
                                                 }`}
                                         >
                                             {m}x
@@ -166,8 +205,8 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                                 <div className="flex items-center gap-4">
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${loan.status === 'APPROVED' ? 'bg-emerald-500/20 text-emerald-400' :
-                                            loan.status === 'PENDING' ? 'bg-yellow-500/20 text-yellow-400' :
-                                                'bg-zinc-800 text-zinc-400'
+                                        loan.status === 'PENDING' ? 'bg-yellow-500/20 text-yellow-400' :
+                                            'bg-zinc-800 text-zinc-400'
                                         }`}>
                                         <DollarSign size={20} />
                                     </div>
@@ -175,8 +214,8 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
                                         <h4 className="font-bold text-white text-lg">{loan.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</h4>
                                         <div className="flex items-center gap-2">
                                             <span className={`text-xs px-2 py-0.5 rounded-full ${loan.status === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-400' :
-                                                    loan.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-400' :
-                                                        'bg-zinc-800 text-zinc-400'
+                                                loan.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-400' :
+                                                    'bg-zinc-800 text-zinc-400'
                                                 }`}>
                                                 {loan.status === 'APPROVED' ? 'Aprovado' : loan.status === 'PENDING' ? 'Em Análise' : loan.status}
                                             </span>

@@ -7,6 +7,7 @@ import { updateScore, SCORE_REWARDS } from '../../../application/services/score.
 import { createPixPayment, createCardPayment } from '../../../infrastructure/gateways/mercadopago.service';
 import { calculateTotalToPay, PaymentMethod } from '../../../shared/utils/financial.utils';
 import { executeInTransaction, processLoanApproval } from '../../../domain/services/transaction.service';
+import { calculateUserLoanLimit } from '../../../application/services/credit-analysis.service';
 import { PoolClient } from 'pg';
 
 const loanRoutes = new Hono();
@@ -117,6 +118,36 @@ loanRoutes.get('/', authMiddleware, async (c) => {
   }
 });
 
+// Obter limite de crédito disponível (Nubank Style)
+loanRoutes.get('/available-limit', authMiddleware, async (c) => {
+  try {
+    const user = c.get('user');
+    const pool = getDbPool(c);
+
+    const limit = await calculateUserLoanLimit(pool, user.id);
+
+    // Buscar dívidas ativas para calcular o limite RESTANTE
+    const activeLoansResult = await pool.query(
+      `SELECT COALESCE(SUM(amount), 0) as total FROM loans 
+       WHERE user_id = $1 AND status IN ('APPROVED', 'PAYMENT_PENDING')`,
+      [user.id]
+    );
+    const activeDebt = parseFloat(activeLoansResult.rows[0].total);
+    const remainingLimit = Math.max(0, limit - activeDebt);
+
+    return c.json({
+      success: true,
+      data: {
+        totalLimit: limit,
+        activeDebt,
+        remainingLimit
+      }
+    });
+  } catch (error) {
+    return c.json({ success: false, message: 'Erro ao calcular limite' }, 500);
+  }
+});
+
 // Solicitar empréstimo
 loanRoutes.post('/request', authMiddleware, async (c) => {
   try {
@@ -141,6 +172,26 @@ loanRoutes.post('/request', authMiddleware, async (c) => {
       return c.json({
         success: false,
         message: 'Você possui empréstimos em atraso. Regularize sua situação para solicitar novos créditos.'
+      }, 400);
+    }
+
+    // --- VALIDAÇÃO DE LIMITE ESTILO NUBANK ---
+    const userLimit = await calculateUserLoanLimit(pool, user.id);
+
+    // Buscar total já emprestado (ativo)
+    const activeLoansResult = await pool.query(
+      `SELECT COALESCE(SUM(amount), 0) as total FROM loans 
+       WHERE user_id = $1 AND status IN ('APPROVED', 'PAYMENT_PENDING')`,
+      [user.id]
+    );
+    const currentDebt = parseFloat(activeLoansResult.rows[0].total);
+    const available = userLimit - currentDebt;
+
+    if (amount > available) {
+      return c.json({
+        success: false,
+        message: `Limite insuficiente. Seu limite disponível é R$ ${available.toFixed(2)}.`,
+        data: { available, userLimit, currentDebt }
       }, 400);
     }
 
