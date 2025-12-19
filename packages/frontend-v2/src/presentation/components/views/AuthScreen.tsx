@@ -135,24 +135,24 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6 md:p-8 relative">
-            <button
-                onClick={() => navigate('/')}
-                className="fixed top-4 left-4 sm:top-8 sm:left-8 text-zinc-500 hover:text-white transition-colors flex items-center gap-2 text-xs sm:text-sm font-bold group z-50 bg-surface/50 backdrop-blur-md px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-surfaceHighlight"
-            >
-                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                <span className="hidden sm:inline">Voltar para o Início</span>
-                <span className="sm:hidden">Voltar</span>
-            </button>
-
             <div className="w-full max-w-[95vw] sm:max-w-md bg-surface border border-surfaceHighlight p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary-400 to-primary-600"></div>
 
-                <div className="text-center mb-8">
-                    <div className="w-16 h-16 bg-gradient-to-tr from-primary-400 to-primary-600 rounded-2xl flex items-center justify-center text-black font-bold text-3xl shadow-[0_0_20px_rgba(34,211,238,0.4)] mx-auto mb-4">
+                {/* Botão Voltar - Dentro do card */}
+                <button
+                    onClick={() => navigate('/')}
+                    className="flex items-center gap-1.5 text-zinc-500 hover:text-white transition-colors text-xs sm:text-sm font-medium group mb-6"
+                >
+                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                    Voltar ao Início
+                </button>
+
+                <div className="text-center mb-6 sm:mb-8">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-tr from-primary-400 to-primary-600 rounded-xl sm:rounded-2xl flex items-center justify-center text-black font-bold text-2xl sm:text-3xl shadow-[0_0_20px_rgba(34,211,238,0.4)] mx-auto mb-3 sm:mb-4">
                         C
                     </div>
-                    <h1 className="text-3xl font-bold text-white tracking-tight">Cred<span className="text-primary-400">30</span></h1>
-                    <p className="text-zinc-500 mt-2 text-sm">Sua liberdade financeira começa aqui.</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Cred<span className="text-primary-400">30</span></h1>
+                    <p className="text-zinc-500 mt-1 sm:mt-2 text-xs sm:text-sm">Sua liberdade financeira começa aqui.</p>
                 </div>
 
                 {/* Custom Error Alert */}
@@ -263,15 +263,15 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
                 </form>
 
                 {!isForgot && (
-                    <div className="mt-6 text-center space-y-2">
-                        <p className="text-zinc-400 text-sm">
-                            {isRegister ? 'Já tem uma conta?' : 'Não tem uma conta?'}
-                            <button onClick={() => setIsRegister(!isRegister)} className="ml-2 text-primary-400 hover:text-primary-300 font-medium">
+                    <div className="mt-4 sm:mt-6 text-center space-y-2">
+                        <p className="text-zinc-400 text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-0">
+                            <span>{isRegister ? 'Já tem uma conta?' : 'Não tem uma conta?'}</span>
+                            <button onClick={() => setIsRegister(!isRegister)} className="sm:ml-2 text-primary-400 hover:text-primary-300 font-bold py-1.5 sm:py-0 underline sm:no-underline">
                                 {isRegister ? 'Fazer Login' : 'Criar Agora'}
                             </button>
                         </p>
                         {!isRegister && (
-                            <button onClick={() => setIsForgot(true)} className="text-zinc-500 text-sm hover:text-zinc-300">
+                            <button onClick={() => setIsForgot(true)} className="text-zinc-500 text-xs sm:text-sm hover:text-zinc-300 py-1">
                                 Esqueci minha senha
                             </button>
                         )}
