@@ -236,6 +236,8 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
                                         <input
                                             type="text"
                                             placeholder="Código 6 dígitos"
+                                            inputMode="numeric"
+                                            autoComplete="one-time-code"
                                             value={twoFactorCode}
                                             onChange={e => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                             className="w-full bg-background border border-primary-500/50 rounded-xl py-3 pl-10 text-white focus:border-primary-500 outline-none transition text-center tracking-[0.5em] font-mono"
@@ -289,8 +291,20 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
                         </div>
 
                         {twoFactorData?.qrCode && (
-                            <div className="bg-white p-4 rounded-3xl mx-auto w-fit mb-8 shadow-[0_0_30px_rgba(255,255,255,0.1)] transition-transform hover:scale-105">
-                                <img src={twoFactorData.qrCode} alt="2FA QR Code" className="w-48 h-48" />
+                            <div className="space-y-6 mb-8">
+                                <div className="bg-white p-4 rounded-3xl mx-auto w-fit shadow-[0_0_30px_rgba(255,255,255,0.1)] transition-transform hover:scale-105">
+                                    <img src={twoFactorData.qrCode} alt="2FA QR Code" className="w-48 h-48" />
+                                </div>
+
+                                {twoFactorData?.otpUri && (
+                                    <a
+                                        href={twoFactorData.otpUri}
+                                        className="w-full bg-primary-500/10 hover:bg-primary-500/20 text-primary-400 border border-primary-500/30 py-4 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold transition-all group"
+                                    >
+                                        <ShieldCheck size={20} className="group-hover:scale-110 transition-transform" />
+                                        Configurar no Navegador (Extensão)
+                                    </a>
+                                )}
                             </div>
                         )}
 
@@ -334,6 +348,8 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
                                 <input
                                     type="text"
                                     placeholder="000000"
+                                    inputMode="numeric"
+                                    autoComplete="one-time-code"
                                     value={verifyCode}
                                     onChange={e => setVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                     className="w-full bg-background border border-surfaceHighlight rounded-2xl py-5 text-center text-white text-3xl tracking-[0.4em] font-mono focus:border-primary-500 outline-none transition shadow-inner"

@@ -252,8 +252,19 @@ export const SettingsView = ({ user, onSimulateTime, onLogout, onDeleteAccount, 
                         </div>
 
                         {twoFactorData?.qrCode && (
-                            <div className="bg-white p-3 rounded-2xl mx-auto w-fit mb-6">
-                                <img src={twoFactorData.qrCode} alt="2FA QR Code" className="w-40 h-40" />
+                            <div className="space-y-4 mb-6">
+                                <div className="bg-white p-3 rounded-2xl mx-auto w-fit shadow-lg">
+                                    <img src={twoFactorData.qrCode} alt="2FA QR Code" className="w-40 h-40" />
+                                </div>
+                                {twoFactorData?.otpUri && (
+                                    <a
+                                        href={twoFactorData.otpUri}
+                                        className="w-full bg-primary-500/10 hover:bg-primary-500/20 text-primary-400 border border-primary-500/30 py-3 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-all group"
+                                    >
+                                        <QrCode size={16} className="group-hover:rotate-12 transition-transform" />
+                                        Configurar no Navegador
+                                    </a>
+                                )}
                             </div>
                         )}
 
@@ -285,6 +296,8 @@ export const SettingsView = ({ user, onSimulateTime, onLogout, onDeleteAccount, 
                         <form onSubmit={handleVerify2FA} className="space-y-4">
                             <input
                                 type="text"
+                                inputMode="numeric"
+                                autoComplete="one-time-code"
                                 placeholder="000000"
                                 value={verifyCode}
                                 onChange={e => setVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}

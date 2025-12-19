@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { ArrowUpFromLine, ShieldCheck, Clock } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { ArrowUpFromLine, ShieldCheck, Clock, XCircle } from 'lucide-react';
 import { User } from '../../../domain/types/common.types';
 import { apiService } from '../../../application/services/api.service';
 import { confirmWithdrawal } from '../../../application/services/storage.service';
@@ -159,47 +159,56 @@ export const WithdrawView = ({ balance, currentUser, totalQuotaValue, onSuccess,
 
                 {confirmModal.isOpen && (
                     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-                        <div className="bg-surface rounded-3xl p-6 w-full max-w-sm relative border border-surfaceHighlight">
-                            <button onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} className="absolute top-4 right-4 text-zinc-500">✕</button>
+                        <div className="bg-surface rounded-3xl p-8 w-full max-w-sm relative border border-surfaceHighlight shadow-2xl">
+                            <button onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} className="absolute top-4 right-4 text-zinc-500 hover:text-white transition">
+                                <XCircle size={24} />
+                            </button>
+
                             <div className="text-center mb-6">
+                                <div className="w-16 h-16 bg-primary-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <ShieldCheck size={32} className="text-primary-500" />
+                                </div>
                                 <h3 className="text-xl font-bold text-white">Autenticação 2FA</h3>
-                                <p className="text-zinc-400 text-sm mt-2">Insira o código gerado no seu aplicativo autenticador.</p>
+                                <p className="text-zinc-400 text-sm mt-2">Insira o código de 6 dígitos do seu autenticador para confirmar o saque.</p>
                             </div>
 
                             <input
                                 type="text"
-                                placeholder="Código de 6 dígitos"
+                                inputMode="numeric"
+                                autoComplete="one-time-code"
+                                placeholder="000 000"
                                 value={confirmModal.code}
                                 onChange={e => setConfirmModal({ ...confirmModal, code: e.target.value.replace(/\D/g, '').slice(0, 6) })}
-                                className="w-full bg-background border border-surfaceHighlight rounded-xl py-3 text-center text-xl tracking-widest text-white focus:border-orange-500 outline-none mb-4 font-mono"
+                                className="w-full bg-background border border-surfaceHighlight rounded-xl py-4 text-center text-2xl tracking-[0.5em] text-white focus:border-primary-500 outline-none mb-6 font-mono"
+                                autoFocus
                             />
 
                             <button
                                 onClick={handleConfirmWithCode}
-                                className="w-full bg-primary-500 hover:bg-primary-400 text-black font-bold py-3 rounded-xl transition-all"
+                                className="w-full bg-primary-500 hover:bg-primary-400 text-black font-bold py-4 rounded-xl transition-all shadow-lg active:scale-95"
                             >
                                 Confirmar e Sacar
                             </button>
                         </div>
                     </div>
                 )}
-
-                <div className="mt-4 p-4 bg-blue-900/20 border border-blue-500/30 rounded-xl">
-                    <p className="text-xs text-blue-300 flex items-center gap-2">
-                        <Clock size={14} />
-                        <span>Processamento em até 24h úteis</span>
-                    </p>
-                    <p className="text-xs text-zinc-400 mt-2">
-                        Taxa mínima de R$ 5,00 ou 2% do valor do saque.
-                    </p>
-                    <p className="text-xs text-emerald-400/80 mt-2">
-                        💡 <strong>Benefício VIP:</strong> Se o valor das suas cotas for maior ou igual ao saque, a taxa é <strong>ZERO</strong>!
-                    </p>
-                    <p className="text-xs text-zinc-400 mt-2">
-                        <strong>Importante:</strong> Você está sacando do seu saldo disponível na conta.
-                    </p>
-                </div>
             </div>
-        </div >
+
+            <div className="p-4 bg-blue-900/20 border border-blue-500/30 rounded-xl">
+                <p className="text-xs text-blue-300 flex items-center gap-2">
+                    <Clock size={14} />
+                    <span>Processamento em até 24h úteis</span>
+                </p>
+                <p className="text-xs text-zinc-400 mt-2">
+                    Taxa mínima de R$ 5,00 ou 2% do valor do saque.
+                </p>
+                <p className="text-xs text-emerald-400/80 mt-2">
+                    💡 <strong>Benefício VIP:</strong> Se o valor das suas cotas for maior ou igual ao saque, a taxa é <strong>ZERO</strong>!
+                </p>
+                <p className="text-xs text-zinc-400 mt-2">
+                    <strong>Importante:</strong> Você está sacando do seu saldo disponível na conta.
+                </p>
+            </div>
+        </div>
     );
 };
