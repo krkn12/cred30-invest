@@ -134,16 +134,17 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4 relative">
+        <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6 md:p-8 relative">
             <button
                 onClick={() => navigate('/')}
-                className="fixed top-8 left-8 text-zinc-500 hover:text-white transition-colors flex items-center gap-2 text-sm font-bold group z-50 bg-surface/50 backdrop-blur-md px-4 py-2 rounded-full border border-surfaceHighlight"
+                className="fixed top-4 left-4 sm:top-8 sm:left-8 text-zinc-500 hover:text-white transition-colors flex items-center gap-2 text-xs sm:text-sm font-bold group z-50 bg-surface/50 backdrop-blur-md px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-surfaceHighlight"
             >
-                <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-                Voltar para o Início
+                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                <span className="hidden sm:inline">Voltar para o Início</span>
+                <span className="sm:hidden">Voltar</span>
             </button>
 
-            <div className="w-full max-w-md bg-surface border border-surfaceHighlight p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+            <div className="w-full max-w-[95vw] sm:max-w-md bg-surface border border-surfaceHighlight p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary-400 to-primary-600"></div>
 
                 <div className="text-center mb-8">

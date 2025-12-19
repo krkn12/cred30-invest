@@ -35,8 +35,8 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             'text-primary-400';
 
     return (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[200] p-4 animate-in fade-in duration-200" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-            <div className="bg-surface border border-surfaceHighlight rounded-3xl p-6 w-full max-w-sm relative shadow-2xl animate-in zoom-in duration-300">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[200] p-3 sm:p-4 animate-in fade-in duration-200" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+            <div className="bg-surface border border-surfaceHighlight rounded-2xl sm:rounded-3xl p-5 sm:p-6 w-full max-w-[92vw] sm:max-w-sm relative shadow-2xl animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
                 <button title="Fechar" onClick={onClose} className="absolute top-4 right-4 text-zinc-400 hover:text-white bg-zinc-800 p-1.5 rounded-full z-10"><XIcon size={20} /></button>
 
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${iconColor} bg-zinc-800/50`}>

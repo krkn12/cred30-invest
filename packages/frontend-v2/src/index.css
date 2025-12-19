@@ -5,6 +5,66 @@
 @layer base {
     body {
         @apply bg-background text-white;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Evitar zoom em inputs no iOS */
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+
+    /* Safe area para dispositivos com notch */
+    .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+}
+
+@layer utilities {
+
+    /* Container responsivo personalizado */
+    .container-responsive {
+        @apply w-full px-4 sm:px-6 md:px-8 max-w-7xl mx-auto;
+    }
+
+    /* Texto responsivo */
+    .text-responsive-sm {
+        @apply text-sm sm:text-base;
+    }
+
+    .text-responsive-lg {
+        @apply text-lg sm:text-xl md:text-2xl;
+    }
+
+    .text-responsive-xl {
+        @apply text-xl sm:text-2xl md:text-3xl;
+    }
+
+    /* Cards responsivos */
+    .card-responsive {
+        @apply rounded-xl sm:rounded-2xl md:rounded-3xl p-4 sm:p-5 md:p-6;
+    }
+
+    /* Grid responsivo para cards */
+    .grid-responsive {
+        @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
+    }
+
+    /* Esconder em mobile */
+    .hide-mobile {
+        @apply hidden sm:block;
+    }
+
+    .hide-desktop {
+        @apply block sm:hidden;
+    }
+
+    /* Botões touch-friendly */
+    .btn-touch {
+        @apply min-h-[44px] min-w-[44px];
     }
 }
 
@@ -25,4 +85,30 @@
 
 ::-webkit-scrollbar-thumb:hover {
     background: #52525b;
+}
+
+/* Modal responsivo */
+.modal-responsive {
+    width: 95vw;
+    max-width: 28rem;
+    max-height: 90vh;
+    overflow-y: auto;
+    margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+    .modal-responsive {
+        max-width: 32rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .modal-responsive {
+        max-width: 36rem;
+    }
+}
+
+/* Animação suave para transições */
+.transition-smooth {
+    transition: all 300ms ease-in-out;
 }
