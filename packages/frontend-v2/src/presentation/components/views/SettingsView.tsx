@@ -125,48 +125,61 @@ export const SettingsView = ({ user, onSimulateTime, onLogout, onDeleteAccount, 
                 </div>
             </div>
 
-            <div className="space-y-3">
-                <button
-                    onClick={() => setShowChangePassword(true)}
-                    className="w-full bg-surfaceHighlight hover:bg-zinc-800 text-white border border-white/5 py-4 rounded-xl font-bold transition flex items-center justify-between px-4 group"
-                >
-                    <span className="flex items-center gap-3">
-                        <Lock size={18} className="text-zinc-400 group-hover:text-primary-400 transition-colors" />
-                        Alterar Senha
-                    </span>
-                    <ChevronRight size={16} className="text-zinc-600 group-hover:text-white transition-colors" />
-                </button>
-
-                <button
-                    onClick={handle2FASetup}
-                    className="w-full bg-surfaceHighlight hover:bg-zinc-800 text-white border border-white/5 py-4 rounded-xl font-bold transition flex items-center justify-between px-4 group"
-                >
-                    <span className="flex items-center gap-3">
-                        <ShieldCheck size={18} className={`${user.twoFactorEnabled ? 'text-emerald-400' : 'text-zinc-400'} group-hover:text-primary-400 transition-colors`} />
-                        2FA: {user.twoFactorEnabled ? 'Ativado' : 'Desativado'}
-                    </span>
-                    {!user.twoFactorEnabled && (
-                        <span className="text-[10px] bg-primary-500 text-black px-2 py-1 rounded-full font-extrabold animate-pulse">
-                            ATIVAR AGORA
+            <div className="pt-4">
+                <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1 mb-4">Segurança</h3>
+                <div className="space-y-3">
+                    <button
+                        onClick={() => setShowChangePassword(true)}
+                        className="w-full bg-surfaceHighlight hover:bg-zinc-800 text-white border border-white/5 py-4 rounded-xl font-bold transition flex items-center justify-between px-4 group"
+                    >
+                        <span className="flex items-center gap-3">
+                            <Lock size={18} className="text-zinc-400 group-hover:text-primary-400 transition-colors" />
+                            Alterar Senha
                         </span>
-                    )}
-                    <ChevronRight size={16} className="text-zinc-600 group-hover:text-white transition-colors" />
-                </button>
+                        <ChevronRight size={16} className="text-zinc-600 group-hover:text-white transition-colors" />
+                    </button>
 
-                <button onClick={onLogout} className="w-full bg-surfaceHighlight hover:bg-zinc-800 text-white border border-white/5 py-4 rounded-xl font-bold transition flex items-center justify-between px-4 group">
-                    <span className="flex items-center gap-3">
-                        <LogOut size={18} className="text-zinc-400 group-hover:text-white transition-colors" />
-                        Sair do App
-                    </span>
-                    <ChevronRight size={16} className="text-zinc-600 group-hover:text-white transition-colors" />
-                </button>
+                    <button
+                        onClick={handle2FASetup}
+                        className="w-full bg-surfaceHighlight hover:bg-zinc-800 text-white border border-white/5 py-4 rounded-xl font-bold transition flex items-center justify-between px-4 group"
+                    >
+                        <span className="flex items-center gap-3">
+                            <ShieldCheck size={18} className={`${user.twoFactorEnabled ? 'text-emerald-400' : 'text-zinc-400'} group-hover:text-primary-400 transition-colors`} />
+                            Autenticação 2FA
+                        </span>
+                        <div className="flex items-center gap-2">
+                            {!user.twoFactorEnabled ? (
+                                <span className="text-[10px] bg-primary-500 text-black px-2 py-1 rounded-full font-extrabold animate-pulse">
+                                    ATIVAR AGORA
+                                </span>
+                            ) : (
+                                <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Ativo</span>
+                            )}
+                            <ChevronRight size={16} className="text-zinc-600 group-hover:text-white transition-colors" />
+                        </div>
+                    </button>
+                </div>
+            </div>
 
-                <button onClick={() => setShowConfirmDelete(true)} className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 py-4 rounded-xl font-bold transition flex items-center justify-between px-4 group">
-                    <span className="flex items-center gap-3">
-                        <Trash2 size={18} className="text-red-500/60 group-hover:text-red-500 transition-colors" />
-                        Encerrar Conta
-                    </span>
-                </button>
+            <div className="pt-8">
+                <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1 mb-4">Conta</h3>
+                <div className="space-y-3">
+
+                    <button onClick={onLogout} className="w-full bg-surfaceHighlight hover:bg-zinc-800 text-white border border-white/5 py-4 rounded-xl font-bold transition flex items-center justify-between px-4 group">
+                        <span className="flex items-center gap-3">
+                            <LogOut size={18} className="text-zinc-400 group-hover:text-white transition-colors" />
+                            Sair do App
+                        </span>
+                        <ChevronRight size={16} className="text-zinc-600 group-hover:text-white transition-colors" />
+                    </button>
+
+                    <button onClick={() => setShowConfirmDelete(true)} className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 py-4 rounded-xl font-bold transition flex items-center justify-between px-4 group">
+                        <span className="flex items-center gap-3">
+                            <Trash2 size={18} className="text-red-500/60 group-hover:text-red-500 transition-colors" />
+                            Encerrar Conta
+                        </span>
+                    </button>
+                </div>
             </div>
 
             <ConfirmModal
