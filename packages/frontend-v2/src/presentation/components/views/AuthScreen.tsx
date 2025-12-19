@@ -294,20 +294,30 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
                             </div>
                         )}
 
-                        <div className="bg-surfaceHighlight/30 border border-surfaceHighlight rounded-2xl p-4 mb-8">
-                            <p className="text-xs text-zinc-500 uppercase tracking-widest font-bold mb-2">Chave Manual</p>
-                            <div className="flex items-center justify-between gap-3">
-                                <code className="text-primary-400 font-mono text-lg font-bold">{twoFactorData?.secret}</code>
-                                <button
-                                    onClick={() => {
-                                        navigator.clipboard.writeText(twoFactorData?.secret || '');
-                                        setSuccess('Chave copiada!');
-                                        setTimeout(() => setSuccess(null), 2000);
-                                    }}
-                                    className="p-2 hover:bg-white/5 rounded-lg text-zinc-400 hover:text-white transition-all"
-                                >
-                                    <Repeat size={18} />
-                                </button>
+                        <div className="bg-surfaceHighlight/30 border border-surfaceHighlight rounded-2xl p-4 mb-8 space-y-4">
+                            <div>
+                                <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Emissor</p>
+                                <p className="text-white font-medium">Cred30</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Conta (Usuário)</p>
+                                <p className="text-white font-medium truncate">{verifyEmailAddr}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Chave Secreta</p>
+                                <div className="flex items-center justify-between gap-3">
+                                    <code className="text-primary-400 font-mono text-lg font-bold">{twoFactorData?.secret}</code>
+                                    <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(twoFactorData?.secret || '');
+                                            setSuccess('Chave copiada!');
+                                            setTimeout(() => setSuccess(null), 2000);
+                                        }}
+                                        className="p-2 hover:bg-white/5 rounded-lg text-zinc-400 hover:text-white transition-all"
+                                    >
+                                        <Repeat size={18} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

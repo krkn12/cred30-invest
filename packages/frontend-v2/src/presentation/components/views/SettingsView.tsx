@@ -257,15 +257,25 @@ export const SettingsView = ({ user, onSimulateTime, onLogout, onDeleteAccount, 
                             </div>
                         )}
 
-                        <div className="bg-surfaceHighlight p-3 rounded-xl mb-6">
-                            <p className="text-xs text-zinc-500 uppercase font-bold mb-1">Chave Manual</p>
-                            <div className="flex items-center justify-between">
-                                <code className="text-primary-400 font-mono font-bold">{twoFactorData?.secret}</code>
-                                <button onClick={() => {
-                                    navigator.clipboard.writeText(twoFactorData?.secret || '');
-                                    setSuccessMessage('Copiado!');
-                                    setTimeout(() => setSuccessMessage(''), 2000);
-                                }}><Repeat size={16} className="text-zinc-500" /></button>
+                        <div className="bg-surfaceHighlight p-4 rounded-xl mb-6 space-y-4">
+                            <div>
+                                <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Emissor</p>
+                                <p className="text-white font-medium">Cred30</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Conta (Usuário)</p>
+                                <p className="text-white font-medium truncate">{user.email}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Chave Secreta</p>
+                                <div className="flex items-center justify-between">
+                                    <code className="text-primary-400 font-mono font-bold">{twoFactorData?.secret}</code>
+                                    <button onClick={() => {
+                                        navigator.clipboard.writeText(twoFactorData?.secret || '');
+                                        setSuccessMessage('Copiado!');
+                                        setTimeout(() => setSuccessMessage(''), 2000);
+                                    }}><Repeat size={16} className="text-zinc-500" /></button>
+                                </div>
                             </div>
                         </div>
 
