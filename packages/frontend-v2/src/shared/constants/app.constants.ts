@@ -39,3 +39,11 @@ export const VIP_LEVELS = {
   PRATA: { name: 'Prata', minQuotas: 10, color: 'gray' },
   OURO: { name: 'Ouro', minQuotas: 50, color: 'yellow' }
 } as const;
+
+export const FINANCIAL_CONSTANTS = {
+  QUOTA_PRICE,
+  LOAN_INTEREST_RATE,
+  PENALTY_RATE,
+  VESTING_PERIOD_DAYS: 365,
+  PROFIT_DISTRIBUTION_RATE: 0.85
+};

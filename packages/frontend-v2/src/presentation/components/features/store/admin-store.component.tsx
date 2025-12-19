@@ -3,7 +3,7 @@ import { Plus, Edit2, Trash2, ExternalLink, Image as ImageIcon, Sparkles } from 
 import { Product } from '../../../../domain/types/common.types';
 import { apiService } from '../../../../application/services/api.service';
 
-export const AdminStoreManager: React.FC = () => {
+export const AdminStoreManager: React.FC<{ onSuccess: (title: string, msg: string) => void, onError: (title: string, msg: string) => void }> = ({ onSuccess, onError }) => {
     const [products, setProducts] = useState<Product[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
@@ -41,7 +41,7 @@ export const AdminStoreManager: React.FC = () => {
             if (meta.imageUrl) setImageUrl(meta.imageUrl);
             if (meta.price) setPrice(String(meta.price));
         } catch (error) {
-            alert('Não foi possível buscar dados automaticamente. Tente preencher manualmente.');
+            onError('Erro na Busca', 'Não foi possível buscar dados automaticamente. Tente preencher manualmente.');
         } finally {
             setFetchingMeta(false);
         }
@@ -70,9 +70,9 @@ export const AdminStoreManager: React.FC = () => {
             setEditingProduct(null);
             resetForm();
             loadProducts();
-            alert('Produto salvo com sucesso!');
+            onSuccess('Sucesso', 'Produto salvo com sucesso!');
         } catch (error) {
-            alert('Erro ao salvar');
+            onError('Erro', 'Erro ao salvar o produto');
         } finally {
             setLoading(false);
         }
@@ -95,7 +95,7 @@ export const AdminStoreManager: React.FC = () => {
             await apiService.deleteProduct(id);
             loadProducts();
         } catch (error) {
-            alert('Erro ao deletar');
+            onError('Erro', 'Erro ao deletar o produto');
         }
     };
 

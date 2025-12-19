@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { MetricCard } from './MetricCard';
-import { formatCurrency } from '../../utils/formatters';
-import { FINANCIAL_CONSTANTS } from '../../utils/constants';
+import { MetricCard } from '../../components/ui/MetricCard';
+import { formatCurrency } from '../../../shared/utils/format.utils';
+import { FINANCIAL_CONSTANTS } from '../../../shared/constants/app.constants';
 
 interface FinancialDashboardProps {
   systemBalance: number;
@@ -82,7 +82,7 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
       {/* Gestão de Lucros */}
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Gestão de Lucros</h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div className="bg-gray-50 rounded-lg p-4">

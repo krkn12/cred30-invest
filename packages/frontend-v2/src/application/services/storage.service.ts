@@ -14,6 +14,7 @@ const convertApiUserToUser = (apiUser: any): User => {
     joinedAt: apiUser.joinedAt,
     referralCode: apiUser.referralCode,
     isAdmin: apiUser.isAdmin || false,
+    score: apiUser.score || 300,
   };
 };
 
@@ -445,6 +446,10 @@ export const registerUser = async (
   return convertApiUserToUser(response.user);
 };
 
+export const changePassword = async (oldPass: string, newPass: string): Promise<void> => {
+  await apiService.changePassword(oldPass, newPass);
+};
+
 export const loginUser = async (
   email: string,
   password: string,
@@ -483,6 +488,10 @@ export const getCurrentUser = async (): Promise<User | null> => {
 export const fixLoanPix = async (loanId: string, pixKey: string): Promise<any> => {
   return await apiService.fixLoanPix(loanId, pixKey);
 };
+
+export const verifyEmail = (email: string, code: string) => apiService.verifyEmail(email, code);
+
+export const confirmWithdrawal = (transactionId: number, code: string) => apiService.confirmWithdrawal(transactionId, code);
 
 export const deleteUserAccount = async (): Promise<any> => {
   const result = await apiService.deleteAccount();

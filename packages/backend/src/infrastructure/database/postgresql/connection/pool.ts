@@ -111,6 +111,18 @@ export const initializeDatabase = async () => {
           await client.query('ALTER TABLE users ADD COLUMN score INTEGER DEFAULT 300');
         }
 
+        const verifiedColumn = await client.query(`
+          SELECT column_name FROM information_schema.columns
+          WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'is_email_verified'
+        `);
+
+        if (verifiedColumn.rows.length === 0) {
+          console.log('Adicionando colunas de verificação de email...');
+          await client.query('ALTER TABLE users ADD COLUMN is_email_verified BOOLEAN DEFAULT FALSE');
+          await client.query('ALTER TABLE users ADD COLUMN verification_code VARCHAR(10)');
+          await client.query('ALTER TABLE users ADD COLUMN reset_password_token VARCHAR(255)');
+        }
+
         console.log('Tabela users verificada e atualizada com sucesso');
       }
     }
@@ -129,6 +141,9 @@ export const initializeDatabase = async () => {
         referred_by VARCHAR(10),
         is_admin BOOLEAN DEFAULT FALSE,
         score INTEGER DEFAULT 300,
+        is_email_verified BOOLEAN DEFAULT FALSE,
+        verification_code VARCHAR(10),
+        reset_password_token VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);

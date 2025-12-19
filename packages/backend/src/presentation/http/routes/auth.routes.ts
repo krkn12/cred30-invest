@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { getDbPool, generateReferralCode } from '../../../infrastructure/database/postgresql/connection/pool';
 import { authRateLimit } from '../middleware/rate-limit.middleware';
+import { emailService } from '../../../infrastructure/gateways/email.service';
 
 const authRoutes = new Hono();
 
@@ -20,7 +21,7 @@ const loginSchema = z.object({
 });
 
 const registerSchema = z.object({
-  name: z.string().min(3),
+  name: z.string().min(5).refine(val => val.trim().split(/\s+/).length >= 2, "Informe seu Nome e Sobrenome reais"),
   email: z.string().email(),
   password: z.string().min(6),
   secretPhrase: z.string().min(3),
@@ -173,36 +174,40 @@ authRoutes.post('/register', async (c) => {
     // Criar novo usuário
     const referralCode = generateReferralCode();
 
-    const result = await pool.query(
-      `INSERT INTO users (name, email, password_hash, secret_phrase, pix_key, balance, referral_code, is_admin, score)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       RETURNING id, name, email, pix_key, balance, score, created_at, referral_code, is_admin`,
+    // Gerar código de verificação
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const newUserResult = await pool.query(
+      `INSERT INTO users (name, email, password_hash, secret_phrase, pix_key, balance, referral_code, is_admin, score, verification_code, is_email_verified)
+       VALUES ($1, $2, $3, $4, $5, 0, $6, $7, 300, $8, FALSE)
+       RETURNING id, name, email, pix_key, balance, score, created_at, referral_code, is_admin, is_email_verified`,
       [
         validatedData.name,
         validatedData.email,
         hashedPassword,
         validatedData.secretPhrase,
         validatedData.pixKey,
-        0,
         referralCode,
-        isFirstUser, // Define como administrador se for o primeiro usuário
-        300
+        isFirstUser,
+        verificationCode
       ]
     );
 
-    const newUser = result.rows[0];
+    const newUser = newUserResult.rows[0];
+
+    // Enviar email de verificação
+    emailService.sendVerificationCode(newUser.email, verificationCode).catch(console.error);
 
     // Gerar token JWT
     const token = sign(
-      { userId: newUser.id, isAdmin: newUser.is_admin },
-      process.env.JWT_SECRET as string,
-      { expiresIn: '7d' }
+      { userId: newUser.id, email: newUser.email, isAdmin: newUser.is_admin },
+      process.env.JWT_SECRET!
     );
 
     // Mensagem personalizada se for o primeiro usuário (administrador)
     const message = isFirstUser
-      ? 'Usuário criado com sucesso! Você foi definido como o primeiro administrador do sistema.'
-      : 'Usuário criado com sucesso';
+      ? 'Usuário criado com sucesso! Você foi definido como o primeiro administrador do sistema. Um código de verificação foi enviado para seu email.'
+      : 'Usuário criado com sucesso. Um código de verificação foi enviado para seu email.';
 
     return c.json({
       success: true,
@@ -217,6 +222,7 @@ authRoutes.post('/register', async (c) => {
           joinedAt: newUser.created_at,
           referralCode: newUser.referral_code,
           isAdmin: newUser.is_admin,
+          isEmailVerified: newUser.is_email_verified,
         },
         token,
       },
@@ -260,17 +266,40 @@ authRoutes.post('/reset-password', async (c) => {
       [hashedPassword, userId]
     );
 
-    return c.json({
-      success: true,
-      message: 'Senha redefinida com sucesso',
-    });
-  } catch (error) {
+    return c.json({ success: true, message: 'Senha redefinida com sucesso' });
+  } catch (error: any) {
+    console.error('Erro no reset de senha:', error);
     if (error instanceof z.ZodError) {
-      return c.json({ success: false, message: 'Dados inválidos', errors: error.errors }, 400);
+      return c.json({ success: false, message: error.errors[0].message }, 400);
+    }
+    return c.json({ success: false, message: 'Erro ao redefinir senha' }, 500);
+  }
+});
+
+// Rota de verificação de email
+authRoutes.post('/verify-email', async (c) => {
+  try {
+    const { email, code } = await c.req.json();
+    const pool = getDbPool(c);
+
+    const result = await pool.query(
+      'SELECT id FROM users WHERE email = $1 AND verification_code = $2',
+      [email, code]
+    );
+
+    if (result.rows.length === 0) {
+      return c.json({ success: false, message: 'Código inválido ou email incorreto' }, 400);
     }
 
-    console.error('Erro no reset de senha:', error);
-    return c.json({ success: false, message: 'Erro interno do servidor' }, 500);
+    await pool.query(
+      'UPDATE users SET is_email_verified = TRUE, verification_code = NULL WHERE id = $1',
+      [result.rows[0].id]
+    );
+
+    return c.json({ success: true, message: 'Email verificado com sucesso!' });
+  } catch (error) {
+    console.error('Erro na verificação:', error);
+    return c.json({ success: false, message: 'Erro ao verificar email' }, 500);
   }
 });
 

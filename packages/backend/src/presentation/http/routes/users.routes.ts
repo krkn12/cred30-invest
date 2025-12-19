@@ -4,6 +4,7 @@ import { authMiddleware } from '../middleware/auth.middleware';
 import { getDbPool } from '../../../infrastructure/database/postgresql/connection/pool';
 import { User, UpdateUserRequest } from '../../../domain/entities/user.entity';
 import { UserContext } from '../../../shared/types/hono.types';
+import bcrypt from 'bcrypt';
 
 const userRoutes = new Hono();
 
@@ -224,6 +225,47 @@ userRoutes.delete('/me', authMiddleware, async (c) => {
   } catch (error) {
     console.error('Erro ao excluir conta:', error);
     return c.json({ success: false, message: 'Erro interno ao processar exclusão.' }, 500);
+  }
+});
+
+// Alterar senha do usuário
+userRoutes.post('/change-password', authMiddleware, async (c) => {
+  try {
+    const { oldPassword, newPassword } = await c.req.json();
+    const userContext = c.get('user') as UserContext;
+    const pool = getDbPool(c);
+
+    // Buscar hash da senha atual
+    const result = await pool.query(
+      'SELECT password_hash FROM users WHERE id = $1',
+      [userContext.id]
+    );
+
+    if (result.rows.length === 0) {
+      return c.json({ success: false, message: 'Usuário não encontrado' }, 404);
+    }
+
+    const { password_hash } = result.rows[0];
+
+    // Verificar se a senha antiga está correta
+    const isMatch = await bcrypt.compare(oldPassword, password_hash);
+    if (!isMatch) {
+      return c.json({ success: false, message: 'Senha atual incorreta' }, 401);
+    }
+
+    // Hash da nova senha
+    const newHashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Atualizar no banco
+    await pool.query(
+      'UPDATE users SET password_hash = $1 WHERE id = $2',
+      [newHashedPassword, userContext.id]
+    );
+
+    return c.json({ success: true, message: 'Senha alterada com sucesso' });
+  } catch (error) {
+    console.error('Erro ao alterar senha:', error);
+    return c.json({ success: false, message: 'Erro interno ao alterar senha' }, 500);
   }
 });
 

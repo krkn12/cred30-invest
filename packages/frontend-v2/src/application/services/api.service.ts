@@ -101,7 +101,7 @@ class ApiService {
       return data;
     } catch (error: any) {
       console.error('Erro na requisição:', error);
-      alert(error.message);
+      // alert(error.message); // Removido para evitar alerts do sistema
       throw error;
     }
   }
@@ -452,6 +452,22 @@ class ApiService {
     return response.data || [];
   }
 
+  // Método para verificar email
+  async verifyEmail(email: string, code: string): Promise<any> { // Changed ApiResponse<void> to any for consistency
+    return this.request<any>('/auth/verify-email', { // Changed this.post to this.request for consistency
+      method: 'POST',
+      body: JSON.stringify({ email, code })
+    });
+  }
+
+  // Método para confirmar saque
+  async confirmWithdrawal(transactionId: number, code: string): Promise<any> { // Changed ApiResponse<void> to any for consistency
+    return this.request<any>('/withdrawals/confirm', { // Changed this.post to this.request for consistency
+      method: 'POST',
+      body: JSON.stringify({ transactionId, code })
+    });
+  }
+
   async createProduct(data: any): Promise<any> {
     const response = await this.request<any>('/products', {
       method: 'POST',
@@ -480,6 +496,14 @@ class ApiService {
       body: JSON.stringify({ url })
     });
     return response.data;
+  }
+
+  // Alterar senha
+  async changePassword(oldPassword: string, newPassword: string): Promise<any> {
+    return this.request<any>('/users/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ oldPassword, newPassword })
+    });
   }
 
   // Verificar se o usuário está autenticado
