@@ -339,6 +339,8 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
 
     const netAmount = parseFloat(metadata.netAmount || transaction.amount);
     const feeAmount = parseFloat(metadata.feeAmount || '0');
+    let feeForOperational = 0;
+    let feeForProfit = 0;
 
     // 1. Subtrair o valor enviado (líquido) do saldo real do sistema
     await client.query(
@@ -348,8 +350,8 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
 
     // 2. Se houver taxa cobrada, aplicar a regra de divisão: 85% Volta pro Caixa / 15% Vai pros Lucros
     if (feeAmount > 0) {
-      const feeForOperational = feeAmount * 0.85;
-      const feeForProfit = feeAmount * 0.15;
+      feeForOperational = feeAmount * 0.85;
+      feeForProfit = feeAmount * 0.15;
 
       await client.query(
         'UPDATE system_config SET system_balance = system_balance + $1',
