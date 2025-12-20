@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, Smartphone, Share, Check, Chrome, Apple, MonitorSmartphone } from 'lucide-react';
+import { ArrowLeft, Download, Smartphone, Share, Check, MoreVertical } from 'lucide-react';
 
 // Interface para o evento de instalação do PWA
 interface BeforeInstallPromptEvent extends Event {
@@ -17,12 +17,11 @@ const DownloadPage = () => {
     // Detectar o tipo de dispositivo
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid = /Android/.test(navigator.userAgent);
-    const isMobile = isIOS || isAndroid;
 
     useEffect(() => {
         window.scrollTo(0, 0);
 
-        // Verificar se já está instalado (modo standalone)
+        // Verificar se já está instalado
         if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true) {
             setIsInstalled(true);
         }
@@ -31,15 +30,17 @@ const DownloadPage = () => {
         const handleBeforeInstallPrompt = (e: Event) => {
             e.preventDefault();
             setDeferredPrompt(e as BeforeInstallPromptEvent);
+            // Tentar mostrar o prompt automaticamente
+            setTimeout(() => {
+                (e as BeforeInstallPromptEvent).prompt();
+            }, 500);
         };
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-        // Detectar quando o app for instalado
         window.addEventListener('appinstalled', () => {
             setIsInstalled(true);
             setDeferredPrompt(null);
-            setInstalling(false);
         });
 
         return () => {
@@ -48,216 +49,178 @@ const DownloadPage = () => {
     }, []);
 
     const handleInstallClick = async () => {
-        setInstalling(true);
-
-        // Se tiver o prompt nativo, usa ele
         if (deferredPrompt) {
+            setInstalling(true);
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             if (outcome === 'accepted') {
                 setDeferredPrompt(null);
             }
             setInstalling(false);
-        } else {
-            // Aguarda um pouco para dar feedback visual
-            setTimeout(() => setInstalling(false), 500);
         }
     };
 
-    return (
-        <div className="min-h-screen bg-zinc-950 text-white selection:bg-cyan-500/30">
-            {/* Navigation */}
-            <nav className="fixed top-0 left-0 w-full z-50 bg-zinc-950/50 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 py-3 sm:py-4">
-                <div className="max-w-4xl mx-auto flex justify-between items-center">
-                    <button
-                        onClick={() => navigate('/')}
-                        className="text-zinc-500 hover:text-white transition-colors flex items-center gap-2 text-sm font-bold group"
-                    >
-                        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-                        Voltar
-                    </button>
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center text-white font-bold text-sm border border-white/10">
-                            C
-                        </div>
-                        <span className="text-lg font-bold tracking-tight">Cred<span className="text-cyan-400">30</span></span>
+    // Se já instalou, mostra sucesso
+    if (isInstalled) {
+        return (
+            <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-6">
+                <div className="text-center">
+                    <div className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Check className="text-emerald-400" size={48} />
                     </div>
+                    <h1 className="text-3xl font-bold mb-4">App Instalado! ✓</h1>
+                    <p className="text-zinc-400 mb-8">Procure o ícone do Cred30 na sua tela inicial.</p>
+                    <button
+                        onClick={() => navigate('/auth')}
+                        className="bg-emerald-500 hover:bg-emerald-400 text-black font-bold py-4 px-8 rounded-2xl"
+                    >
+                        Entrar no App
+                    </button>
                 </div>
-            </nav>
+            </div>
+        );
+    }
 
-            <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-24 sm:pt-32 pb-20">
-                {/* Header */}
-                <div className="text-center mb-12">
-                    <div className="w-24 h-24 bg-gradient-to-tr from-cyan-400 to-blue-600 rounded-3xl flex items-center justify-center text-black font-bold text-4xl mx-auto mb-6 shadow-2xl shadow-cyan-500/20">
+    return (
+        <div className="min-h-screen bg-zinc-950 text-white flex flex-col">
+            {/* Header */}
+            <nav className="px-4 py-4 flex items-center justify-between">
+                <button onClick={() => navigate('/')} className="text-zinc-500 hover:text-white p-2">
+                    <ArrowLeft size={24} />
+                </button>
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-tr from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center text-black font-bold text-sm">
                         C
                     </div>
-                    <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 tracking-tight">Baixar Cred30</h1>
-                    <p className="text-zinc-400 text-lg max-w-md mx-auto">
-                        Instale o app na sua tela inicial para acesso rápido e experiência completa.
-                    </p>
+                    <span className="font-bold">Cred30</span>
+                </div>
+                <div className="w-10"></div>
+            </nav>
+
+            {/* Conteúdo Principal */}
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                {/* Logo Grande */}
+                <div className="w-28 h-28 bg-gradient-to-tr from-cyan-400 to-blue-600 rounded-3xl flex items-center justify-center text-black font-bold text-5xl mb-8 shadow-2xl shadow-cyan-500/30">
+                    C
                 </div>
 
-                {/* Status de Instalação */}
-                {isInstalled ? (
-                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-3xl p-8 text-center mb-12">
-                        <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Check className="text-emerald-400" size={32} />
+                <h1 className="text-3xl font-extrabold mb-3">Baixar Cred30</h1>
+
+                {/* Instruções Visuais Simples */}
+                {isIOS ? (
+                    // iOS - Safari
+                    <div className="w-full max-w-sm">
+                        <p className="text-zinc-400 mb-8">Toque nos ícones abaixo:</p>
+
+                        <div className="flex items-center justify-center gap-4 mb-8">
+                            {/* Passo 1 */}
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center border-2 border-cyan-500">
+                                    <Share className="text-cyan-400" size={28} />
+                                </div>
+                                <span className="text-xs text-zinc-500">1. Compartilhar</span>
+                            </div>
+
+                            <div className="text-zinc-600 text-2xl">→</div>
+
+                            {/* Passo 2 */}
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center border-2 border-cyan-500">
+                                    <span className="text-cyan-400 text-2xl">+</span>
+                                </div>
+                                <span className="text-xs text-zinc-500 text-center">2. Adicionar<br />à Tela</span>
+                            </div>
                         </div>
-                        <h2 className="text-2xl font-bold text-emerald-400 mb-2">App Instalado!</h2>
-                        <p className="text-zinc-400">O Cred30 já está instalado no seu dispositivo.</p>
-                        <button
-                            onClick={() => navigate('/auth')}
-                            className="mt-6 bg-emerald-500 hover:bg-emerald-400 text-black font-bold py-3 px-8 rounded-xl transition"
-                        >
-                            Abrir App
-                        </button>
+
+                        <div className="bg-zinc-900 rounded-2xl p-4 text-zinc-400 text-sm">
+                            📱 Use o <strong className="text-white">Safari</strong> para instalar
+                        </div>
                     </div>
-                ) : (
-                    <>
-                        {/* Botão Principal de Download */}
-                        <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-8 text-center mb-12">
+                ) : isAndroid ? (
+                    // Android - Chrome
+                    <div className="w-full max-w-sm">
+                        <p className="text-zinc-400 mb-8">Toque nos ícones abaixo:</p>
+
+                        <div className="flex items-center justify-center gap-4 mb-8">
+                            {/* Passo 1 */}
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center border-2 border-cyan-500">
+                                    <MoreVertical className="text-cyan-400" size={28} />
+                                </div>
+                                <span className="text-xs text-zinc-500">1. Menu ⋮</span>
+                            </div>
+
+                            <div className="text-zinc-600 text-2xl">→</div>
+
+                            {/* Passo 2 */}
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center border-2 border-cyan-500">
+                                    <Download className="text-cyan-400" size={28} />
+                                </div>
+                                <span className="text-xs text-zinc-500 text-center">2. Instalar<br />App</span>
+                            </div>
+                        </div>
+
+                        {deferredPrompt && (
                             <button
                                 onClick={handleInstallClick}
                                 disabled={installing}
-                                className="w-full sm:w-auto bg-cyan-500 hover:bg-cyan-400 disabled:bg-cyan-600 text-black font-extrabold py-5 px-12 rounded-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 text-xl mx-auto"
+                                className="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold py-5 rounded-2xl text-lg flex items-center justify-center gap-3"
                             >
                                 {installing ? (
-                                    <>
-                                        <div className="w-6 h-6 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
-                                        Instalando...
-                                    </>
+                                    <div className="w-6 h-6 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
                                 ) : (
                                     <>
-                                        <Download className="w-6 h-6" />
+                                        <Download size={24} />
                                         Instalar Agora
                                     </>
                                 )}
                             </button>
-                            <p className="text-zinc-500 text-sm mt-4">Grátis • Leve • Sem ocupar espaço</p>
-                        </div>
-
-                        {/* Instruções por Plataforma */}
-                        <div className="space-y-6">
-                            <h2 className="text-xl font-bold text-center text-white mb-6">Como instalar</h2>
-
-                            {/* iOS */}
-                            <div className={`bg-zinc-900/30 border border-white/5 rounded-2xl p-6 ${isIOS ? 'ring-2 ring-cyan-500' : ''}`}>
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
-                                        <Apple className="text-white" size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-white">iPhone / iPad</h3>
-                                        {isIOS && <span className="text-xs text-cyan-400">Seu dispositivo</span>}
-                                    </div>
-                                </div>
-                                <ol className="space-y-3 text-zinc-400 text-sm">
-                                    <li className="flex gap-3">
-                                        <span className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center text-white text-xs shrink-0">1</span>
-                                        <span>Abra esta página no <strong className="text-white">Safari</strong></span>
-                                    </li>
-                                    <li className="flex gap-3">
-                                        <span className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center text-white text-xs shrink-0">2</span>
-                                        <span>Toque no botão <Share className="inline text-cyan-400" size={16} /> <strong className="text-white">Compartilhar</strong></span>
-                                    </li>
-                                    <li className="flex gap-3">
-                                        <span className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center text-white text-xs shrink-0">3</span>
-                                        <span>Role e toque em <strong className="text-white">"Adicionar à Tela de Início"</strong></span>
-                                    </li>
-                                    <li className="flex gap-3">
-                                        <span className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center text-white text-xs shrink-0">4</span>
-                                        <span>Toque em <strong className="text-white">"Adicionar"</strong></span>
-                                    </li>
-                                </ol>
+                        )}
+                    </div>
+                ) : (
+                    // Desktop
+                    <div className="w-full max-w-sm">
+                        {deferredPrompt ? (
+                            <button
+                                onClick={handleInstallClick}
+                                disabled={installing}
+                                className="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold py-5 rounded-2xl text-lg flex items-center justify-center gap-3 mb-6"
+                            >
+                                {installing ? (
+                                    <div className="w-6 h-6 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
+                                ) : (
+                                    <>
+                                        <Download size={24} />
+                                        Instalar Agora
+                                    </>
+                                )}
+                            </button>
+                        ) : (
+                            <div className="bg-zinc-900 rounded-2xl p-6 text-center">
+                                <Download className="text-cyan-400 mx-auto mb-4" size={40} />
+                                <p className="text-zinc-400 text-sm">
+                                    Clique no ícone <strong className="text-white">⊕</strong> na barra de endereço do navegador
+                                </p>
                             </div>
+                        )}
 
-                            {/* Android */}
-                            <div className={`bg-zinc-900/30 border border-white/5 rounded-2xl p-6 ${isAndroid ? 'ring-2 ring-cyan-500' : ''}`}>
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
-                                        <Smartphone className="text-green-400" size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-white">Android</h3>
-                                        {isAndroid && <span className="text-xs text-cyan-400">Seu dispositivo</span>}
-                                    </div>
-                                </div>
-                                <ol className="space-y-3 text-zinc-400 text-sm">
-                                    <li className="flex gap-3">
-                                        <span className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center text-white text-xs shrink-0">1</span>
-                                        <span>Abra esta página no <strong className="text-white">Chrome</strong></span>
-                                    </li>
-                                    <li className="flex gap-3">
-                                        <span className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center text-white text-xs shrink-0">2</span>
-                                        <span>Toque no menu <strong className="text-white">⋮</strong> (três pontos)</span>
-                                    </li>
-                                    <li className="flex gap-3">
-                                        <span className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center text-white text-xs shrink-0">3</span>
-                                        <span>Toque em <strong className="text-white">"Adicionar à tela inicial"</strong></span>
-                                    </li>
-                                    <li className="flex gap-3">
-                                        <span className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center text-white text-xs shrink-0">4</span>
-                                        <span>Confirme tocando em <strong className="text-white">"Adicionar"</strong></span>
-                                    </li>
-                                </ol>
-                            </div>
-
-                            {/* Desktop */}
-                            <div className={`bg-zinc-900/30 border border-white/5 rounded-2xl p-6 ${!isMobile ? 'ring-2 ring-cyan-500' : ''}`}>
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
-                                        <MonitorSmartphone className="text-blue-400" size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-white">Computador</h3>
-                                        {!isMobile && <span className="text-xs text-cyan-400">Seu dispositivo</span>}
-                                    </div>
-                                </div>
-                                <ol className="space-y-3 text-zinc-400 text-sm">
-                                    <li className="flex gap-3">
-                                        <span className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center text-white text-xs shrink-0">1</span>
-                                        <span>Abra esta página no <strong className="text-white">Chrome, Edge ou Brave</strong></span>
-                                    </li>
-                                    <li className="flex gap-3">
-                                        <span className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center text-white text-xs shrink-0">2</span>
-                                        <span>Clique no ícone <Download className="inline text-cyan-400" size={16} /> na barra de endereço</span>
-                                    </li>
-                                    <li className="flex gap-3">
-                                        <span className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center text-white text-xs shrink-0">3</span>
-                                        <span>Clique em <strong className="text-white">"Instalar"</strong></span>
-                                    </li>
-                                </ol>
-                            </div>
-                        </div>
-                    </>
+                        <p className="text-zinc-600 text-xs mt-6 text-center">
+                            💡 Melhor experiência no celular
+                        </p>
+                    </div>
                 )}
+            </div>
 
-                {/* Benefícios */}
-                <div className="mt-16 grid sm:grid-cols-3 gap-4">
-                    <div className="bg-zinc-900/30 border border-white/5 rounded-xl p-5 text-center">
-                        <div className="text-2xl mb-2">⚡</div>
-                        <h4 className="font-bold text-white text-sm">Acesso Rápido</h4>
-                        <p className="text-zinc-500 text-xs mt-1">Abra direto da tela inicial</p>
-                    </div>
-                    <div className="bg-zinc-900/30 border border-white/5 rounded-xl p-5 text-center">
-                        <div className="text-2xl mb-2">📱</div>
-                        <h4 className="font-bold text-white text-sm">Tela Cheia</h4>
-                        <p className="text-zinc-500 text-xs mt-1">Experiência sem barra do navegador</p>
-                    </div>
-                    <div className="bg-zinc-900/30 border border-white/5 rounded-xl p-5 text-center">
-                        <div className="text-2xl mb-2">🔔</div>
-                        <h4 className="font-bold text-white text-sm">Notificações</h4>
-                        <p className="text-zinc-500 text-xs mt-1">Receba alertas importantes</p>
-                    </div>
-                </div>
-
-                {/* Footer */}
-                <footer className="mt-16 pt-8 border-t border-white/5 text-center">
-                    <p className="text-zinc-600 text-xs">
-                        Cred30 © 2024 - Todos os direitos reservados.
-                    </p>
-                </footer>
-            </main>
+            {/* Footer */}
+            <div className="p-6 text-center">
+                <button
+                    onClick={() => navigate('/auth')}
+                    className="text-zinc-500 hover:text-white text-sm"
+                >
+                    Continuar no navegador →
+                </button>
+            </div>
         </div>
     );
 };
