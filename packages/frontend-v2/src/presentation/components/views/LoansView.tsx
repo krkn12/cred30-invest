@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { DollarSign, AlertTriangle, X as XIcon, CheckCircle2, ShieldCheck, Clock, TrendingUp } from 'lucide-react';
+import { DollarSign, AlertTriangle, X as XIcon, CheckCircle2, ShieldCheck, Clock, TrendingUp, Download, FileText } from 'lucide-react';
 import { Loan, User } from '../../../domain/types/common.types';
 import { apiService } from '../../../application/services/api.service';
+import { downloadLoanContract, createContractData } from '../../../application/services/contract.service';
 
 interface LoansViewProps {
     loans: Loan[];
@@ -248,7 +249,7 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
 
                             {/* Actions */}
                             {loan.status === 'APPROVED' && !loan.isFullyPaid && (
-                                <div className="grid grid-cols-2 gap-3 pt-4 border-t border-surfaceHighlight">
+                                <div className="grid grid-cols-3 gap-2 pt-4 border-t border-surfaceHighlight">
                                     <button
                                         onClick={() => setInstallmentModalData({ loanId: loan.id, installmentAmount: installmentValue })}
                                         className="py-2.5 rounded-xl bg-surfaceHighlight hover:bg-zinc-700 text-white text-sm font-medium transition"
@@ -260,6 +261,37 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
                                         className={`py-2.5 rounded-xl text-white text-sm font-medium transition ${isOverdue ? 'bg-red-500 hover:bg-red-600' : 'bg-primary-500 hover:bg-primary-400 text-black'}`}
                                     >
                                         Quitar Tudo
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (currentUser) {
+                                                const contractData = createContractData(loan, currentUser);
+                                                downloadLoanContract(contractData);
+                                            }
+                                        }}
+                                        className="py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm font-medium transition flex items-center justify-center gap-1.5"
+                                        title="Baixar Contrato"
+                                    >
+                                        <FileText size={14} />
+                                        <span className="hidden sm:inline">Contrato</span>
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Botão de contrato para empréstimos já quitados */}
+                            {loan.status === 'APPROVED' && loan.isFullyPaid && (
+                                <div className="pt-4 border-t border-surfaceHighlight">
+                                    <button
+                                        onClick={() => {
+                                            if (currentUser) {
+                                                const contractData = createContractData(loan, currentUser);
+                                                downloadLoanContract(contractData);
+                                            }
+                                        }}
+                                        className="w-full py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm font-medium transition flex items-center justify-center gap-2"
+                                    >
+                                        <Download size={16} />
+                                        Baixar Contrato PDF
                                     </button>
                                 </div>
                             )}
