@@ -28,6 +28,7 @@ export const REFERRAL_BONUS = 5.00; // R$ 5,00
 export const QUOTA_PURCHASE_FEE_RATE = 0.02; // 2% de taxa na compra de cotas
 export const LOAN_ORIGINATION_FEE_RATE = 0.03; // 3% de taxa de originação (seguro)
 export const WITHDRAWAL_FIXED_FEE = 2.00; // Taxa fixa de R$ 2,00 por saque
+export const MARKETPLACE_ESCROW_FEE_RATE = 0.05; // 5% de taxa de garantia (Escrow) no Mercado Cred30
 
 // Taxas do Mercado Pago (Gateway)
 export const MERCADO_PAGO_PIX_FEE_PERCENT = 0.0099; // 0.99% para PIX

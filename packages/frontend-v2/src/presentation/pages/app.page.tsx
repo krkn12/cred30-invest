@@ -28,6 +28,7 @@ const StoreView = lazy(() => import('../components/features/store/store.componen
 const SlotMachine = lazy(() => import('../components/features/slot-machine.component').then(m => ({ default: m.SlotMachine })));
 const AIAssistant = lazy(() => import('../components/features/ai-assistant.component').then(m => ({ default: m.AIAssistant })));
 const HistoryView = lazy(() => import('../components/views/HistoryView').then(m => ({ default: m.HistoryView })));
+const MarketplaceView = lazy(() => import('../components/views/MarketplaceView').then(m => ({ default: m.MarketplaceView })));
 
 import { ConfirmModal } from '../components/ui/ConfirmModal';
 
@@ -406,6 +407,7 @@ export default function App() {
                       setShowSuccess({ isOpen: true, title: 'Sucesso', message: 'Senha alterada com sucesso!' });
                     }}
                     onClaimReward={handleClaimReward}
+                    onMarketplace={() => navigate('/app/marketplace')}
                   />
                 </Suspense>
               } />
@@ -475,6 +477,17 @@ export default function App() {
               <Route path="history" element={
                 <Suspense fallback={null}>
                   <HistoryView transactions={state.transactions.filter(t => t.userId === state.currentUser!.id)} />
+                </Suspense>
+              } />
+              <Route path="marketplace" element={
+                <Suspense fallback={null}>
+                  <MarketplaceView
+                    state={state}
+                    onBack={() => navigate('/app/dashboard')}
+                    onSuccess={(t, m) => setShowSuccess({ isOpen: true, title: t, message: m })}
+                    onError={(t, m) => setShowError({ isOpen: true, title: t, message: m })}
+                    onRefresh={refreshState}
+                  />
                 </Suspense>
               } />
               <Route path="*" element={<Navigate to="/app/dashboard" replace />} />

@@ -32,6 +32,7 @@ export const WITHDRAWAL_FEE_PERCENTAGE = 0.02;
 export const WITHDRAWAL_FEE_FIXED = 5.00;
 export const LOAN_INTEREST_RATE = 0.20;
 export const PENALTY_RATE = 0.40;
+export const MARKETPLACE_ESCROW_FEE_RATE = 0.05;
 
 // VIP Levels
 export const VIP_LEVELS = {

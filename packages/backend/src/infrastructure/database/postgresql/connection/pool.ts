@@ -520,7 +520,7 @@ export const initializeDatabase = async () => {
       )
     `);
 
-    // Criar tabela de produtos (Loja de Afiliados)
+    // Criar tabela de produtos (Loja de Afiliados - Deprecated em favor do Marketplace P2P)
     await client.query(`
       CREATE TABLE IF NOT EXISTS products (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -533,6 +533,43 @@ export const initializeDatabase = async () => {
         active BOOLEAN DEFAULT true,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // --- NOVO MERCADO CRED30 (P2P MARKETPLACE) ---
+
+    // Tabela de Anúncios (OLX STYLE)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS marketplace_listings (
+        id SERIAL PRIMARY KEY,
+        seller_id INTEGER REFERENCES users(id),
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        price DECIMAL(10, 2) NOT NULL,
+        category VARCHAR(50) DEFAULT 'OUTROS',
+        image_url TEXT,
+        status VARCHAR(20) DEFAULT 'ACTIVE', -- ACTIVE, SOLD, PAUSED, DELETED
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Tabela de Pedidos / Escrow (Garantia Cred30)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS marketplace_orders (
+        id SERIAL PRIMARY KEY,
+        listing_id INTEGER REFERENCES marketplace_listings(id),
+        buyer_id INTEGER REFERENCES users(id),
+        seller_id INTEGER REFERENCES users(id),
+        amount DECIMAL(10, 2) NOT NULL,
+        fee_amount DECIMAL(10, 2) NOT NULL, -- Taxa de 5-10% da Cred30 pela garantia
+        seller_amount DECIMAL(10, 2) NOT NULL, -- Valor que o vendedor receberá (amount - fee)
+        status VARCHAR(30) DEFAULT 'WAITING_PAYMENT', -- WAITING_PAYMENT, WAITING_SHIPPING, IN_TRANSIT, DELIVERED, COMPLETED, CANCELLED, DISPUTE
+        payment_method VARCHAR(20), -- BALANCE, PIX, etc
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        tracking_code VARCHAR(100),
+        dispute_reason TEXT
       )
     `);
 

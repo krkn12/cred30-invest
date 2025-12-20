@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import {
     Users, Gamepad2, TrendingUp, DollarSign, ArrowUpFromLine,
     Repeat, Crown, Clock, ArrowDownLeft, ArrowUpRight,
-    PieChart, AlertTriangle, LogOut, Star, Zap
+    PieChart, AlertTriangle, LogOut, Star, Zap,
+    ShoppingBag, Tag, PlusCircle, ShieldCheck, ChevronRight, Wallet
 } from 'lucide-react';
 import { AppState, User } from '../../../domain/types/common.types';
 import { QUOTA_PRICE } from '../../../shared/constants/app.constants';
@@ -25,9 +26,10 @@ interface DashboardProps {
     onError: (title: string, message: string) => void;
     onChangePassword: (oldPass: string, newPass: string) => Promise<void>;
     onClaimReward: () => Promise<void>;
+    onMarketplace: () => void;
 }
 
-export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onReinvest, onRefer, onVip, onLogout, onSuccess, onError, onChangePassword, onClaimReward }: DashboardProps) => {
+export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onReinvest, onRefer, onVip, onLogout, onSuccess, onError, onChangePassword, onClaimReward, onMarketplace }: DashboardProps) => {
     const user = state.currentUser!;
 
     const { userQuotas, totalInvested, totalCurrentValue, totalEarnings, earningsPercentage } = useMemo(() => {
@@ -243,23 +245,23 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                         </div>
                     </div>
 
-                    {/* Novo Bloco: Bônus de Clique Específico (Foco em CPC) */}
+                    {/* Novo Bloco: Chamada para o Mercado Cred30 */}
                     <div className="mt-4 pt-4 border-t border-surfaceHighlight">
                         <div
-                            onClick={() => window.open('https://www.effectivegatecpm.com/ec4mxdzvs?key=a9eefff1a8aa7769523373a66ff484aa', '_blank')}
-                            className="bg-gradient-to-r from-emerald-900/30 to-emerald-600/10 border border-emerald-500/30 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:border-emerald-500/60 transition-all group scale-[1.02] shadow-lg shadow-emerald-900/10"
+                            onClick={onMarketplace}
+                            className="bg-gradient-to-r from-primary-900/30 to-primary-600/10 border border-primary-500/30 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:border-primary-500/60 transition-all group scale-[1.02] shadow-lg shadow-primary-900/10"
                         >
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-400">
-                                    <Clock size={20} />
+                                <div className="p-2 bg-primary-500/20 rounded-lg text-primary-400">
+                                    <ShoppingBag size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors">Bônus Diário de Parceiro</p>
-                                    <p className="text-[10px] text-zinc-400">Visite nosso parceiro e ganhe prioridade na fila.</p>
+                                    <p className="text-sm font-bold text-white group-hover:text-primary-400 transition-colors">Venda no Mercado Cred30</p>
+                                    <p className="text-[10px] text-zinc-400">Transforme desapegos em saldo na conta com garantia total.</p>
                                 </div>
                             </div>
-                            <div className="bg-emerald-500 text-black text-[10px] font-black px-3 py-1.5 rounded-lg flex items-center gap-1 group-hover:scale-105 transition-transform shadow-lg shadow-emerald-500/20">
-                                PEGAR AGORA <ArrowUpRight size={10} />
+                            <div className="bg-primary-500 text-black text-[10px] font-black px-3 py-1.5 rounded-lg flex items-center gap-1 group-hover:scale-105 transition-transform shadow-lg shadow-primary-500/20">
+                                ANUNCIAR <PlusCircle size={10} />
                             </div>
                         </div>
                     </div>
@@ -281,6 +283,13 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                         <Gamepad2 size={24} />
                     </div>
                     <span className="text-xs font-medium text-zinc-300">Jogos</span>
+                </button>
+
+                <button onClick={onMarketplace} className="flex flex-col items-center gap-2 min-w-[72px] group shrink-0">
+                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-zinc-800 flex items-center justify-center text-primary-400 group-hover:bg-primary-900/40 transition-all border border-zinc-700 shadow-lg group-active:scale-95">
+                        <ShoppingBag size={24} />
+                    </div>
+                    <span className="text-xs font-medium text-zinc-300">Mercado</span>
                 </button>
 
                 <button onClick={onLoans} className="flex flex-col items-center gap-2 min-w-[72px] group shrink-0">
@@ -319,17 +328,32 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                 </button>
             </div>
 
-            {/* Ofertas Parceiras (Monetização Não Intrusiva) */}
+            {/* Mercado Cred30 - Escrow (Pivô de Monetização) */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between px-1">
-                    <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider">Recomendações</h3>
-                    <span className="text-[10px] text-zinc-600">Patrocinado</span>
+                    <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider">Mercado Cred30</h3>
+                    <div className="flex items-center gap-1 text-[10px] text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">
+                        <ShieldCheck size={10} /> COMPRA GARANTIDA
+                    </div>
                 </div>
-                <AdBanner
-                    type="NATIVE"
-                    title="Cartão de Crédito Black"
-                    description="Limite de até R$ 50.000 com aprovação imediata para membros Cred30."
-                />
+
+                <div
+                    onClick={onMarketplace}
+                    className="bg-surface border border-surfaceHighlight rounded-2xl p-4 cursor-pointer hover:border-primary-500/30 transition-all group"
+                >
+                    <div className="flex gap-4">
+                        <div className="w-20 h-20 bg-zinc-900 rounded-xl flex items-center justify-center text-zinc-800 shrink-0">
+                            <Tag size={32} />
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="text-white font-bold text-sm group-hover:text-primary-400 transition-colors">Venda o que não usa mais!</h4>
+                            <p className="text-xs text-zinc-500 mt-1">Anuncie gratuitamente e receba direto no seu saldo com a segurança da Cred30.</p>
+                            <div className="mt-3 text-[10px] font-black text-primary-400 flex items-center gap-1">
+                                ACESSAR MERCADO <ChevronRight size={12} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Recent Transactions (Extrato) */}
@@ -400,9 +424,5 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
     );
 };
 
-function Wallet(props: { size: number }) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width={props.size} height={props.size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-wallet"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" /><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" /></svg>
-    );
-}
+
 
