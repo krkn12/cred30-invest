@@ -442,6 +442,19 @@ export const initializeDatabase = async () => {
       );
     `);
 
+    // Criar tabela de códigos de indicação (Sistema Admin)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS referral_codes (
+        id SERIAL PRIMARY KEY,
+        code VARCHAR(20) UNIQUE NOT NULL,
+        created_by ${userIdType} REFERENCES users(id),
+        max_uses INTEGER,
+        current_uses INTEGER DEFAULT 0,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     if (!totalGatewayCostsColumnExists.rows[0].exists) {
       await client.query('ALTER TABLE system_config ADD COLUMN total_gateway_costs DECIMAL(15,2) DEFAULT 0');
       console.log('Coluna total_gateway_costs adicionada à tabela system_config');

@@ -11,7 +11,7 @@ export const backupDatabase = async (pool: Pool): Promise<{ success: boolean; fi
         console.log('📦 Iniciando backup de dados críticos...');
 
         // Tabelas para backup
-        const tables = ['users', 'quotas', 'loans', 'transactions', 'system_config', 'admin_logs'];
+        const tables = ['users', 'quotas', 'loans', 'transactions', 'system_config', 'admin_logs', 'referral_codes'];
         const backupData: Record<string, any[]> = {};
 
         for (const table of tables) {

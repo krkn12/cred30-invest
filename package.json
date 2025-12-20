@@ -1,7 +1,7 @@
 {
   "name": "cred30",
   "private": true,
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Plataforma Fintech Cred30 - Monorepo",
   "workspaces": [
     "packages/*"

@@ -58,6 +58,11 @@ const simulateMpSchema = z.object({
   transactionId: z.string()
 });
 
+const createReferralCodeSchema = z.object({
+  code: z.string().min(3).max(20).toUpperCase(),
+  maxUses: z.number().int().min(1).optional().nullable(),
+});
+
 // Dashboard administrativo
 adminRoutes.get('/dashboard', adminMiddleware, async (c) => {
   try {
@@ -1252,6 +1257,98 @@ adminRoutes.post('/liquidate-loan', adminMiddleware, auditMiddleware('LIQUIDATE_
   } catch (error: any) {
     console.error('Erro ao liquidar empréstimo:', error);
     return c.json({ success: false, message: error.message || 'Erro interno' }, 500);
+  }
+});
+
+// --- GESTÃO DE CÓDIGOS DE INDICAÇÃO (REFERRAL CODES) ---
+
+// Listar todos os códigos
+adminRoutes.get('/referral-codes', adminMiddleware, async (c) => {
+  try {
+    const pool = getDbPool(c);
+    const result = await pool.query(`
+      SELECT rc.*, u.name as creator_name 
+      FROM referral_codes rc
+      LEFT JOIN users u ON rc.created_by = u.id
+      ORDER BY rc.created_at DESC
+    `);
+    return c.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Erro ao listar códigos de indicação:', error);
+    return c.json({ success: false, message: 'Erro interno do servidor' }, 500);
+  }
+});
+
+// Criar novo código
+adminRoutes.post('/referral-codes', adminMiddleware, auditMiddleware('CREATE_REFERRAL_CODE', 'REFERRAL_CODE'), async (c) => {
+  try {
+    const body = await c.req.json();
+    const { code, maxUses } = createReferralCodeSchema.parse(body);
+    const user = c.get('user');
+    const pool = getDbPool(c);
+
+    const result = await pool.query(
+      'INSERT INTO referral_codes (code, created_by, max_uses) VALUES ($1, $2, $3) RETURNING *',
+      [code, user.id, maxUses]
+    );
+
+    return c.json({
+      success: true,
+      message: 'Código de indicação criado com sucesso!',
+      data: result.rows[0]
+    });
+  } catch (error: any) {
+    if (error.code === '23505') {
+      return c.json({ success: false, message: 'Este código já existe. Escolha outro.' }, 409);
+    }
+    if (error instanceof z.ZodError) {
+      return c.json({ success: false, message: 'Dados inválidos', errors: error.errors }, 400);
+    }
+    console.error('Erro ao criar código de indicação:', error);
+    return c.json({ success: false, message: 'Erro interno do servidor' }, 500);
+  }
+});
+
+// Ativar/Desativar código
+adminRoutes.post('/referral-codes/:id/toggle', adminMiddleware, auditMiddleware('TOGGLE_REFERRAL_CODE', 'REFERRAL_CODE'), async (c) => {
+  try {
+    const id = c.req.param('id');
+    const pool = getDbPool(c);
+
+    const result = await pool.query(
+      'UPDATE referral_codes SET is_active = NOT is_active WHERE id = $1 RETURNING *',
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return c.json({ success: false, message: 'Código não encontrado' }, 404);
+    }
+
+    return c.json({
+      success: true,
+      message: `Código ${result.rows[0].is_active ? 'ativado' : 'desativado'} com sucesso!`,
+      data: result.rows[0]
+    });
+  } catch (error) {
+    console.error('Erro ao toggle código de indicação:', error);
+    return c.json({ success: false, message: 'Erro interno do servidor' }, 500);
+  }
+});
+
+adminRoutes.delete('/referral-codes/:id', adminMiddleware, auditMiddleware('DELETE_REFERRAL_CODE', 'REFERRAL_CODE'), async (c) => {
+  try {
+    const id = c.req.param('id');
+    const pool = getDbPool(c);
+    const result = await pool.query('DELETE FROM referral_codes WHERE id = $1 RETURNING *', [id]);
+
+    if (result.rows.length === 0) {
+      return c.json({ success: false, message: 'Código não encontrado' }, 404);
+    }
+
+    return c.json({ success: true, message: 'Código removido com sucesso!' });
+  } catch (error) {
+    console.error('Erro ao remover código de indicação:', error);
+    return c.json({ success: false, message: 'Erro interno do servidor' }, 500);
   }
 });
 

@@ -206,16 +206,48 @@ authRoutes.post('/register', async (c) => {
         return c.json({ success: false, message: 'Código de indicação é obrigatório para novos membros.' }, 403);
       }
 
-      const referrerResult = await pool.query(
+      const inputCode = validatedData.referralCode.toUpperCase();
+      let referrerId = null;
+      let referrerName = null;
+
+      // 1. Tentar indicação orgânica (de outros membros)
+      const userReferrerResult = await pool.query(
         'SELECT id, name FROM users WHERE referral_code = $1',
-        [validatedData.referralCode.toUpperCase()]
+        [inputCode]
       );
 
-      if (referrerResult.rows.length === 0) {
-        return c.json({ success: false, message: 'Código de indicação inválido. O Cred30 é exclusivo para convidados.' }, 403);
+      if (userReferrerResult.rows.length > 0) {
+        referrerId = userReferrerResult.rows[0].id;
+        referrerName = userReferrerResult.rows[0].name;
+      } else {
+        // 2. Tentar código administrativo
+        const adminCodeResult = await pool.query(
+          'SELECT * FROM referral_codes WHERE code = $1 AND is_active = TRUE',
+          [inputCode]
+        );
+
+        if (adminCodeResult.rows.length > 0) {
+          const adminCode = adminCodeResult.rows[0];
+
+          // Verificar limites
+          if (adminCode.max_uses !== null && adminCode.current_uses >= adminCode.max_uses) {
+            return c.json({ success: false, message: 'Este código de convite expirou ou atingiu o limite de usos.' }, 403);
+          }
+
+          referrerId = adminCode.created_by;
+          referrerName = 'Sistema (Admin Code)';
+
+          // Incrementar uso do código administrativo
+          await pool.query(
+            'UPDATE referral_codes SET current_uses = current_uses + 1 WHERE id = $1',
+            [adminCode.id]
+          );
+        }
       }
 
-      const referrerId = referrerResult.rows[0].id;
+      if (!referrerId) {
+        return c.json({ success: false, message: 'Código de indicação inválido. O Cred30 é exclusivo para convidados.' }, 403);
+      }
 
       // Aplicar bônus de indicação
       await pool.query(
@@ -226,7 +258,7 @@ authRoutes.post('/register', async (c) => {
       // Registrar transação de bônus
       await pool.query(
         'INSERT INTO transactions (user_id, type, amount, description, status) VALUES ($1, $2, $3, $4, $5)',
-        [referrerId, 'REFERRAL_BONUS', 5.00, `Bônus indicação: ${validatedData.name}`, 'APPROVED']
+        [referrerId, 'REFERRAL_BONUS', 5.00, `Bônus indicação: ${validatedData.name} (${inputCode})`, 'APPROVED']
       );
     }
 

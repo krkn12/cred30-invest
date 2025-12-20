@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import packageJson from '../../../../package.json';
 import {
-    ShieldCheck, RefreshCw, LogOut, Users, PieChart, DollarSign, PiggyBank, Coins, ArrowUpFromLine, ArrowDownLeft, TrendingUp, Clock, ArrowUpRight, Check, X as XIcon, AlertTriangle, Settings as SettingsIcon, ShoppingBag as ShoppingBagIcon
+    ShieldCheck, RefreshCw, LogOut, Users, PieChart, DollarSign, PiggyBank, Coins, ArrowUpFromLine, ArrowDownLeft, TrendingUp, Clock, ArrowUpRight, Check, X as XIcon, AlertTriangle, Settings as SettingsIcon, ShoppingBag as ShoppingBagIcon, UserPlus, Trash2
 } from 'lucide-react';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { PromptModal } from '../ui/PromptModal';
@@ -49,7 +49,10 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
     const [isLoading, setIsLoading] = useState(true);
     const [confirmMP, setConfirmMP] = useState<{ id: string, tid: string } | null>(null);
     const [showFixPix, setShowFixPix] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'overview' | 'approvals' | 'system' | 'store'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'approvals' | 'system' | 'store' | 'referrals'>('overview');
+    const [referralCodes, setReferralCodes] = useState<any[]>([]);
+    const [newReferralCode, setNewReferralCode] = useState('');
+    const [referralMaxUses, setReferralMaxUses] = useState('');
 
     useEffect(() => {
         const fetchPending = async () => {
@@ -63,7 +66,65 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
             }
         };
         fetchPending();
-    }, [state]);
+        if (activeTab === 'referrals') {
+            fetchReferralCodes();
+        }
+    }, [state, activeTab]);
+
+    const fetchReferralCodes = async () => {
+        try {
+            const response = await apiService.get<any[]>('/admin/referral-codes');
+            if (response.success) {
+                setReferralCodes(response.data || []);
+            }
+        } catch (error) {
+            console.error('Erro ao buscar códigos:', error);
+        }
+    };
+
+    const handleCreateReferralCode = async () => {
+        if (!newReferralCode) return;
+        try {
+            const response = await apiService.post('/admin/referral-codes', {
+                code: newReferralCode,
+                maxUses: referralMaxUses ? parseInt(referralMaxUses) : null
+            });
+            if (response.success) {
+                onSuccess('Sucesso', 'Código criado!');
+                setNewReferralCode('');
+                setReferralMaxUses('');
+                fetchReferralCodes();
+            } else {
+                onError('Erro', response.message);
+            }
+        } catch (e: any) {
+            onError('Erro', e.message);
+        }
+    };
+
+    const handleToggleReferralCode = async (id: number) => {
+        try {
+            const response = await apiService.post(`/admin/referral-codes/${id}/toggle`, {});
+            if (response.success) {
+                fetchReferralCodes();
+            }
+        } catch (e: any) {
+            onError('Erro', e.message);
+        }
+    };
+
+    const handleDeleteReferralCode = async (id: number) => {
+        if (!window.confirm('Excluir este código definitivamente?')) return;
+        try {
+            const response = await apiService.delete(`/admin/referral-codes/${id}`);
+            if (response.success) {
+                onSuccess('Removido', 'Código excluído com sucesso');
+                fetchReferralCodes();
+            }
+        } catch (e: any) {
+            onError('Erro', e.message);
+        }
+    };
 
     const [newProfit, setNewProfit] = useState('');
     const [newManualCost, setNewManualCost] = useState('');
@@ -250,6 +311,7 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                     { id: 'overview', name: 'Resumo', icon: PieChart },
                     { id: 'approvals', name: 'Fila de Aprovação', icon: Clock, count: (pending.transactions?.length || 0) + (pending.loans?.length || 0) },
                     { id: 'system', name: 'Gestão Financeira', icon: SettingsIcon },
+                    { id: 'referrals', name: 'Indicações', icon: UserPlus },
                     { id: 'store', name: 'Loja', icon: ShoppingBagIcon },
                 ].map((tab) => (
                     <button
@@ -519,6 +581,92 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                                         <AlertTriangle size={20} /> Lançar Despesa
                                     </button>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'referrals' && (
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* Criar Código */}
+                        <div className="lg:col-span-1 bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl h-fit">
+                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
+                                <div className="p-2 bg-primary-500/10 rounded-lg"><UserPlus className="text-primary-400" size={20} /></div>
+                                Novo Código
+                            </h3>
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="text-[10px] text-zinc-500 font-black uppercase mb-2 block tracking-widest">Código (Ex: VIP2024)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="CÓDIGO"
+                                        value={newReferralCode}
+                                        onChange={(e) => setNewReferralCode(e.target.value.toUpperCase())}
+                                        className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded-2xl px-6 py-4 text-white outline-none focus:border-primary-500/50 focus:bg-zinc-800 transition-all font-bold"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] text-zinc-500 font-black uppercase mb-2 block tracking-widest">Limite de Usos (Opcional)</label>
+                                    <input
+                                        type="number"
+                                        placeholder="Ilimitado se vazio"
+                                        value={referralMaxUses}
+                                        onChange={(e) => setReferralMaxUses(e.target.value)}
+                                        className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded-2xl px-6 py-4 text-white outline-none focus:border-primary-500/50 focus:bg-zinc-800 transition-all font-bold"
+                                    />
+                                </div>
+                                <button
+                                    onClick={handleCreateReferralCode}
+                                    className="w-full bg-primary-500 hover:bg-primary-400 text-black font-black py-4 rounded-2xl transition-all shadow-xl flex items-center justify-center gap-3 text-sm uppercase"
+                                >
+                                    <Check size={20} /> Criar Código
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Lista de Códigos */}
+                        <div className="lg:col-span-2 bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
+                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
+                                <div className="p-2 bg-zinc-800 rounded-lg"><Users className="text-zinc-400" size={20} /></div>
+                                Códigos Ativos
+                            </h3>
+                            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-3 custom-scrollbar">
+                                {referralCodes.length === 0 ? (
+                                    <div className="py-12 text-center text-zinc-500 font-medium">Nenhum código administrativo criado.</div>
+                                ) : (
+                                    referralCodes.map((rc) => (
+                                        <div key={rc.id} className={`bg-black/30 border ${rc.is_active ? 'border-zinc-800/50' : 'border-red-900/20 opacity-60'} rounded-2xl p-6 transition-all hover:bg-black/40`}>
+                                            <div className="flex justify-between items-center">
+                                                <div className="space-y-1">
+                                                    <p className="text-2xl font-black text-white tracking-widest">{rc.code}</p>
+                                                    <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                                        <span>Criado por: {rc.creator_name}</span>
+                                                        <span>•</span>
+                                                        <span className={rc.current_uses >= (rc.max_uses || Infinity) ? 'text-red-400' : 'text-primary-400'}>
+                                                            Usos: {rc.current_uses} / {rc.max_uses || '∞'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => handleToggleReferralCode(rc.id)}
+                                                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all border ${rc.is_active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500 hover:text-black' : 'bg-zinc-800 text-zinc-500 border-zinc-700 hover:bg-white hover:text-black'}`}
+                                                    >
+                                                        {rc.is_active ? 'Ativo' : 'Inativo'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteReferralCode(rc.id)}
+                                                        className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-black transition-all"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
                     </div>
