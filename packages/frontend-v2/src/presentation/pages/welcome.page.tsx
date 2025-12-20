@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, TrendingUp, Shield, Zap, Users, Check, Wallet, PiggyBank, CreditCard, Sparkles } from 'lucide-react';
+import { ArrowRight, TrendingUp, Shield, Zap, Users, Check, Wallet, PiggyBank, CreditCard, Sparkles, Download, Smartphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+
+// Interface para o evento de instalação do PWA
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
 
 const WelcomePage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
   const navigate = useNavigate();
 
   const stats = [
@@ -33,7 +42,44 @@ const WelcomePage = () => {
 
   useEffect(() => {
     setIsLoaded(true);
+
+    // Verificar se já está instalado (modo standalone)
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstalled(true);
+    }
+
+    // Capturar o evento de instalação do PWA
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      setIsInstallable(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // Detectar quando o app for instalado
+    window.addEventListener('appinstalled', () => {
+      setIsInstalled(true);
+      setIsInstallable(false);
+      setDeferredPrompt(null);
+    });
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
   }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === 'accepted') {
+      setIsInstallable(false);
+      setDeferredPrompt(null);
+    }
+  };
 
   const handleGetStarted = () => {
     navigate('/auth');
@@ -95,6 +141,25 @@ const WelcomePage = () => {
               Filiar-se agora
               <ArrowRight className="w-5 h-5" />
             </button>
+
+            {/* Botão Instalar App - só aparece se for instalável */}
+            {isInstallable && !isInstalled && (
+              <button
+                onClick={handleInstallClick}
+                className="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-5 px-8 rounded-2xl transition-all hover:scale-105 flex items-center justify-center gap-3 text-lg border border-zinc-700"
+              >
+                <Download className="w-5 h-5" />
+                Instalar App
+              </button>
+            )}
+
+            {/* Badge de app instalado */}
+            {isInstalled && (
+              <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-6 py-4 rounded-2xl text-emerald-400 font-medium">
+                <Smartphone className="w-5 h-5" />
+                App Instalado ✓
+              </div>
+            )}
           </div>
         </div>
       </section>
