@@ -432,6 +432,112 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                 </div>
             </div>
 
+            {/* Health Metrics and Projections */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Liquidity Thermometer */}
+                <div className="bg-surface border border-surfaceHighlight rounded-2xl p-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                            <TrendingUp className="text-primary-400" size={20} />
+                            Saúde da Liquidez
+                        </h3>
+                        {(() => {
+                            const activeQuotasVal = (state.stats?.quotasCount || 0) * 50;
+                            const reserveNeeded = activeQuotasVal * 0.3;
+                            const currentCash = state.systemBalance;
+
+                            let status = "Saudável";
+                            let color = "text-emerald-400";
+                            let bgColor = "bg-emerald-500/10";
+                            if (currentCash < reserveNeeded) { status = "Risco Baixo"; color = "text-yellow-400"; bgColor = "bg-yellow-500/10"; }
+                            if (currentCash < reserveNeeded * 0.5) { status = "CRÍTICO"; color = "text-red-400"; bgColor = "bg-red-500/10"; }
+
+                            return (
+                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${bgColor} ${color} border border-current opacity-80`}>
+                                    {status}
+                                </span>
+                            );
+                        })()}
+                    </div>
+
+                    {(() => {
+                        const activeQuotasVal = (state.stats?.quotasCount || 0) * 50;
+                        const reserveNeeded = activeQuotasVal * 0.3;
+                        const currentCash = state.systemBalance;
+                        const percentage = activeQuotasVal > 0 ? Math.min((currentCash / activeQuotasVal) * 100, 100) : 100;
+                        const reservePercentage = 30;
+
+                        return (
+                            <div className="space-y-4">
+                                <div className="relative h-6 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
+                                    <div className="absolute top-0 left-[30%] h-full w-0.5 bg-yellow-400 z-10 opacity-50" title="Reserva Mínima (30%)"></div>
+                                    <div
+                                        className={`h-full transition-all duration-1000 ${percentage >= reservePercentage ? 'bg-gradient-to-r from-emerald-600 to-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'bg-gradient-to-r from-red-600 to-red-400'}`}
+                                        style={{ width: `${percentage}%` }}
+                                    ></div>
+                                </div>
+                                <div className="flex justify-between text-xs text-zinc-500 font-medium px-1">
+                                    <span>Vazio</span>
+                                    <span>Reserva (30%)</span>
+                                    <span>Cheio</span>
+                                </div>
+                                <div className="bg-background/50 p-4 rounded-xl border border-surfaceHighlight grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Disponível Agora</p>
+                                        <p className="text-lg font-bold text-white">{formatCurrency(currentCash)}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Reserva Mínima</p>
+                                        <p className="text-lg font-bold text-yellow-400/80">{formatCurrency(reserveNeeded)}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })()}
+                </div>
+
+                {/* Profit Projections */}
+                <div className="bg-surface border border-surfaceHighlight rounded-2xl p-6">
+                    <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                        <PieChart className="text-orange-400" size={20} />
+                        Projeção de Recebíveis (30 dias)
+                    </h3>
+                    {(() => {
+                        const toReceive = state.stats?.totalToReceive || 0;
+                        const totalDebt = state.stats?.totalLoaned || 0;
+                        const estimatedInterest = toReceive - totalDebt;
+                        const userShare = estimatedInterest * 0.85;
+
+                        return (
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-background/50 p-4 rounded-xl border border-surfaceHighlight">
+                                        <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Receita Futura</p>
+                                        <p className="text-xl font-bold text-white">{formatCurrency(toReceive)}</p>
+                                        <p className="text-[10px] text-emerald-500 mt-1">↑ Incluindo Juros</p>
+                                    </div>
+                                    <div className="bg-background/50 p-4 rounded-xl border border-surfaceHighlight">
+                                        <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Lucro Estimado</p>
+                                        <p className="text-xl font-bold text-orange-400">{formatCurrency(estimatedInterest)}</p>
+                                        <p className="text-[10px] text-zinc-500 mt-1">Estimativa bruta</p>
+                                    </div>
+                                </div>
+                                <div className="bg-orange-500/5 border border-orange-500/10 p-4 rounded-xl">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className="text-sm text-zinc-400">Repasse p/ Cotistas (85%)</span>
+                                        <span className="text-sm font-bold text-white">{formatCurrency(userShare)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-zinc-400">Manutenção (15%)</span>
+                                        <span className="text-sm font-bold text-zinc-300">{formatCurrency(estimatedInterest * 0.15)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })()}
+                </div>
+            </div>
+
             <AdminStoreManager onSuccess={onSuccess} onError={onError} />
 
             {/* Resumo Financeiro Detalhado */}

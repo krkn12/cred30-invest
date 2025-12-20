@@ -1,51 +1,42 @@
 
-import { Context } from 'hono';
-
-interface Client {
-    id: string;
-    send: (data: any) => void;
-}
-
 /**
- * Serviço de Gerenciamento de Notificações em Tempo Real (SSE)
+ * Serviço de Notificações Cred30
+ * Gerencia o envio de alertas para usuários e administradores
  */
-class NotificationService {
-    private clients: Client[] = [];
-
+export const notificationService = {
     /**
-     * Adiciona um novo cliente (conexão SSE) à lista
+     * Envia um alerta de sistema para o administrador
      */
-    public addClient(userId: string, send: (data: any) => void) {
-        this.clients.push({ id: userId, send });
-        console.log(`🔌 Cliente conectado às notificações: ${userId} (Total: ${this.clients.length})`);
-    }
+    async notifyAdmin(message: string, type: 'ALERT' | 'INFO' | 'SUCCESS' = 'INFO') {
+        const emoji = type === 'ALERT' ? '🚨' : type === 'SUCCESS' ? '✅' : 'ℹ️';
+        console.log(`${emoji} [ADMIN NOTIFICATION]: ${message}`);
 
-    /**
-     * Remove um cliente quando a conexão é fechada
-     */
-    public removeClient(userId: string) {
-        this.clients = this.clients.filter(c => c.id !== userId);
-        console.log(`🔌 Cliente desconectado: ${userId} (Total: ${this.clients.length})`);
-    }
+        // TODO: Integrar com Bot do Telegram ou WhatsApp API
+        // Exemplo: await sendTelegramMessage(process.env.ADMIN_CHAT_ID, message);
+    },
 
     /**
      * Envia uma notificação para um usuário específico
      */
-    public notifyUser(userId: string, event: string, data: any) {
-        const client = this.clients.find(c => c.id === userId);
-        if (client) {
-            client.send({ event, data });
-            console.log(`🔔 Notificação enviada para ${userId}: ${event}`);
-        }
-    }
+    async notifyUser(userId: string, title: string, body: string) {
+        console.log(`🔔 [USER NOTIFICATION] User: ${userId} | ${title}: ${body}`);
+
+        // Futuramente integrar com Push Notifications ou Email
+    },
 
     /**
-     * Envia uma notificação para todos os usuários conectados
+     * Alerta sobre novo saque solicitado
      */
-    public notifyAll(event: string, data: any) {
-        this.clients.forEach(c => c.send({ event, data }));
-        console.log(`🔔 Notificação global enviada: ${event}`);
-    }
-}
+    async notifyNewWithdrawal(userName: string, amount: number) {
+        const msg = `Novo saque solicitado!\nCliente: ${userName}\nValor: R$ ${amount.toFixed(2)}\n\nAcesse o painel para aprovar.`;
+        await this.notifyAdmin(msg, 'ALERT');
+    },
 
-export const notificationService = new NotificationService();
+    /**
+     * Alerta sobre lucro distribuído
+     */
+    async notifyProfitDistributed(totalAmount: number) {
+        const msg = `Distribuição diária realizada com sucesso!\nTotal distribuído: R$ ${totalAmount.toFixed(2)}`;
+        await this.notifyAdmin(msg, 'SUCCESS');
+    }
+};

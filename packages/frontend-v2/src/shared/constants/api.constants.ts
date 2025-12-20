@@ -2,7 +2,7 @@
  * Constantes utilizadas no frontend
  */
 
-export const API_BASE_URL = '/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 export const CACHE_DURATION = {
   SHORT: 5000,      // 5 segundos para dados críticos

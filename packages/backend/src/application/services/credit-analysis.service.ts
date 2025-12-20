@@ -1,6 +1,6 @@
 
 import { Pool, PoolClient } from 'pg';
-import { QUOTA_PRICE } from '../../shared/constants/business.constants';
+import { QUOTA_PRICE, VIP_LEVELS } from '../../shared/constants/business.constants';
 
 /**
  * Serviço de Análise de Crédito (Estilo Nubank)
@@ -37,7 +37,9 @@ export const calculateUserLoanLimit = async (pool: Pool | PoolClient, userId: st
         const paidCount = parseInt(stats.paid_loans);
 
         // 4. CAIXA OPERACIONAL DISPONÍVEL (Nova Trava)
-        // Caixa = (Total de Cotas ATIVAS * QUOTA_PRICE) - (Total Emprestado Ativo)
+        // Caixa Bruto = (Total de Cotas ATIVAS * QUOTA_PRICE)
+        // Emprestado = (Total Emprestado Ativo)
+        // Reserva Liquidez = 30% do Caixa Bruto (Sempre mantido para saques de cotas)
         const systemQuotasRes = await pool.query(
             "SELECT COUNT(*) as count FROM quotas WHERE status = 'ACTIVE'"
         );
@@ -46,7 +48,10 @@ export const calculateUserLoanLimit = async (pool: Pool | PoolClient, userId: st
         );
         const systemQuotasCount = parseInt(systemQuotasRes.rows[0].count);
         const systemTotalLoaned = parseFloat(systemActiveLoansRes.rows[0].total);
-        const operationalCash = (systemQuotasCount * QUOTA_PRICE) - systemTotalLoaned;
+
+        const grossCash = systemQuotasCount * QUOTA_PRICE;
+        const liquidityReserve = grossCash * 0.30; // 30% de reserva para saques
+        const operationalCash = grossCash - systemTotalLoaned - liquidityReserve;
 
         // --- LÓGICA DE CÁLCULO (ESTILO NUBANK) ---
 
@@ -62,8 +67,14 @@ export const calculateUserLoanLimit = async (pool: Pool | PoolClient, userId: st
         // A. Limite Base por Score
         const scoreLimit = (user.score || 0) * 5;
 
-        // B. Alavancagem por Cotas
-        const quotaMultiplier = 2.0;
+        // B. Alavancagem por Cotas Dinâmica (VIP)
+        let quotaMultiplier = VIP_LEVELS.BRONZE.multiplier;
+        const qCount = totalQuotasValue / QUOTA_PRICE;
+
+        if (qCount >= 100) quotaMultiplier = VIP_LEVELS.FOUNDER.multiplier;
+        else if (qCount >= 50) quotaMultiplier = VIP_LEVELS.OURO.multiplier;
+        else if (qCount >= 10) quotaMultiplier = VIP_LEVELS.PRATA.multiplier;
+
         const assetsLimit = totalQuotasValue * quotaMultiplier;
 
         // C. Bônus por Fidelidade
@@ -82,7 +93,7 @@ export const calculateUserLoanLimit = async (pool: Pool | PoolClient, userId: st
 
         // F. TRAVA CRÍTICA: O limite final é o MENOR entre:
         //    - O limite pessoal do usuário
-        //    - O dinheiro disponível no caixa operacional do sistema
+        //    - O dinheiro disponível no caixa operacional do sistema (respeitando a reserva de 30%)
         const finalLimit = Math.min(Math.floor(personalLimit), Math.max(0, operationalCash));
 
         console.log('DEBUG - Análise de Crédito:', {

@@ -1,5 +1,5 @@
-
 import { Pool, PoolClient } from 'pg';
+import { notificationService } from './notification.service';
 
 const DIVIDEND_USER_SHARE = 0.85; // 85% para usuários
 
@@ -120,6 +120,9 @@ export const distributeProfits = async (pool: Pool | PoolClient): Promise<any> =
             finalMaintenance,
             roundingDifference
         });
+
+        // Notificar Admin
+        await notificationService.notifyProfitDistributed(profit);
 
         return {
             success: true,

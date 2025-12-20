@@ -1179,4 +1179,80 @@ adminRoutes.post('/manual-cost', adminMiddleware, auditMiddleware('ADD_MANUAL_CO
   }
 });
 
+// Liquidar empréstimo usando as cotas do usuário como garantia (Exercer Garantia)
+adminRoutes.post('/liquidate-loan', adminMiddleware, auditMiddleware('LIQUIDATE_LOAN_WITH_QUOTAS', 'LOAN'), async (c) => {
+  try {
+    const body = await c.req.json();
+    const { loanId } = body;
+
+    if (!loanId) {
+      return c.json({ success: false, message: 'ID do empréstimo é obrigatório' }, 400);
+    }
+
+    const pool = getDbPool(c);
+
+    const result = await executeInTransaction(pool, async (client) => {
+      // 1. Buscar empréstimo
+      const loanRes = await client.query('SELECT * FROM loans WHERE id = $1 FOR UPDATE', [loanId]);
+      if (loanRes.rows.length === 0) throw new Error('Empréstimo não encontrado');
+      const loan = loanRes.rows[0];
+
+      if (loan.status === 'PAID') throw new Error('Empréstimo já está quitado');
+
+      // 2. Calcular quanto o usuário deve (Total - já pago)
+      const paidRes = await client.query('SELECT COALESCE(SUM(amount), 0) as total FROM loan_installments WHERE loan_id = $1', [loanId]);
+      const debtAmount = parseFloat(loan.total_repayment) - parseFloat(paidRes.rows[0].total);
+
+      // 3. Buscar cotas ativas do usuário para liquidar
+      const quotasRes = await client.query('SELECT id, current_value FROM quotas WHERE user_id = $1 AND status = $2 FOR UPDATE', [loan.user_id, 'ACTIVE']);
+      const userQuotas = quotasRes.rows;
+
+      let liquidatedValue = 0;
+      const quotasToLiquidate = [];
+
+      for (const q of userQuotas) {
+        if (liquidatedValue < debtAmount) {
+          liquidatedValue += parseFloat(q.current_value);
+          quotasToLiquidate.push(q.id);
+        }
+      }
+
+      if (liquidatedValue === 0) throw new Error('Usuário não possui cotas ativas para garantir a dívida');
+
+      // 4. Executar a liquidação
+      // Deletar as cotas (elas voltam para o sistema como caixa)
+      if (quotasToLiquidate.length > 0) {
+        await client.query('DELETE FROM quotas WHERE id = ANY($1)', [quotasToLiquidate]);
+      }
+
+      // Devolver o principal ao caixa do sistema
+      await client.query('UPDATE system_config SET system_balance = system_balance + $1', [liquidatedValue]);
+
+      // Marcar empréstimo como PAGO (Integral ou parcial dependendo do valor)
+      const newStatus = liquidatedValue >= debtAmount ? 'PAID' : loan.status;
+      await client.query('UPDATE loans SET status = $1 WHERE id = $2', [newStatus, loanId]);
+
+      // Registrar transação de liquidação forçada
+      const admin = c.get('user');
+      await client.query(
+        `INSERT INTO transactions (user_id, type, amount, description, status, metadata)
+         VALUES ($1, 'SYSTEM_LIQUIDATION', $2, $3, 'APPROVED', $4)`,
+        [
+          loan.user_id,
+          liquidatedValue,
+          `Liquidação forçada de ${quotasToLiquidate.length} cota(s) para quitar empréstimo ${loanId}`,
+          JSON.stringify({ adminId: admin.id, loanId, quotasCount: quotasToLiquidate.length })
+        ]
+      );
+
+      return { success: true, liquidatedValue, isFullyPaid: newStatus === 'PAID' };
+    });
+
+    return c.json(result);
+  } catch (error: any) {
+    console.error('Erro ao liquidar empréstimo:', error);
+    return c.json({ success: false, message: error.message || 'Erro interno' }, 500);
+  }
+});
+
 export { adminRoutes };

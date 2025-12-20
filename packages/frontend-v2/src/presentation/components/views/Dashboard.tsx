@@ -57,14 +57,22 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
     };
 
     const getVipLevel = (quotas: number) => {
+        if (quotas >= 100) return 'Fundador';
         if (quotas >= 50) return 'Ouro';
         if (quotas >= 10) return 'Prata';
         return 'Bronze';
     };
 
     const vipLevel = getVipLevel(userQuotas.length);
-    const nextLevelQuotas = vipLevel === 'Bronze' ? 10 : vipLevel === 'Prata' ? 50 : 50;
-    const progressToNext = Math.min((userQuotas.length / nextLevelQuotas) * 100, 100);
+    const getNextLevelInfo = (level: string) => {
+        if (level === 'Bronze') return { next: 'Prata', goal: 10 };
+        if (level === 'Prata') return { next: 'Ouro', goal: 50 };
+        if (level === 'Ouro') return { next: 'Fundador', goal: 100 };
+        return { next: null, goal: 100 };
+    };
+
+    const nextLevel = getNextLevelInfo(vipLevel);
+    const progressToNext = nextLevel.next ? Math.min((userQuotas.length / nextLevel.goal) * 100, 100) : 100;
 
     const formatCurrency = (val: number) => val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -160,11 +168,11 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
             </div>
 
             {/* VIP Progress */}
-            {vipLevel !== 'Ouro' && (
+            {nextLevel.next && (
                 <div className="bg-surface border border-surfaceHighlight rounded-2xl p-6">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold text-white">Progresso para {nextLevelQuotas === 10 ? 'Prata' : 'Ouro'}</h3>
-                        <span className="text-sm text-zinc-400">{userQuotas.length}/{nextLevelQuotas} cotas</span>
+                        <h3 className="text-lg font-bold text-white">Progresso para {nextLevel.next}</h3>
+                        <span className="text-sm text-zinc-400">{userQuotas.length}/{nextLevel.goal} cotas</span>
                     </div>
                     <div className="w-full bg-zinc-700 rounded-full h-3 overflow-hidden">
                         <div
@@ -172,7 +180,7 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                             style={{ width: `${Math.min(progressToNext, 100)}%` }}
                         ></div>
                     </div>
-                    <p className="text-xs text-zinc-500 mt-2">Faltam {nextLevelQuotas - userQuotas.length} cotas para alcançar o próximo nível</p>
+                    <p className="text-xs text-zinc-500 mt-2">Faltam {nextLevel.goal - userQuotas.length} cotas para alcançar o próximo nível</p>
                 </div>
             )}
 

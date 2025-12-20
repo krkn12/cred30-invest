@@ -4,6 +4,8 @@ import { authMiddleware } from '../middleware/auth.middleware';
 import { getDbPool } from '../../../infrastructure/database/postgresql/connection/pool';
 import { executeInTransaction, updateUserBalance, createTransaction } from '../../../domain/services/transaction.service';
 import { twoFactorService } from '../../../application/services/two-factor.service';
+import { notificationService } from '../../../application/services/notification.service';
+import { calculateUserLoanLimit } from '../../../application/services/credit-analysis.service';
 
 const withdrawalRoutes = new Hono();
 
@@ -62,6 +64,25 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
     const totalLoanAmount = parseFloat(loansResult.rows[0].total_loan_amount);
     const totalWithdrawnAmount = parseFloat(withdrawalsResult.rows[0].total_withdrawn);
     const availableCredit = totalLoanAmount - totalWithdrawnAmount;
+
+    // 4. VERIFICAÇÃO DE LIQUIDEZ DO SISTEMA (TRAVA ANTIFALÊNCIA)
+    const systemQuotasRes = await pool.query("SELECT COUNT(*) as count FROM quotas WHERE status = 'ACTIVE'");
+    const systemActiveLoansRes = await pool.query("SELECT COALESCE(SUM(amount), 0) as total FROM loans WHERE status IN ('APPROVED', 'PAYMENT_PENDING')");
+
+    const systemQuotasCount = parseInt(systemQuotasRes.rows[0].count);
+    const systemTotalLoaned = parseFloat(systemActiveLoansRes.rows[0].total);
+    const systemGrossCash = systemQuotasCount * 50; // Preço fixo da cota
+
+    // Liquidez Real = O que tem no "pote" agora
+    const realLiquidity = systemGrossCash - systemTotalLoaned;
+
+    if (amount > realLiquidity) {
+      return c.json({
+        success: false,
+        message: 'O sistema atingiu o limite de saques diários por falta de liquidez momentânea. Tente novamente em 24h ou entre em contato com o suporte.',
+        errorCode: 'LOW_LIQUIDITY'
+      }, 400);
+    }
 
     // Validar se o cliente tem limite disponível
     if (amount > availableCredit) {
@@ -174,6 +195,10 @@ withdrawalRoutes.post('/confirm', authMiddleware, async (c) => {
        WHERE id = $1`,
       [transactionId]
     );
+
+    // Notificar Admin
+    const amountRequested = parseFloat(transaction.metadata.amount || 0);
+    await notificationService.notifyNewWithdrawal(user.name, amountRequested);
 
     return c.json({
       success: true,

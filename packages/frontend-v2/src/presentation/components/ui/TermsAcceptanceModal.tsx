@@ -75,24 +75,30 @@ export const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({ isOp
 
                     <section className="space-y-4">
                         <h3 className="text-lg md:text-xl font-bold text-primary-400 flex items-center gap-2">
-                            3. Resgates e Saques
+                            3. Empréstimos e Garantia Real
                         </h3>
                         <p className="text-zinc-400 leading-relaxed text-sm md:text-base">
-                            Os pedidos de saque são processados por ordem de prioridade. Membros com maior número de cotas e melhor pontuação (Score) possuem preferência na fila de liquidação por segurança do fundo.
+                            Os membros podem solicitar crédito baseado em seu patrimônio. <strong className="text-white">As cotas ativas servem como garantia real para os empréstimos.</strong>
                         </p>
-                        <div className="bg-primary-500/5 border border-primary-500/10 p-4 rounded-xl flex items-start gap-4">
-                            <div className="w-6 h-6 bg-primary-500/20 rounded-full flex items-center justify-center text-primary-400 text-xs font-bold mt-1 shrink-0">!</div>
-                            <p className="text-zinc-500 text-xs md:text-sm leading-relaxed">Resgates antecipados de cotas antes do período de carência (30 dias) podem estar sujeitos a taxas de saída para manutenção da liquidez do pool.</p>
+                        <div className="bg-red-500/5 border border-red-500/10 p-4 rounded-xl flex items-start gap-4">
+                            <div className="w-6 h-6 bg-red-500/20 rounded-full flex items-center justify-center text-red-400 text-xs font-bold mt-1 shrink-0">!</div>
+                            <p className="text-zinc-500 text-xs md:text-sm leading-relaxed">
+                                Em caso de atraso superior a 5 dias, o sistema reserva-se o direito de <strong className="text-red-400">LIQUIDAR AUTOMATICAMENTE</strong> as cotas do devedor para quitar o saldo devedor, sem necessidade de aviso prévio.
+                            </p>
                         </div>
                     </section>
 
                     <section className="space-y-4">
                         <h3 className="text-lg md:text-xl font-bold text-primary-400 flex items-center gap-2">
-                            4. Conduta e Responsabilidades
+                            4. Juros e Penalidades
                         </h3>
-                        <p className="text-zinc-400 leading-relaxed text-sm md:text-base">
-                            É estritamente proibido o uso da plataforma para lavagem de dinheiro ou qualquer atividade ilícita. A cooperativa reserva-se o direito de banir membros que violarem as regras de boa convivência ou tentarem fraudar o sistema.
-                        </p>
+                        <div className="bg-zinc-900/50 p-5 rounded-2xl border border-zinc-800">
+                            <p className="text-zinc-400 text-xs md:text-sm leading-relaxed">
+                                • Juros fixos de 20% por operação.<br />
+                                • Multa de mora diária de <strong className="text-white">0.5% ao dia</strong> sobre o valor em atraso.<br />
+                                • Perda imediata de Score e exclusão de benefícios VIP em caso de inadimplência.
+                            </p>
+                        </div>
                     </section>
 
                     <div className="pt-10 border-t border-zinc-900 text-center">
@@ -114,8 +120,8 @@ export const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({ isOp
                         onClick={onAccept}
                         disabled={!hasScrolledToBottom}
                         className={`w-full py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-3 text-base md:text-lg shadow-2-xl ${hasScrolledToBottom
-                                ? 'bg-primary-500 hover:bg-primary-400 text-black shadow-primary-500/20'
-                                : 'bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50'
+                            ? 'bg-primary-500 hover:bg-primary-400 text-black shadow-primary-500/20'
+                            : 'bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50'
                             }`}
                     >
                         {hasScrolledToBottom ? <CheckCircle2 size={24} /> : <div className="w-6 h-6 border-2 border-zinc-600 rounded-full" />}

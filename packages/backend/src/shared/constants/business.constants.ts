@@ -10,6 +10,9 @@ export const PENALTY_RATE = Number(process.env.PENALTY_RATE) || 0.4;
 // Período de carência em milissegundos (1 ano)
 export const VESTING_PERIOD_MS = (Number(process.env.VESTING_PERIOD_DAYS) || 365) * 24 * 60 * 60 * 1000;
 
+// Taxa diária de atraso (0.5% ao dia de multa por atraso)
+export const DAILY_LATE_FEE = 0.005;
+
 // Um mês em milissegundos (para simulação de tempo)
 export const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -27,3 +30,11 @@ export const MERCADO_PAGO_FIXED_FEE = 0.00; // R$ 0,00 fixo
 
 export const MERCADO_PAGO_CARD_FEE_PERCENT = 0.0499; // 4.99% para Cartão
 export const MERCADO_PAGO_CARD_FIXED_FEE = 0.40; // R$ 0,40 fixo
+
+// Níveis VIP
+export const VIP_LEVELS = {
+    BRONZE: { name: 'Bronze', minQuotas: 0, multiplier: 1.2 },
+    PRATA: { name: 'Prata', minQuotas: 10, multiplier: 1.5 },
+    OURO: { name: 'Ouro', minQuotas: 50, multiplier: 2.0 },
+    FOUNDER: { name: 'Fundador', minQuotas: 100, multiplier: 3.0 }
+};

@@ -118,7 +118,11 @@ const TermsPage = () => {
                             </div>
                             <div className="flex items-start gap-3">
                                 <div className="w-6 h-6 bg-cyan-500/20 rounded-full flex items-center justify-center text-cyan-400 flex-shrink-0 text-xs font-bold">3</div>
-                                <p className="text-zinc-400 text-xs sm:text-sm"><strong className="text-white">Inadimplência:</strong> Atrasos resultam em bloqueio de novos empréstimos, penalização de score e possível exclusão da cooperativa.</p>
+                                <p className="text-zinc-400 text-xs sm:text-sm"><strong className="text-white">Garantia Real:</strong> Os empréstimos são garantidos pelas cotas do membro. Em caso de atraso superior a 5 dias, o sistema executará automaticamente a garantia, liquidando as cotas necessárias para quitar o débito.</p>
+                            </div>
+                            <div className="flex items-start gap-3">
+                                <div className="w-6 h-6 bg-cyan-500/20 rounded-full flex items-center justify-center text-cyan-400 flex-shrink-0 text-xs font-bold">4</div>
+                                <p className="text-zinc-400 text-xs sm:text-sm"><strong className="text-white">Juros de Mora:</strong> Aplica-se multa diária de 0.5% sobre o valor total em atraso, além da restrição de score imediata.</p>
                             </div>
                         </div>
                     </section>

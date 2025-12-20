@@ -3,6 +3,7 @@ import cron from 'node-cron';
 import { Pool } from 'pg';
 import { distributeProfits } from './application/services/profit-distribution.service';
 import { backupDatabase } from './application/services/backup.service';
+import { runAutoLiquidation } from './application/services/auto-liquidation.service';
 
 /**
  * Inicializa os agendadores de tarefas (Cron Jobs)
@@ -38,5 +39,18 @@ export const initializeScheduler = (pool: Pool) => {
         }
     });
 
-    console.log('✅ Agendador de tarefas inicializado: Distribuição (00:00) e Backup (01:00) configurados.');
+    // 3. Liquidação Automática de inadimplentes às 02:00 (Madrugada)
+    cron.schedule('0 2 * * *', async () => {
+        console.log('🕒 [CRON] Iniciando varredura de liquidação automática...');
+        try {
+            const result = await runAutoLiquidation(pool);
+            if (result.liquidatedCount > 0) {
+                console.log(`✅ [CRON] Liquidação finalizada: ${result.liquidatedCount} empréstimos processados.`);
+            }
+        } catch (error) {
+            console.error('❌ [CRON] Erro fatal na liquidação automática:', error);
+        }
+    });
+
+    console.log('✅ Agendador inicializado: Distribuição (00:00), Backup (01:00) e Auto-Liquidação (02:00).');
 };
