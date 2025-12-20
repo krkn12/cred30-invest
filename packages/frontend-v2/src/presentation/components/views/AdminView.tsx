@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-    ShieldCheck, RefreshCw, LogOut, Users, PieChart, DollarSign, PiggyBank, Coins, ArrowUpFromLine, ArrowDownLeft, TrendingUp, Clock, ArrowUpRight, Check, X as XIcon, AlertTriangle
+    ShieldCheck, RefreshCw, LogOut, Users, PieChart, DollarSign, PiggyBank, Coins, ArrowUpFromLine, ArrowDownLeft, TrendingUp, Clock, ArrowUpRight, Check, X as XIcon, AlertTriangle, Settings as SettingsIcon, ShoppingBag as ShoppingBagIcon
 } from 'lucide-react';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { PromptModal } from '../ui/PromptModal';
@@ -19,11 +19,36 @@ interface AdminViewProps {
     onError: (title: string, message: string) => void;
 }
 
+const MetricCard = ({ title, value, subtitle, icon: Icon, color }: any) => {
+    const colorClasses: any = {
+        blue: "from-blue-600 to-blue-700 border-blue-500/30 shadow-blue-500/10",
+        cyan: "from-primary-600 to-primary-700 border-primary-500/30 shadow-primary-500/10",
+        emerald: "from-emerald-600 to-emerald-700 border-emerald-500/30 shadow-emerald-500/10",
+        yellow: "from-amber-600 to-amber-700 border-amber-500/30 shadow-amber-500/10",
+        red: "from-red-600 to-red-700 border-red-500/30 shadow-red-500/10",
+        orange: "from-orange-600 to-orange-700 border-orange-500/30 shadow-orange-500/10",
+    };
+
+    return (
+        <div className={`bg-gradient-to-br ${colorClasses[color]} rounded-2xl p-6 text-white border shadow-lg transition-transform hover:scale-[1.02] duration-300`}>
+            <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                    <Icon size={20} className="text-white" />
+                </div>
+                <span className="text-xs font-bold uppercase tracking-wider opacity-80">{title}</span>
+            </div>
+            <p className="text-3xl font-bold tracking-tight">{value}</p>
+            <p className="text-[10px] opacity-70 mt-1 font-medium uppercase">{subtitle}</p>
+        </div>
+    );
+};
+
 export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: AdminViewProps) => {
     const [pending, setPending] = useState<{ transactions: any[], loans: any[] }>({ transactions: [], loans: [] });
     const [isLoading, setIsLoading] = useState(true);
     const [confirmMP, setConfirmMP] = useState<{ id: string, tid: string } | null>(null);
     const [showFixPix, setShowFixPix] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<'overview' | 'approvals' | 'system' | 'store'>('overview');
 
     useEffect(() => {
         const fetchPending = async () => {
@@ -39,37 +64,26 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
         fetchPending();
     }, [state]);
 
-    const [newBalance, setNewBalance] = useState('');
     const [newProfit, setNewProfit] = useState('');
     const [newManualCost, setNewManualCost] = useState('');
     const [manualCostDescription, setManualCostDescription] = useState('');
     const [showDistributeModal, setShowDistributeModal] = useState(false);
 
     const parseCurrencyInput = (val: string) => {
-        // Remove all non-numeric chars except dot and comma
         const clean = val.replace(/[^0-9,.]/g, '');
-        // Replace comma with dot
         const standard = clean.replace(',', '.');
         return parseFloat(standard);
     }
-
-    // handleUpdateBalance removido - caixa operacional agora é calculado automaticamente
 
     const handleUpdateProfit = async () => {
         try {
             const val = parseCurrencyInput(newProfit);
             if (isNaN(val)) throw new Error("Valor inválido");
-
-            const result = await updateProfitPool(val);
+            await updateProfitPool(val);
             clearAllCache();
             onRefresh();
             setNewProfit('');
-
-            // Mensagem atualizada para refletir a distribuição automática
-            onSuccess(
-                'Lucro Adicionado',
-                `R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} adicionado com sucesso! O valor foi acumulado e será distribuído automaticamente à meia-noite (00:00).`
-            );
+            onSuccess('Lucro Adicionado', `R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} adicionado com sucesso!`);
         } catch (e: any) {
             onError('Erro ao Atualizar Lucro', e.message);
         }
@@ -79,21 +93,16 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
         try {
             const val = parseCurrencyInput(newManualCost);
             if (isNaN(val) || val <= 0) throw new Error("Valor inválido");
-
             const response = await apiService.post('/admin/manual-cost', {
                 amount: val,
                 description: manualCostDescription || 'Custo manual'
             });
-
             if (response.success) {
                 clearAllCache();
                 onRefresh();
                 setNewManualCost('');
                 setManualCostDescription('');
-                onSuccess(
-                    'Custo Registrado',
-                    `Custo de R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} registrado com sucesso e deduzido do caixa operacional.`
-                );
+                onSuccess('Custo Registrado', `Custo de R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} registrado.`);
             } else {
                 onError('Erro', response.message);
             }
@@ -104,23 +113,12 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
 
     const handleAction = async (id: string, type: 'TRANSACTION' | 'LOAN', action: 'APPROVE' | 'REJECT') => {
         try {
-            console.log('DEBUG - Ação administrativa:', { id, type, action });
-
             await processAdminAction(id, type, action);
-
-            // Limpar cache após ação administrativa para forçar atualização
             clearAllCache();
-
-            // Aguardar um pouco para garantir que o backend processou
             await new Promise(resolve => setTimeout(resolve, 500));
-
-            // Forçar atualização completa do estado
-            console.log('DEBUG - Forçando atualização do estado após ação administrativa');
             await onRefresh();
-
-            // Se for aprovação de empréstimo, mostrar mensagem específica
             if (type === 'LOAN' && action === 'APPROVE') {
-                onSuccess('Empréstimo Aprovado', 'Empréstimo aprovado com sucesso! O valor foi creditado no saldo do cliente.');
+                onSuccess('Empréstimo Aprovado', 'Empréstimo aprovado com sucesso!');
             }
         } catch (e: any) {
             onError('Erro na Ação', e.message);
@@ -136,9 +134,8 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
         const { id: paymentId, tid: transactionId } = confirmMP;
         try {
             const response = await apiService.post('/admin/simulate-mp-payment', { paymentId, transactionId });
-
             if (response.success) {
-                onSuccess('Simulação Sucesso', 'Sucesso! O pagamento foi aprovado no Sandbox e a transação foi processada.');
+                onSuccess('Simulação Sucesso', 'Pagamento aprovado no Sandbox.');
                 await onRefresh();
             } else {
                 onError('Erro na Simulação', response.message);
@@ -150,726 +147,399 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
 
     const handleRejectPayment = async (transactionId: string) => {
         try {
-            // Verificar se está autenticado
-            if (!apiService.isAuthenticated()) {
-                onError('Sessão Expirada', 'Por favor, faça login novamente.');
-                onLogout();
-                return;
-            }
-
-            // Chamar a API de rejeição de pagamento usando apiService
             const result = await apiService.rejectPayment(transactionId);
-
-            console.log('DEBUG - Resposta da API de rejeição:', result);
-
             if (result && result.success) {
                 clearAllCache();
                 onRefresh();
-                const data = result.data || {};
-                const amountRefunded = data.amountRefunded || 0;
-                onSuccess(
-                    'Pagamento Rejeitado',
-                    `Pagamento rejeitado com sucesso! Empréstimo reativado para novo pagamento.${amountRefunded > 0 ? ` Saldo de R$ ${amountRefunded.toFixed(2)} reembolsado.` : ''}`
-                );
+                onSuccess('Pagamento Rejeitado', 'Pagamento rejeitado com sucesso!');
             }
         } catch (e: any) {
-            console.error('Erro ao rejeitar pagamento:', e);
-            // Verificar se é um erro de autenticação
-            if (e.message && e.message.includes('401')) {
-                onError('Sessão Expirada', 'Por favor, faça login novamente.');
-                onLogout();
-            } else {
-                onError('Erro', e.message || "Erro ao rejeitar pagamento.");
-            }
+            onError('Erro', e.message);
         }
     };
 
-    const handleApprovePayment = async (transactionId: string): Promise<void> => {
+    const handleApprovePayment = async (transactionId: string) => {
         try {
-            // Verificar se está autenticado
-            if (!apiService.isAuthenticated()) {
-                onError('Sessão Expirada', 'Por favor, faça login novamente.');
-                onLogout();
-                return;
-            }
-
-            // Chamar a API de aprovação de pagamento usando apiService
             const result = await apiService.approvePayment(transactionId);
-
-            console.log('DEBUG - Resposta da API de aprovação:', result);
-
             if (result && result.success) {
-                const data = result.data || {};
-                const principalValue = typeof data.principalReturned === 'number' ? data.principalReturned : 0;
-                const profitValue = typeof data.interestForProfit === 'number' ? data.interestForProfit : 0;
-                const operationalValue = typeof data.interestForOperational === 'number' ? data.interestForOperational : 0;
-
                 clearAllCache();
                 onRefresh();
-                onSuccess(
-                    'Pagamento Aprovado',
-                    `Pagamento aprovado com sucesso! Principal devolvido: R$ ${principalValue.toFixed(2)}, Juros (85% para lucro: R$ ${profitValue.toFixed(2)}, 15% para caixa: R$ ${operationalValue.toFixed(2)})`
-                );
+                onSuccess('Pagamento Aprovado', 'Pagamento aprovado com sucesso!');
             }
         } catch (e: any) {
-            console.error('Erro ao aprovar pagamento:', e);
-            // Verificar se é um erro de autenticação
-            if (e.message && e.message.includes('401')) {
-                onError('Sessão Expirada', 'Por favor, faça login novamente.');
-                onLogout();
-            } else {
-                onError('Erro', e.message || "Erro ao aprovar pagamento.");
-            }
+            onError('Erro', e.message);
         }
     };
 
     const handleApproveWithdrawal = async (transactionId: string) => {
         try {
-            // Verificar se está autenticado
-            if (!apiService.isAuthenticated()) {
-                onError('Sessão Expirada', 'Por favor, faça login novamente.');
-                onLogout();
-                return;
-            }
-
-            // Chamar a API de aprovação de saque usando apiService
             const result = await apiService.approveWithdrawal(transactionId);
-
-            console.log('DEBUG - Resposta da API de aprovação de saque:', result);
-
             if (result && result.success) {
-                const data = result.data || {};
                 clearAllCache();
                 onRefresh();
-                onSuccess(
-                    'Saque Aprovado',
-                    `Saque aprovado com sucesso! Valor líquido: R$ ${(data.netAmount || 0).toFixed(2)}, Taxa: R$ ${(data.feeAmount || 0).toFixed(2)} adicionada ao lucro de juros.`
-                );
+                onSuccess('Saque Aprovado', 'Saque aprovado com sucesso!');
             }
         } catch (e: any) {
-            console.error('Erro ao aprovar saque:', e);
-            if (e.message && e.message.includes('401')) {
-                onError('Sessão Expirada', 'Por favor, faça login novamente.');
-                onLogout();
-            } else {
-                onError('Erro', e.message || "Erro ao aprovar saque.");
-            }
+            onError('Erro', e.message);
         }
     };
 
     const handleRejectWithdrawal = async (transactionId: string) => {
         try {
-            // Verificar se está autenticado
-            if (!apiService.isAuthenticated()) {
-                onError('Sessão Expirada', 'Por favor, faça login novamente.');
-                onLogout();
-                return;
-            }
-
-            // Chamar a API de rejeição de saque usando apiService
             const result = await apiService.rejectWithdrawal(transactionId);
-
-            console.log('DEBUG - Resposta da API de rejeição de saque:', result);
-
             if (result && result.success) {
                 clearAllCache();
                 onRefresh();
-                const data = result.data || {};
-                const amountRefunded = data.amountRefunded || 0;
-                onSuccess(
-                    'Saque Rejeitado',
-                    `Saque rejeitado com sucesso! Valor de R$ ${amountRefunded.toFixed(2)} reembolsado na conta do cliente.`
-                );
+                onSuccess('Saque Rejeitado', 'Saque rejeitado com sucesso!');
             }
         } catch (e: any) {
-            console.error('Erro ao rejeitar saque:', e);
-            if (e.message && e.message.includes('401')) {
-                onError('Sessão Expirada', 'Por favor, faça login novamente.');
-                onLogout();
-            } else {
-                onError('Erro', e.message || "Erro ao rejeitar saque.");
-            }
-        }
-    };
-
-    const confirmDistribution = async () => {
-        try {
-            await distributeMonthlyDividends();
-            clearAllCache();
-            onRefresh();
-            setShowDistributeModal(false);
-            onSuccess("Sucesso", "Distribuição de lucros realizada com sucesso!");
-        } catch (e: any) {
-            onError("Erro na Distribuição", e.message);
-        }
-    };
-
-    const handleFixPix = (loanId: string) => {
-        setShowFixPix(loanId);
-    };
-
-    const onConfirmFixPix = async (newPix: string) => {
-        if (!showFixPix || !newPix) return;
-        try {
-            await fixLoanPix(showFixPix, newPix);
-            clearAllCache();
-            onRefresh();
-            onSuccess("Sucesso", "Chave PIX atualizada com sucesso!");
-        } catch (e: any) {
-            onError("Erro", `Erro ao atualizar PIX: ${e.message}`);
+            onError('Erro', e.message);
         }
     };
 
     const formatCurrency = (val: number) => {
-        if (typeof val !== 'number' || isNaN(val)) {
-            return 'R$ 0,00';
-        }
+        if (typeof val !== 'number' || isNaN(val)) return 'R$ 0,00';
         return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     };
 
-    // Calculations for Preview
-    const profit = state.profitPool;
-
     return (
-        <div className="space-y-8">
-            {/* Header with Admin Info */}
-            <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-6 text-black">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                            <ShieldCheck size={32} className="text-white" />
+        <div className="space-y-8 pb-20">
+            {/* Header Modernizado */}
+            <div className="bg-gradient-to-br from-zinc-900 to-black rounded-3xl p-8 border border-zinc-800 shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
+                    <div className="flex items-center gap-6">
+                        <div className="w-20 h-20 bg-primary-500/10 rounded-3xl flex items-center justify-center border border-primary-500/20 shadow-[0_0_30px_rgba(6,182,212,0.1)] group-hover:scale-105 transition-transform duration-500">
+                            <ShieldCheck size={40} className="text-primary-400" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold">Painel Administrativo</h1>
-                            <p className="text-sm opacity-80">Gerenciamento do Sistema Cred30</p>
+                            <h1 className="text-3xl font-extrabold text-white tracking-tight">Painel de Controle</h1>
+                            <div className="flex items-center gap-3 mt-2">
+                                <span className="flex h-2.5 w-2.5 relative">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                </span>
+                                <p className="text-xs text-zinc-400 font-bold uppercase tracking-[0.2em]">Servidor Ativo • v1.0</p>
+                            </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+
+                    <div className="flex flex-wrap items-center justify-center gap-4">
                         <button
-                            onClick={() => {
-                                clearAllCache();
-                                onRefresh();
-                                onSuccess("Cache Limpo", "Cache limpo com sucesso! Dados atualizados.");
-                            }}
-                            className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg flex items-center gap-2 transition"
-                            title="Limpar cache e atualizar dados"
+                            onClick={() => { clearAllCache(); onRefresh(); onSuccess("Atualizado", "Dados sincronizados."); }}
+                            className="group bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 hover:border-primary-500/50 px-6 py-3.5 rounded-2xl flex items-center gap-3 transition-all duration-300 text-sm font-bold text-zinc-300 shadow-lg"
                         >
-                            <RefreshCw size={18} /> Limpar Cache
+                            <RefreshCw size={18} className={isLoading ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-500"} />
+                            {isLoading ? "Sincronizando" : "Atualizar Sistema"}
                         </button>
-                        <button onClick={onLogout} className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg flex items-center gap-2 transition">
+                        <button
+                            onClick={onLogout}
+                            className="bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/40 px-6 py-3.5 rounded-2xl flex items-center gap-3 transition-all duration-300 text-sm font-bold text-red-500 shadow-lg"
+                        >
                             <LogOut size={18} /> Sair
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* Key Metrics Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white border border-blue-500/30 shadow-lg">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                            <Users size={24} className="text-white" />
-                        </div>
-                        <span className="text-sm font-medium opacity-90">Total Usuários</span>
-                    </div>
-                    <p className="text-3xl font-bold">{state.users.length}</p>
-                    <p className="text-xs opacity-75 mt-1">Cadastrados no sistema</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-2xl p-6 text-white border border-primary-500/30 shadow-lg">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                            <PieChart size={24} className="text-white" />
-                        </div>
-                        <span className="text-sm font-medium opacity-90">Cotas Ativas</span>
-                    </div>
-                    <p className="text-3xl font-bold">{state.stats?.quotasCount ?? 0}</p>
-                    <p className="text-xs opacity-75 mt-1">Status: ACTIVE</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl p-6 text-white border border-emerald-500/30 shadow-lg">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                            <DollarSign size={24} className="text-white" />
-                        </div>
-                        <span className="text-sm font-medium opacity-90">Caixa Operacional</span>
-                    </div>
-                    <p className="text-3xl font-bold">{formatCurrency(state.systemBalance)}</p>
-                    <p className="text-xs opacity-75 mt-1">Disponível para operações</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-yellow-600 to-yellow-700 rounded-2xl p-6 text-white border border-yellow-500/30 shadow-lg">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                            <PiggyBank size={24} className="text-white" />
-                        </div>
-                        <span className="text-sm font-medium opacity-90">Lucro Acumulado</span>
-                    </div>
-                    <p className="text-3xl font-bold">{formatCurrency(state.profitPool)}</p>
-                    <p className="text-xs opacity-75 mt-1">85% para distribuição</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-red-600 to-red-700 rounded-2xl p-6 text-white border border-red-500/30 shadow-lg">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                            <ShieldCheck size={24} className="text-white" />
-                        </div>
-                        <span className="text-sm font-medium opacity-90">Custo Gateway</span>
-                    </div>
-                    <p className="text-3xl font-bold">{formatCurrency(state.stats?.totalGatewayCosts ?? 0)}</p>
-                    <p className="text-xs opacity-75 mt-1">Taxas pagas ao Mercado Pago</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-2xl p-6 text-white border border-orange-500/30 shadow-lg">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                            <Coins size={24} className="text-white" />
-                        </div>
-                        <span className="text-sm font-medium opacity-90">Custos Manuais</span>
-                    </div>
-                    <p className="text-3xl font-bold">{formatCurrency(state.stats?.totalManualCosts ?? 0)}</p>
-                    <p className="text-xs opacity-75 mt-1">Lançados manualmente</p>
-                </div>
-            </div>
-
-            {/* Health Metrics and Projections */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Liquidity Thermometer */}
-                <div className="bg-surface border border-surfaceHighlight rounded-2xl p-6">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                            <TrendingUp className="text-primary-400" size={20} />
-                            Saúde da Liquidez
-                        </h3>
-                        {(() => {
-                            const activeQuotasVal = (state.stats?.quotasCount || 0) * 50;
-                            const reserveNeeded = activeQuotasVal * 0.3;
-                            const currentCash = state.systemBalance;
-
-                            let status = "Saudável";
-                            let color = "text-emerald-400";
-                            let bgColor = "bg-emerald-500/10";
-                            if (currentCash < reserveNeeded) { status = "Risco Baixo"; color = "text-yellow-400"; bgColor = "bg-yellow-500/10"; }
-                            if (currentCash < reserveNeeded * 0.5) { status = "CRÍTICO"; color = "text-red-400"; bgColor = "bg-red-500/10"; }
-
-                            return (
-                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${bgColor} ${color} border border-current opacity-80`}>
-                                    {status}
-                                </span>
-                            );
-                        })()}
-                    </div>
-
-                    {(() => {
-                        const activeQuotasVal = (state.stats?.quotasCount || 0) * 50;
-                        const reserveNeeded = activeQuotasVal * 0.3;
-                        const currentCash = state.systemBalance;
-                        const percentage = activeQuotasVal > 0 ? Math.min((currentCash / activeQuotasVal) * 100, 100) : 100;
-                        const reservePercentage = 30;
-
-                        return (
-                            <div className="space-y-4">
-                                <div className="relative h-6 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
-                                    <div className="absolute top-0 left-[30%] h-full w-0.5 bg-yellow-400 z-10 opacity-50" title="Reserva Mínima (30%)"></div>
-                                    <div
-                                        className={`h-full transition-all duration-1000 ${percentage >= reservePercentage ? 'bg-gradient-to-r from-emerald-600 to-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'bg-gradient-to-r from-red-600 to-red-400'}`}
-                                        style={{ width: `${percentage}%` }}
-                                    ></div>
-                                </div>
-                                <div className="flex justify-between text-xs text-zinc-500 font-medium px-1">
-                                    <span>Vazio</span>
-                                    <span>Reserva (30%)</span>
-                                    <span>Cheio</span>
-                                </div>
-                                <div className="bg-background/50 p-4 rounded-xl border border-surfaceHighlight grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Disponível Agora</p>
-                                        <p className="text-lg font-bold text-white">{formatCurrency(currentCash)}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Reserva Mínima</p>
-                                        <p className="text-lg font-bold text-yellow-400/80">{formatCurrency(reserveNeeded)}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })()}
-                </div>
-
-                {/* Profit Projections */}
-                <div className="bg-surface border border-surfaceHighlight rounded-2xl p-6">
-                    <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                        <PieChart className="text-orange-400" size={20} />
-                        Projeção de Recebíveis (30 dias)
-                    </h3>
-                    {(() => {
-                        const toReceive = state.stats?.totalToReceive || 0;
-                        const totalDebt = state.stats?.totalLoaned || 0;
-                        const estimatedInterest = toReceive - totalDebt;
-                        const userShare = estimatedInterest * 0.85;
-
-                        return (
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-background/50 p-4 rounded-xl border border-surfaceHighlight">
-                                        <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Receita Futura</p>
-                                        <p className="text-xl font-bold text-white">{formatCurrency(toReceive)}</p>
-                                        <p className="text-[10px] text-emerald-500 mt-1">↑ Incluindo Juros</p>
-                                    </div>
-                                    <div className="bg-background/50 p-4 rounded-xl border border-surfaceHighlight">
-                                        <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Lucro Estimado</p>
-                                        <p className="text-xl font-bold text-orange-400">{formatCurrency(estimatedInterest)}</p>
-                                        <p className="text-[10px] text-zinc-500 mt-1">Estimativa bruta</p>
-                                    </div>
-                                </div>
-                                <div className="bg-orange-500/5 border border-orange-500/10 p-4 rounded-xl">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <span className="text-sm text-zinc-400">Repasse p/ Cotistas (85%)</span>
-                                        <span className="text-sm font-bold text-white">{formatCurrency(userShare)}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-sm text-zinc-400">Manutenção (15%)</span>
-                                        <span className="text-sm font-bold text-zinc-300">{formatCurrency(estimatedInterest * 0.15)}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })()}
-                </div>
-            </div>
-
-            <AdminStoreManager onSuccess={onSuccess} onError={onError} />
-
-            {/* Resumo Financeiro Detalhado */}
-            <div className="bg-surface border border-surfaceHighlight rounded-2xl p-6">
-                <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                    <TrendingUp className="text-emerald-400" size={20} />
-                    Resumo Financeiro Detalhado
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-gradient-to-br from-blue-900/30 to-blue-800/20 rounded-xl p-4 border border-blue-500/30">
-                        <div className="flex items-center gap-2 mb-3">
-                            <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                                <ArrowUpFromLine className="text-blue-400" size={16} />
-                            </div>
-                            <span className="text-sm text-zinc-300 font-medium">Total Emprestado</span>
-                        </div>
-                        <p className="text-2xl font-bold text-blue-400">
-                            {state.stats?.totalLoaned !== undefined ? formatCurrency(state.stats.totalLoaned) : 'R$ 0,00'}
-                        </p>
-                        <p className="text-xs text-zinc-500 mt-2">Valor em empréstimos ativos</p>
-                    </div>
-
-                    <div className="bg-gradient-to-br from-orange-900/30 to-orange-800/20 rounded-xl p-4 border border-orange-500/30">
-                        <div className="flex items-center gap-2 mb-3">
-                            <div className="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center">
-                                <ArrowDownLeft className="text-orange-400" size={16} />
-                            </div>
-                            <span className="text-sm text-zinc-300 font-medium">A Receber</span>
-                        </div>
-                        <p className="text-2xl font-bold text-orange-400">
-                            {state.stats?.totalToReceive !== undefined ? formatCurrency(state.stats.totalToReceive) : 'R$ 0,00'}
-                        </p>
-                        <p className="text-xs text-zinc-500 mt-2">Principal + juros</p>
-                    </div>
-
-                    <div className="bg-gradient-to-br from-emerald-900/30 to-emerald-800/20 rounded-xl p-4 border border-emerald-500/30">
-                        <div className="flex items-center gap-2 mb-3">
-                            <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center">
-                                <PieChart className="text-emerald-400" size={16} />
-                            </div>
-                            <span className="text-sm text-zinc-300 font-medium">Valor por Cota</span>
-                        </div>
-                        <p className="text-2xl font-bold text-emerald-400">
-                            {state.stats?.quotasCount && state.stats.quotasCount > 0 ? formatCurrency((state.profitPool * 0.85) / state.stats.quotasCount) : 'R$ 0,00'}
-                        </p>
-                        <p className="text-xs text-zinc-500 mt-2">85% dos lucros / cota</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Control Panels */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* System Balance Control */}
-                <div className="bg-gradient-to-br from-surface to-surfaceHighlight rounded-2xl p-6 border border-surfaceHighlight shadow-xl">
-                    <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-500/20 rounded-xl flex items-center justify-center">
-                            <DollarSign className="text-primary-400" size={20} />
-                        </div>
-                        Caixa Operacional
-                        <span className="ml-2 px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full font-medium">Automático</span>
-                    </h3>
-                    <div className="bg-gradient-to-r from-background to-surfaceHighlight rounded-xl p-6 mb-6 border border-surfaceHighlight/50">
-                        <p className="text-sm text-zinc-400 mb-2 font-medium">Saldo Disponível</p>
-                        <p className="text-3xl font-bold text-white">{formatCurrency(state.systemBalance)}</p>
-                        <p className="text-xs text-zinc-500 mt-2">Disponível para operações do sistema</p>
-                    </div>
-                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 space-y-3">
-                        <h4 className="font-semibold text-blue-300 text-sm flex items-center gap-2">
-                            <RefreshCw size={16} className="text-blue-400" />
-                            Cálculo Automático
-                        </h4>
-                        <div className="space-y-2 text-sm text-blue-200">
-                            <p>• Total de cotas ativas × R$ 50,00</p>
-                            <p>• Menos: Valor total emprestado</p>
-                            <p>• Menos: Custo do Gateway (Mercado Pago)</p>
-                            <p>• Igual: Caixa disponível</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Profit Pool Control */}
-                <div className="bg-gradient-to-br from-surface to-surfaceHighlight rounded-2xl p-6 border border-surfaceHighlight shadow-xl">
-                    <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                        <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center">
-                            <PiggyBank className="text-emerald-400" size={20} />
-                        </div>
-                        Lucro de Juros Acumulado
-                    </h3>
-                    <div className="bg-gradient-to-r from-background to-surfaceHighlight rounded-xl p-6 mb-6 border border-surfaceHighlight/50">
-                        <p className="text-sm text-zinc-400 mb-2 font-medium">Acumulado para Distribuição</p>
-                        <p className="text-3xl font-bold text-emerald-400">{formatCurrency(state.profitPool)}</p>
-                        <div className="mt-4 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-                            <p className="text-xs text-yellow-300">
-                                <strong>Regra de Distribuição:</strong> 85% para cotistas e 15% para manutenção. A distribuição ocorre automaticamente todos os dias às 00:00.
-                            </p>
-                        </div>
-                    </div>
-                    <div className="space-y-4">
-                        <div className="relative">
-                            <label className="text-xs text-zinc-400 block mb-2 font-medium">Adicionar Lucro</label>
-                            <input
-                                type="text"
-                                placeholder="200,50"
-                                value={newProfit}
-                                onChange={(e) => setNewProfit(e.target.value)}
-                                className="w-full bg-background border border-surfaceHighlight rounded-xl px-4 py-4 text-white outline-none focus:border-emerald-500 transition text-lg font-medium"
-                            />
-                        </div>
-                        <button
-                            onClick={handleUpdateProfit}
-                            className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-black font-bold py-4 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] flex items-center justify-center gap-2"
-                        >
-                            <Coins size={18} />
-                            Adicionar Lucro
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Manual Cost Control */}
-            <div className="bg-gradient-to-br from-surface to-surfaceHighlight rounded-2xl p-6 border border-surfaceHighlight shadow-xl mt-6">
-                <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-orange-500/20 rounded-xl flex items-center justify-center">
-                        <ArrowDownLeft className="text-orange-400" size={20} />
-                    </div>
-                    Lançar Custos Adicionais
-                </h3>
-                <div className="bg-gradient-to-r from-background to-surfaceHighlight rounded-xl p-6 mb-6 border border-surfaceHighlight/50">
-                    <p className="text-sm text-zinc-400 mb-2 font-medium">Total de Custos Manuais</p>
-                    <p className="text-3xl font-bold text-orange-400">{formatCurrency(state.stats?.totalManualCosts ?? 0)}</p>
-                    <p className="text-xs text-zinc-500 mt-2">Estes custos são deduzidos do caixa operacional.</p>
-                </div>
-                <div className="space-y-4">
-                    <div className="relative">
-                        <label className="text-xs text-zinc-400 block mb-2 font-medium">Valor do Custo</label>
-                        <input
-                            type="text"
-                            placeholder="0,00"
-                            value={newManualCost}
-                            onChange={(e) => setNewManualCost(e.target.value)}
-                            className="w-full bg-background border border-surfaceHighlight rounded-xl px-4 py-4 text-white outline-none focus:border-orange-500 transition text-lg font-medium"
-                        />
-                    </div>
-                    <div className="relative">
-                        <label className="text-xs text-zinc-400 block mb-2 font-medium">Descrição (Opcional)</label>
-                        <input
-                            type="text"
-                            placeholder="Ex: Servidor"
-                            value={manualCostDescription}
-                            onChange={(e) => setManualCostDescription(e.target.value)}
-                            className="w-full bg-background border border-surfaceHighlight rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500 transition text-sm"
-                        />
-                    </div>
+            {/* Navegação por Abas - Estilo iOS/Moderno */}
+            <div className="flex items-center gap-1.5 p-1.5 bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-[2rem] overflow-x-auto no-scrollbar shadow-xl sticky top-4 z-50">
+                {[
+                    { id: 'overview', name: 'Resumo', icon: PieChart },
+                    { id: 'approvals', name: 'Fila de Aprovação', icon: Clock, count: (pending.transactions?.length || 0) + (pending.loans?.length || 0) },
+                    { id: 'system', name: 'Gestão Financeira', icon: SettingsIcon },
+                    { id: 'store', name: 'Loja', icon: ShoppingBagIcon },
+                ].map((tab) => (
                     <button
-                        onClick={handleUpdateManualCost}
-                        className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-black font-bold py-4 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] flex items-center justify-center gap-2"
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as any)}
+                        className={`
+                            relative flex items-center gap-3 px-8 py-4 rounded-[1.5rem] text-sm font-bold transition-all duration-500 whitespace-nowrap
+                            ${activeTab === tab.id
+                                ? 'bg-zinc-800 text-white shadow-2xl border border-zinc-700/50 scale-[1.02]'
+                                : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}
+                        `}
                     >
-                        <ArrowDownLeft size={18} />
-                        Lançar Custo
+                        <tab.icon size={20} className={activeTab === tab.id ? "text-primary-400" : ""} />
+                        {tab.name}
+                        {tab.count !== undefined && tab.count > 0 && (
+                            <span className="flex h-5 w-5 items-center justify-center bg-primary-500 text-zinc-900 text-[10px] font-black rounded-full shadow-[0_0_15px_rgba(6,182,212,0.4)]">
+                                {tab.count}
+                            </span>
+                        )}
                     </button>
-                </div>
+                ))}
             </div>
 
-            {/* Approval Queue */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Pending Transactions */}
-                <div className="bg-surface border border-surfaceHighlight rounded-2xl p-6">
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><RefreshCw size={18} /> Transações Pendentes ({pending.transactions?.length || 0})</h3>
-                    <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-                        {pending.transactions?.length === 0 && <p className="text-zinc-500 text-sm">Nenhuma transação pendente.</p>}
-                        {pending.transactions?.map((t) => {
-                            let metadata: any = {};
-                            try {
-                                if (t.metadata && typeof t.metadata === 'object') {
-                                    metadata = t.metadata;
-                                } else {
-                                    const metadataStr = String(t.metadata || '{}').trim();
-                                    if (metadataStr.startsWith('{') || metadataStr.startsWith('[')) {
-                                        metadata = JSON.parse(metadataStr);
-                                    }
-                                }
-                            } catch (error) {
-                                console.error('Erro ao fazer parse do metadata no frontend:', error);
-                            }
+            {activeTab === 'overview' && (
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <MetricCard title="Membros" value={state.users.length} subtitle="Usuários Totais" icon={Users} color="blue" />
+                        <MetricCard title="Investimento" value={state.stats?.quotasCount ?? 0} subtitle="Cotas em Operação" icon={PieChart} color="cyan" />
+                        <MetricCard title="Liquidez" value={formatCurrency(state.systemBalance)} subtitle="Caixa Disponível" icon={DollarSign} color="emerald" />
+                        <MetricCard title="Dividendos" value={formatCurrency(state.profitPool)} subtitle="Pote Acumulado" icon={PiggyBank} color="yellow" />
+                    </div>
 
-                            const isLoanPayment = t.type === 'LOAN_PAYMENT';
-                            const canApprovePayment = isLoanPayment && t.status === 'PENDING';
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* Termômetro de Liquidez */}
+                        <div className="bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-3xl p-8 shadow-2xl">
+                            <div className="flex items-center justify-between mb-8">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                                    <div className="p-2 bg-primary-500/10 rounded-lg"><TrendingUp className="text-primary-400" size={20} /></div>
+                                    Monitor de Liquidez
+                                </h3>
+                                {(() => {
+                                    const activeQuotasVal = (state.stats?.quotasCount || 0) * 50;
+                                    const reserveNeeded = activeQuotasVal * 0.3;
+                                    const currentCash = state.systemBalance;
+                                    let status = currentCash < reserveNeeded * 0.5 ? "Crítico" : currentCash < reserveNeeded ? "Alerta" : "Saudável";
+                                    let color = status === "Crítico" ? "text-red-400 bg-red-400/10 border-red-400/30" : status === "Alerta" ? "text-yellow-400 bg-yellow-400/10 border-yellow-400/30" : "text-emerald-400 bg-emerald-400/10 border-emerald-400/30";
+                                    return <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${color}`}>{status}</span>;
+                                })()}
+                            </div>
 
-                            return (
-                                <div key={t.id} className="bg-background p-4 rounded-xl border border-surfaceHighlight flex justify-between items-center">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className={`text-xs font-bold px-2 py-0.5 rounded ${t.type === 'BUY_QUOTA' ? 'bg-primary-900 text-primary-200' : isLoanPayment ? 'bg-blue-900 text-blue-200' : 'bg-orange-900 text-orange-200'}`}>
-                                                {t.type === 'BUY_QUOTA' ? 'COMPRA COTA' : isLoanPayment ? 'PGTO EMPRÉSTIMO' : 'SAQUE'}
-                                            </span>
-                                            {t.user_quotas > 0 && (
-                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-primary-500/20 text-primary-400 border border-primary-500/30 animate-pulse">
-                                                    PRIORIDADE: {t.user_quotas} COTAS
-                                                </span>
-                                            )}
-                                            <span className="text-zinc-400 text-xs">{t.date ? new Date(t.date).toLocaleDateString('pt-BR', {
-                                                day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                                            }) : 'Data não disponível'}</span>
-                                        </div>
-
-                                        <div className="bg-surfaceHighlight/50 rounded-lg p-2 mb-2">
-                                            <p className="text-xs text-zinc-400 mb-1">Cliente</p>
-                                            <p className="text-sm font-medium text-white">{t.user_name || 'Nome não disponível'}</p>
-                                            <p className="text-xs text-zinc-500">ID: {t.user_id} | {t.user_email || 'Email não disponível'}</p>
-                                        </div>
-
-                                        <p className="text-white font-medium">{t.description}</p>
-                                        <div className="flex items-center gap-3 mt-2">
-                                            <p className="text-xl font-bold text-white">{formatCurrency(t.amount)}</p>
-                                            {t.type === 'WITHDRAWAL' && metadata.fee && (
-                                                <div className="text-right">
-                                                    <p className="text-xs text-red-400">Taxa: {formatCurrency(metadata.fee)}</p>
-                                                    <p className="text-xs text-emerald-400">Líquido: {formatCurrency(metadata.netAmount)}</p>
-                                                </div>
-                                            )}
-                                            {isLoanPayment && (
-                                                <div className="text-right">
-                                                    <p className="text-xs text-emerald-400">Principal: {formatCurrency(metadata.principalAmount || 0)}</p>
-                                                    <p className="text-xs text-orange-400">Juros: {formatCurrency(metadata.interestAmount || 0)}</p>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {metadata.mp_id && (
-                                            <button
-                                                onClick={() => handleSimulateMpPayment(metadata.mp_id, t.id)}
-                                                className="w-full mt-3 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2"
-                                                title="Simular pagamento aprovado no Mercado Pago"
-                                            >
-                                                <ShieldCheck size={14} /> Simular Pagamento (Sandbox)
-                                            </button>
-                                        )}
+                            <div className="space-y-6">
+                                <div className="relative h-4 bg-zinc-800/80 rounded-full overflow-hidden border border-zinc-700/50">
+                                    <div className="absolute top-0 left-[30%] h-full w-[2px] bg-white/20 z-10" title="Reserva 30% shadow-[0_0_10px_white]"></div>
+                                    <div className="h-full bg-gradient-to-r from-primary-600 to-emerald-400 shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all duration-1000"
+                                        style={{ width: `${Math.min((state.systemBalance / ((state.stats?.quotasCount || 1) * 50)) * 100, 100)}%` }}></div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-6 pt-4">
+                                    <div className="bg-black/20 p-5 rounded-2xl border border-zinc-800">
+                                        <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Disponível</p>
+                                        <p className="text-2xl font-bold text-white tracking-tight">{formatCurrency(state.systemBalance)}</p>
                                     </div>
-                                    <div className="flex gap-2 ml-4">
-                                        {isLoanPayment && canApprovePayment ? (
-                                            <>
-                                                <button title="Aprovar Pagamento" onClick={() => handleApprovePayment(t.id)} className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30">
-                                                    <DollarSign size={20} />
-                                                </button>
-                                                <button title="Rejeitar Pagamento" onClick={() => handleRejectPayment(t.id)} className="p-2 bg-orange-500/20 text-orange-400 rounded-lg hover:bg-orange-500/30">
-                                                    <XIcon size={20} />
-                                                </button>
-                                            </>
-                                        ) : t.type === 'WITHDRAWAL' ? (
-                                            <>
-                                                <button title="Aprovar Saque" onClick={() => handleApproveWithdrawal(t.id)} className="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30">
-                                                    <DollarSign size={20} />
-                                                </button>
-                                                <button title="Rejeitar Saque" onClick={() => handleRejectWithdrawal(t.id)} className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30">
-                                                    <XIcon size={20} />
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <button title="Aprovar" onClick={() => handleAction(t.id, 'TRANSACTION', 'APPROVE')} className="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30"><Check size={20} /></button>
-                                        )}
-                                        {!isLoanPayment && t.type !== 'WITHDRAWAL' && (
-                                            <button title="Rejeitar" onClick={() => handleAction(t.id, 'TRANSACTION', 'REJECT')} className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30"><XIcon size={20} /></button>
-                                        )}
+                                    <div className="bg-black/20 p-5 rounded-2xl border border-zinc-800">
+                                        <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Reserva (30%)</p>
+                                        <p className="text-2xl font-bold text-primary-400/80 tracking-tight">{formatCurrency((state.stats?.quotasCount || 0) * 50 * 0.3)}</p>
                                     </div>
                                 </div>
-                            );
-                        })}
-                    </div>
-                </div>
+                            </div>
+                        </div>
 
-                {/* Pending Loans */}
-                <div className="bg-surface border border-surfaceHighlight rounded-2xl p-6">
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><DollarSign size={18} /> Empréstimos Solicitados ({pending.loans?.length || 0})</h3>
-                    <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-                        {pending.loans?.length === 0 && <p className="text-zinc-500 text-sm">Nenhum empréstimo pendente.</p>}
-                        {pending.loans?.map(l => {
-                            return (
-                                <div key={l.id} className="bg-background p-4 rounded-xl border border-surfaceHighlight flex justify-between items-center">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-900 text-blue-200">
-                                                SOLICITAÇÃO EMPRÉSTIMO
-                                            </span>
-                                            {l.user_quotas > 0 && (
-                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-primary-500/20 text-primary-400 border border-primary-500/30 animate-pulse">
-                                                    PRIORIDADE: {l.user_quotas} COTAS
-                                                </span>
-                                            )}
-                                            <span className="text-zinc-400 text-xs">{l.created_at || l.createdAt ? new Date(l.created_at || l.createdAt).toLocaleDateString('pt-BR', {
-                                                day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                                            }) : 'Data não disponível'}</span>
-                                        </div>
-
-                                        <div className="bg-surfaceHighlight/50 rounded-lg p-2 mb-2">
-                                            <p className="text-xs text-zinc-400 mb-1">Cliente</p>
-                                            <p className="text-sm font-medium text-white">{l.userName || l.user_name || 'Nome não disponível'}</p>
-                                            <p className="text-xs text-zinc-500">ID: {l.userId || l.user_id} | {l.userEmail || l.user_email || 'Email não disponível'}</p>
-                                        </div>
-
-                                        <p className="text-xl font-bold text-white">{formatCurrency(l.amount)}</p>
-                                        <p className="text-xs text-zinc-400 mt-1">Pix Destino: {l.pixKeyToReceive || 'Não informado'}</p>
-                                        <p className="text-xs text-zinc-500">Pagar: {formatCurrency(l.totalRepayment)} em {l.installments}x</p>
+                        {/* Projeção de Lucros */}
+                        <div className="bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-3xl p-8 shadow-2xl">
+                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
+                                <div className="p-2 bg-orange-500/10 rounded-lg"><PieChart className="text-orange-400" size={20} /></div>
+                                Recebíveis de Curto Prazo
+                            </h3>
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Total a Receber</p>
+                                        <p className="text-2xl font-bold text-white tracking-tight">{formatCurrency(state.stats?.totalToReceive || 0)}</p>
                                     </div>
-                                    <div className="flex gap-2 ml-4">
-                                        <button title="Corrigir PIX" onClick={() => handleFixPix(l.id)} className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30"><RefreshCw size={20} /></button>
-                                        <button title="Aprovar" onClick={() => handleAction(l.id, 'LOAN', 'APPROVE')} className="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30"><Check size={20} /></button>
-                                        <button title="Rejeitar" onClick={() => handleAction(l.id, 'LOAN', 'REJECT')} className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30"><XIcon size={20} /></button>
+                                    <div>
+                                        <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Lucro Previsto</p>
+                                        <p className="text-2xl font-bold text-orange-400 tracking-tight">{formatCurrency((state.stats?.totalToReceive || 0) - (state.stats?.totalLoaned || 0))}</p>
                                     </div>
                                 </div>
-                            );
-                        })}
+                                <div className="p-4 bg-orange-500/5 rounded-2xl border border-orange-500/10">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-xs text-zinc-400 font-bold uppercase">Repasse (85%)</span>
+                                        <span className="text-lg font-black text-white">{formatCurrency(((state.stats?.totalToReceive || 0) - (state.stats?.totalLoaned || 0)) * 0.85)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
-            <ConfirmModal
-                isOpen={!!confirmMP}
-                onClose={() => setConfirmMP(null)}
-                onConfirm={confirmSimulateMpPayment}
-                title="Simular Pagamento"
-                message="Deseja realmente simular a aprovação deste pagamento no Mercado Pago Sandbox?"
-            />
+            {activeTab === 'approvals' && (
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Transações Pendentes */}
+                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
+                            <div className="flex items-center justify-between mb-8">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                                    <div className="p-2 bg-primary-500/10 rounded-lg"><ArrowUpRight className="text-primary-400" size={20} /></div>
+                                    Movimentações Financeiras
+                                </h3>
+                                <span className="bg-zinc-800 text-zinc-400 px-3 py-1 rounded-full text-[10px] font-black uppercase">Fila de Espera: {pending.transactions.length}</span>
+                            </div>
 
-            <PromptModal
-                isOpen={!!showFixPix}
-                onClose={() => setShowFixPix(null)}
-                onConfirm={onConfirmFixPix}
-                title="Corrigir Chave PIX"
-                message="Digite a nova chave PIX para o recebimento deste empréstimo."
-                placeholder="Chave PIX (CPF, Email, Telefone ou Aleatória)"
-            />
+                            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-3 custom-scrollbar">
+                                {pending.transactions.length === 0 ? (
+                                    <div className="py-12 text-center text-zinc-500 font-medium">Nenhuma transação pendente no momento.</div>
+                                ) : (
+                                    pending.transactions.map((t) => (
+                                        <div key={t.id} className="bg-black/30 border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-zinc-700 hover:bg-black/40 group">
+                                            <div className="flex justify-between items-start gap-4">
+                                                <div className="space-y-3 flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider ${t.type === 'BUY_QUOTA' ? 'bg-primary-500/10 text-primary-400' : t.type === 'WITHDRAWAL' ? 'bg-red-500/10 text-red-400' : 'bg-blue-500/10 text-blue-400'}`}>
+                                                            {t.type}
+                                                        </span>
+                                                        <span className="text-[10px] text-zinc-500 font-bold">{new Date(t.date).toLocaleString()}</span>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-white mb-0.5">{t.user_name}</p>
+                                                        <p className="text-[11px] text-zinc-500">{t.user_email}</p>
+                                                    </div>
+                                                    <p className="text-2xl font-black text-white">{formatCurrency(t.amount)}</p>
+                                                </div>
+                                                <div className="flex flex-col gap-2">
+                                                    <button onClick={() => handleAction(t.id, 'TRANSACTION', 'APPROVE')} className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl hover:bg-emerald-500 hover:text-black transition-all">
+                                                        <Check size={20} />
+                                                    </button>
+                                                    <button onClick={() => handleAction(t.id, 'TRANSACTION', 'REJECT')} className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-black transition-all">
+                                                        <XIcon size={20} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Empréstimos Pendentes */}
+                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
+                            <div className="flex items-center justify-between mb-8">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                                    <div className="p-2 bg-orange-500/10 rounded-lg"><Coins className="text-orange-400" size={20} /></div>
+                                    Solicitações de Crédito
+                                </h3>
+                                <span className="bg-zinc-800 text-zinc-400 px-3 py-1 rounded-full text-[10px] font-black uppercase">Pendentes: {pending.loans.length}</span>
+                            </div>
+
+                            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-3 custom-scrollbar">
+                                {pending.loans.length === 0 ? (
+                                    <div className="py-12 text-center text-zinc-500 font-medium">Nenhuma solicitação de empréstimo.</div>
+                                ) : (
+                                    pending.loans.map((l) => (
+                                        <div key={l.id} className="bg-black/30 border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-zinc-700 hover:bg-black/40">
+                                            <div className="flex justify-between items-start gap-4">
+                                                <div className="space-y-3 flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider bg-orange-500/10 text-orange-400">EMPRÉSTIMO</span>
+                                                        <span className="text-[10px] text-zinc-500 font-bold">{new Date(l.date).toLocaleString()}</span>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-white mb-0.5">{l.user_name}</p>
+                                                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Score: {l.user_score}</p>
+                                                    </div>
+                                                    <div className="flex items-end gap-3">
+                                                        <p className="text-2xl font-black text-white">{formatCurrency(l.amount)}</p>
+                                                        <span className="text-emerald-500 text-[10px] font-bold pb-1.5">Juros: {formatCurrency(l.total_repayment - l.amount)}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col gap-2">
+                                                    <button onClick={() => handleAction(l.id, 'LOAN', 'APPROVE')} className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl hover:bg-emerald-500 hover:text-black transition-all">
+                                                        <Check size={20} />
+                                                    </button>
+                                                    <button onClick={() => handleAction(l.id, 'LOAN', 'REJECT')} className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-black transition-all">
+                                                        <XIcon size={20} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'system' && (
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Gestão de Lucros */}
+                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
+                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
+                                <div className="p-2 bg-emerald-500/10 rounded-lg"><Coins className="text-emerald-400" size={20} /></div>
+                                Injetar Lucros no Sistema
+                            </h3>
+                            <div className="space-y-6">
+                                <div className="bg-black/20 p-6 rounded-2xl border border-zinc-800 relative group overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity">
+                                        <TrendingUp size={60} />
+                                    </div>
+                                    <p className="text-[10px] text-zinc-500 font-black uppercase mb-1 underline decoration-primary-500/50 underline-offset-4">Pote de Dividendos</p>
+                                    <p className="text-4xl font-black text-white tracking-tighter">{formatCurrency(state.profitPool)}</p>
+                                    <p className="text-[11px] text-zinc-400 mt-4 leading-relaxed font-medium">
+                                        Este valor será distribuído automaticamente entre as cotas ativas à meia-noite (00:00).
+                                    </p>
+                                </div>
+                                <div className="space-y-4 pt-4">
+                                    <div className="relative">
+                                        <label className="text-[10px] text-zinc-500 font-black uppercase mb-2 block tracking-widest">Valor do Lucro a Adicionar (R$)</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Ex: 1.250,50"
+                                            value={newProfit}
+                                            onChange={(e) => setNewProfit(e.target.value)}
+                                            className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded-2xl px-6 py-4 text-white outline-none focus:border-emerald-500/50 focus:bg-zinc-800 transition-all text-xl font-bold shadow-inner"
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={handleUpdateProfit}
+                                        className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-black font-black py-4 rounded-2xl transition-all shadow-xl hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] transform active:scale-95 flex items-center justify-center gap-3 text-sm uppercase"
+                                    >
+                                        <Check size={20} /> Confirmar Lançamento
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Lançamento de Custos */}
+                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
+                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
+                                <div className="p-2 bg-red-500/10 rounded-lg"><ArrowDownLeft className="text-red-400" size={20} /></div>
+                                Registro de Despesas Manuais
+                            </h3>
+                            <div className="space-y-6">
+                                <div className="bg-black/20 p-6 rounded-2xl border border-zinc-800">
+                                    <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Total de Despesas Lançadas</p>
+                                    <p className="text-4xl font-black text-red-500 tracking-tighter">{formatCurrency(state.stats?.totalManualCosts || 0)}</p>
+                                </div>
+                                <div className="space-y-4">
+                                    <input
+                                        type="text"
+                                        placeholder="Valor da Despesa (R$)"
+                                        value={newManualCost}
+                                        onChange={(e) => setNewManualCost(e.target.value)}
+                                        className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded-2xl px-6 py-4 text-white outline-none focus:border-red-500/50 focus:bg-zinc-800 transition-all font-bold shadow-inner"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Motivo / Descrição"
+                                        value={manualCostDescription}
+                                        onChange={(e) => setManualCostDescription(e.target.value)}
+                                        className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded-2xl px-6 py-4 text-white outline-none focus:border-red-500/50 focus:bg-zinc-800 transition-all text-sm font-medium shadow-inner"
+                                    />
+                                    <button
+                                        onClick={handleUpdateManualCost}
+                                        className="w-full bg-zinc-800 hover:bg-red-950 border border-red-900/30 hover:border-red-500/50 text-red-500 font-black py-4 rounded-2xl transition-all shadow-xl flex items-center justify-center gap-3 text-sm uppercase"
+                                    >
+                                        <AlertTriangle size={20} /> Lançar Despesa
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'store' && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <AdminStoreManager onSuccess={onSuccess} onError={onError} />
+                </div>
+            )}
+
+            {/* Modais de Suporte */}
+            {confirmMP && (
+                <ConfirmModal
+                    isOpen={true}
+                    title="Simular Pagamento"
+                    message="Deseja simular a aprovação deste pagamento no ambiente de testes (Sandbox)?"
+                    onConfirm={confirmSimulateMpPayment}
+                    onClose={() => setConfirmMP(null)}
+                />
+            )}
         </div>
     );
 };

@@ -116,7 +116,7 @@ async function startServer() {
     app.route('/api/notifications', notificationRoutes);
     // Rota de health check
     app.get('/api/health', (c) => {
-      return c.json({ status: 'ok', timestamp: new Date().toISOString() });
+      return c.json({ status: 'ok', version: '1.0', timestamp: new Date().toISOString() });
     });
 
     const port = process.env.PORT || 3001;
