@@ -9,11 +9,14 @@ interface AdBannerProps {
 }
 
 export const AdBanner = ({ type, title, description, actionText }: AdBannerProps) => {
+    const [isVisible, setIsVisible] = React.useState(true);
     const SMART_LINK = 'https://www.effectivegatecpm.com/ec4mxdzvs?key=a9eefff1a8aa7769523373a66ff484aa';
 
     const handleClick = () => {
         window.open(SMART_LINK, '_blank');
     };
+
+    if (!isVisible) return null;
 
     if (type === 'NATIVE') {
         return (
@@ -45,9 +48,19 @@ export const AdBanner = ({ type, title, description, actionText }: AdBannerProps
                 onClick={handleClick}
                 className="w-full bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 cursor-pointer hover:border-zinc-700 transition-all group"
             >
-                <div className="bg-primary-500/10 p-3 flex items-center justify-between border-b border-zinc-800">
-                    <span className="text-[10px] font-black text-primary-400 tracking-widest uppercase">Publicidade</span>
-                    <Info size={14} className="text-zinc-600" />
+                <div className="bg-primary-500/10 p-2 flex items-center justify-between border-b border-zinc-800">
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-black text-primary-400 tracking-widest uppercase">Parceiro</span>
+                        <div className="w-1 h-1 bg-zinc-700 rounded-full"></div>
+                        <span className="text-[9px] text-zinc-500 italic">Anúncio Externo</span>
+                    </div>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setIsVisible(false); }}
+                        className="text-zinc-600 hover:text-white p-1"
+                        title="Ocultar"
+                    >
+                        <X size={12} />
+                    </button>
                 </div>
                 <div className="p-4">
                     <h4 className="text-sm font-bold text-white mb-1">{title || 'Cartão com Limite Imediato'}</h4>
@@ -55,6 +68,7 @@ export const AdBanner = ({ type, title, description, actionText }: AdBannerProps
                     <button className="w-full py-2 bg-zinc-800 group-hover:bg-primary-500 group-hover:text-black rounded-lg text-xs font-bold transition-all">
                         {actionText || 'SAIBA MAIS'}
                     </button>
+                    <p className="text-[8px] text-zinc-700 mt-2 text-center uppercase tracking-tighter">O conteúdo acima é de responsabilidade do anunciante</p>
                 </div>
             </div>
         );
@@ -79,4 +93,4 @@ export const AdBanner = ({ type, title, description, actionText }: AdBannerProps
     );
 };
 
-import { Star } from 'lucide-react';
+import { Star, X } from 'lucide-react';
