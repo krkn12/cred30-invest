@@ -31,8 +31,8 @@ export const InvestView = ({ onBuy }: { onBuy: (qty: number, method: 'PIX' | 'BA
             <div className="bg-surface border border-surfaceHighlight rounded-3xl p-8 text-center relative overflow-hidden mb-6">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-primary-600"></div>
                 <TrendingUp size={48} className="mx-auto text-primary-400 mb-4" />
-                <h2 className="text-2xl font-bold text-white mb-2">Adquirir Participação</h2>
-                <p className="text-zinc-400 mb-6">Apoie a cooperativa e receba excedentes diários variáveis.</p>
+                <h2 className="text-2xl font-bold text-white mb-2">Aporte de Participação</h2>
+                <p className="text-zinc-400 mb-6">Apoie a conta comum da comunidade e receba excedentes operacionais proporcionais.</p>
 
                 <div className="text-4xl font-bold text-white mb-8">
                     {QUOTA_PRICE.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}

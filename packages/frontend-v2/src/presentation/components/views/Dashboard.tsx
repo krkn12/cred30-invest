@@ -137,10 +137,10 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                     <div className="relative z-10">
                         <div className="flex items-center gap-2 mb-2">
                             <PieChart size={20} className="text-primary-400" />
-                            <span className="text-sm font-medium text-zinc-400">Total em Cotas</span>
+                            <span className="text-sm font-medium text-zinc-400">Participações</span>
                         </div>
                         <h3 className="text-2xl font-bold text-white">{formatCurrency(totalInvested)}</h3>
-                        <p className="text-xs text-zinc-500 mt-1">{userQuotas.length} participações</p>
+                        <p className="text-xs text-zinc-500 mt-1">{userQuotas.length} unidades</p>
                     </div>
                 </div>
 
@@ -153,7 +153,7 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                             <span className="text-sm font-medium text-zinc-400">Excedentes</span>
                         </div>
                         <h3 className="text-2xl font-bold text-emerald-400">{formatCurrency(totalEarnings)}</h3>
-                        <p className="text-xs text-zinc-500 mt-1">+{earningsPercentage.toFixed(1)}%</p>
+                        <p className="text-xs text-zinc-500 mt-1">Sobra Proporcional</p>
                     </div>
                 </div>
 

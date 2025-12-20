@@ -60,61 +60,62 @@ const TermsPage = () => {
 
                     {/* Seção 2 */}
                     <section className="bg-zinc-900/30 border border-white/5 p-5 sm:p-8 rounded-2xl sm:rounded-3xl">
-                        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-3 text-cyan-400">
-                            <Users size={22} /> 2. Natureza da Cooperativa
+                        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-3 text-emerald-400 font-mono">
+                            <Users size={22} /> 2. Natureza da Comunidade (Grupo Fechado)
                         </h2>
                         <p className="text-zinc-300 text-sm sm:text-base leading-relaxed mb-4">
-                            O Cred30 é um sistema de cooperação financeira mútua. Ao se cadastrar, você se torna um membro participante de uma comunidade de crédito cooperativo, sujeito às seguintes condições:
+                            O Cred30 é uma plataforma de gestão para uma **Economia Social Fechada**. Ao se cadastrar, você declara ser parte de um grupo restrito de ajuda mútua, sujeito às seguintes condições:
                         </p>
-                        <ul className="list-disc list-inside text-zinc-400 text-sm sm:text-base space-y-2 ml-2 sm:ml-4">
-                            <li>A participação é voluntária e baseada na confiança mútua entre os membros.</li>
-                            <li>O capital da cooperativa é formado exclusivamente pelo aporte dos seus membros (cotas).</li>
-                            <li>Todas as operações são transparentes e registradas no sistema para auditoria.</li>
-                            <li>A cooperativa não é uma instituição financeira regulamentada pelo Banco Central do Brasil.</li>
+                        <ul className="list-disc list-inside text-zinc-400 text-[10px] sm:text-xs space-y-2 ml-2 sm:ml-4 font-medium uppercase tracking-wider">
+                            <li>A adesão é restrita e baseada em convite e confiança mútua.</li>
+                            <li>O capital é formado por aportes de capital social (Participações) para uso exclusivo do grupo.</li>
+                            <li>As sobras financeiras são distribuídas como bonificação por participação, não como rendimento financeiro fixo.</li>
+                            <li>A plataforma NÃO realiza intermediação financeira pública e não é regulada pelo BACEN.</li>
+                            <li>A aquisição de participações não constitui investimento em valores mobiliários sob a ótica da CVM.</li>
                         </ul>
                     </section>
 
                     {/* Seção 3 */}
                     <section className="space-y-4 sm:space-y-6">
                         <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-3">
-                            <Scale size={22} className="text-cyan-400" /> 3. Cotas de Participação
+                            <Scale size={22} className="text-emerald-400" /> 3. Participações e Excedentes
                         </h2>
                         <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
                             <div className="bg-zinc-900/50 p-5 sm:p-6 rounded-xl sm:rounded-2xl border border-white/5">
-                                <h3 className="font-bold mb-2 text-white">Valor e Aquisição</h3>
-                                <p className="text-zinc-400 text-xs sm:text-sm">Cada cota tem valor nominal de R$ 50,00. A aquisição pode ser feita via PIX ou cartão de crédito, sujeita a taxas do gateway de pagamento.</p>
+                                <h3 className="font-bold mb-2 text-white">Aporte de Capital</h3>
+                                <p className="text-zinc-400 text-xs sm:text-sm">Cada participação representa um aporte de R$ 50,00 no fundo comum. Isso não é um depósito bancário, mas um direito de participação nos resultados da conta comum.</p>
                             </div>
                             <div className="bg-zinc-900/50 p-5 sm:p-6 rounded-xl sm:rounded-2xl border border-white/5">
-                                <h3 className="font-bold mb-2 text-white">Dividendos</h3>
-                                <p className="text-zinc-400 text-xs sm:text-sm">85% do lucro gerado é distribuído proporcionalmente entre os membros elegíveis. 15% é destinado à manutenção e reserva operacional.</p>
+                                <h3 className="font-bold mb-2 text-white">Excedentes (Participação)</h3>
+                                <p className="text-zinc-400 text-xs sm:text-sm">85% das sobras operacionais (taxas e anúncios) são distribuídas como bônus de participação. Não há promessa de rendimento fixo ou garantido.</p>
                             </div>
                             <div className="bg-zinc-900/50 p-5 sm:p-6 rounded-xl sm:rounded-2xl border border-white/5">
-                                <h3 className="font-bold mb-2 text-white">Venda de Cotas</h3>
-                                <p className="text-zinc-400 text-xs sm:text-sm">Cotas podem ser resgatadas a qualquer momento pelo valor atualizado. O valor é creditado no saldo do usuário para saque.</p>
+                                <h3 className="font-bold mb-2 text-white">Cessão de Participação</h3>
+                                <p className="text-zinc-400 text-xs sm:text-sm">As participações podem ser cedidas de volta ao fundo pelo valor patrimonial atualizado, conforme disponibilidade de liquidez do grupo.</p>
                             </div>
                             <div className="bg-zinc-900/50 p-5 sm:p-6 rounded-xl sm:rounded-2xl border border-white/5">
-                                <h3 className="font-bold mb-2 text-white">Elegibilidade</h3>
-                                <p className="text-zinc-400 text-xs sm:text-sm">Para receber dividendos, o membro deve ter utilizado o sistema (empréstimos, jogos ou transações) no período de distribuição.</p>
+                                <h3 className="font-bold mb-2 text-white">Fundo de Reserva</h3>
+                                <p className="text-zinc-400 text-xs sm:text-sm">15% de todo excedente é retido para blindagem do capital contra inadimplência e manutenção da infraestrutura tecnológica.</p>
                             </div>
                         </div>
                     </section>
 
                     {/* Seção 4 */}
                     <section className="bg-zinc-900/30 border border-white/5 p-5 sm:p-8 rounded-2xl sm:rounded-3xl">
-                        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-3 text-cyan-400">
-                            <CreditCard size={22} /> 4. Empréstimos
+                        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-3 text-emerald-400">
+                            <CreditCard size={22} /> 4. Apoio Mútuo (Mútuo Social)
                         </h2>
                         <p className="text-zinc-300 text-sm sm:text-base leading-relaxed mb-4">
-                            Os membros podem solicitar empréstimos dentro do seu limite de crédito aprovado. As condições são:
+                            Os membros podem solicitar apoio financeiro do fundo comum sob a égide do Mútuo Civil (Art. 586 do CC). As condições são:
                         </p>
                         <div className="space-y-3 sm:space-y-4">
                             <div className="flex items-start gap-3">
-                                <div className="w-6 h-6 bg-cyan-500/20 rounded-full flex items-center justify-center text-cyan-400 flex-shrink-0 text-xs font-bold">1</div>
-                                <p className="text-zinc-400 text-xs sm:text-sm"><strong className="text-white">Limite Dinâmico:</strong> O limite é calculado com base no score, patrimônio em cotas, histórico de pagamentos e disponibilidade do caixa operacional.</p>
+                                <div className="w-6 h-6 bg-emerald-500/20 rounded-full flex items-center justify-center text-emerald-400 flex-shrink-0 text-xs font-bold">1</div>
+                                <p className="text-zinc-400 text-xs sm:text-sm"><strong className="text-white">Limite Dinâmico:</strong> Calculado pelo score de reputação interna e garantias aportadas.</p>
                             </div>
                             <div className="flex items-start gap-3">
-                                <div className="w-6 h-6 bg-cyan-500/20 rounded-full flex items-center justify-center text-cyan-400 flex-shrink-0 text-xs font-bold">2</div>
-                                <p className="text-zinc-400 text-xs sm:text-sm"><strong className="text-white">Juros:</strong> Taxa fixa de 20% sobre o valor emprestado, independente do prazo.</p>
+                                <div className="w-6 h-6 bg-emerald-500/20 rounded-full flex items-center justify-center text-emerald-400 flex-shrink-0 text-xs font-bold">2</div>
+                                <p className="text-zinc-400 text-xs sm:text-sm"><strong className="text-white">Taxa de Sustentabilidade:</strong> Taxa de 20% destinada ao reequilíbrio do fundo e bonificação dos demais membros (não se confunde com juros bancários).</p>
                             </div>
                             <div className="flex items-start gap-3">
                                 <div className="w-6 h-6 bg-cyan-500/20 rounded-full flex items-center justify-center text-cyan-400 flex-shrink-0 text-xs font-bold">3</div>
@@ -195,19 +196,25 @@ const TermsPage = () => {
 
                     {/* Seção 8 */}
                     <section className="bg-zinc-900/30 border border-white/5 p-5 sm:p-8 rounded-2xl sm:rounded-3xl">
-                        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-3 text-cyan-400">
+                        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-3 text-emerald-400">
                             <ClockIcon size={22} /> 8. Modificações e Foro
                         </h2>
                         <p className="text-zinc-300 text-sm sm:text-base leading-relaxed mb-4">
-                            A Cred30 reserva-se o direito de modificar estes Termos a qualquer momento. As alterações entram em vigor imediatamente após a publicação. O uso continuado da plataforma após modificações implica aceitação dos novos termos.
+                            A Cred30 reserva-se o direito de modificar estes Termos a qualquer momento para garantir a sustentabilidade do grupo.
                         </p>
-                        <div className="bg-zinc-800/30 p-4 rounded-xl border border-white/5">
-                            <p className="text-zinc-400 text-xs sm:text-sm">
-                                <strong>Natureza Jurídica:</strong> Este sistema opera sob as normas do Código Civil Brasileiro relativas à Sociedade em Conta de Participação (SCP - Arts. 991 a 996) e ao Mútuo Civil (Arts. 586 a 592). Não se caracteriza como conta bancária ou investimento mobiliário.
+                        <div className="bg-zinc-800/30 p-4 rounded-xl border border-white/5 space-y-3 shadow-inner">
+                            <p className="text-zinc-400 text-[10px] sm:text-xs leading-relaxed">
+                                <strong>Natureza Jurídica (Blindagem):</strong> Este sistema opera estritamente sob as normas do Código Civil Brasileiro relativas à **Sociedade em Conta de Participação (SCP - Arts. 991 a 996)**, onde o gestor atua como sócio ostensivo e os membros como sócios participantes.
+                            </p>
+                            <p className="text-zinc-400 text-[10px] sm:text-xs leading-relaxed">
+                                **Mútuo Coletivo:** As operações de apoio mútuo baseiam-se nos **Arts. 586 a 592 (Mútuo Civil)** operados em caráter privado entre os sócios. NÃO se caracteriza como atividade financeira pública, conta de pagamento aberta ou oferta pública de investimentos.
+                            </p>
+                            <p className="text-red-400/80 text-[9px] uppercase font-black tracking-tighter">
+                                aviso: a plataforma não promete ganhos fáceis. o resultado depende da atividade comercial do grupo no mercado cred30 e publicidade.
                             </p>
                         </div>
-                        <p className="text-zinc-400 text-xs sm:text-sm mt-4">
-                            Fica eleito o foro da comarca de residência do Usuário para dirimir quaisquer controvérsias oriundas deste contrato.
+                        <p className="text-zinc-400 text-[10px] sm:text-xs mt-4 italic">
+                            Fica eleito o foro da comarca sede do gestor para dirimir controvérsias de natureza societária.
                         </p>
                     </section>
                 </div>
@@ -220,8 +227,8 @@ const TermsPage = () => {
                         Cred30 © 2024 - Todos os direitos reservados.
                     </p>
                 </footer>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 };
 

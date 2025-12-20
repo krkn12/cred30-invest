@@ -92,22 +92,22 @@ export const PortfolioView = ({ quotas, hasLoans, onSell, onSellAll }: Portfolio
             <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-6 text-black">
                 <div className="flex justify-between items-end mb-4">
                     <div>
-                        <h2 className="text-2xl font-bold">Sua Carteira</h2>
-                        <p className="text-sm opacity-80">Gerencie seus investimentos</p>
+                        <h2 className="text-2xl font-bold">Participações</h2>
+                        <p className="text-sm opacity-80">Gestão de Apoio à Comunidade</p>
                     </div>
                     <div className="text-right">
-                        <p className="text-sm opacity-80">Valor Total</p>
+                        <p className="text-sm opacity-80">Valor Patrimonial</p>
                         <p className="text-3xl font-bold">{totalCurrentValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                     <div className="bg-white/20 rounded-xl p-4">
-                        <p className="text-sm opacity-80 mb-1">Investido</p>
+                        <p className="text-sm opacity-80 mb-1">Capital Aportado</p>
                         <p className="text-xl font-bold">{totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
                     </div>
                     <div className="bg-white/20 rounded-xl p-4">
-                        <p className="text-sm opacity-80 mb-1">Lucro Total</p>
+                        <p className="text-sm opacity-80 mb-1">Excedentes</p>
                         <p className="text-xl font-bold flex items-center gap-1">
                             {totalEarnings >= 0 ? '+' : ''}{totalEarnings.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                             <span className="text-xs bg-black/20 px-1.5 py-0.5 rounded-full">

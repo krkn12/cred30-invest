@@ -91,7 +91,7 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
 
                             {creditLimit.totalLimit === 0 ? (
                                 <p className="text-sm text-zinc-300">
-                                    Para liberar empréstimos, você precisa ter no mínimo <strong className="text-white">1 cota ativa</strong> no sistema.
+                                    Para liberar o apoio mútuo, você precisa ter no mínimo <strong className="text-white">1 participação ativa</strong> no sistema.
                                 </p>
                             ) : (
                                 <>
@@ -210,11 +210,11 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
 
             {/* Active Loans List */}
             <div className="space-y-4">
-                <h3 className="text-lg font-bold text-white pl-1">Seus Compromissos Mútuos</h3>
+                <h3 className="text-lg font-bold text-white pl-1">Seus Compromissos Sociais</h3>
 
                 {activeLoans.length === 0 && (
                     <div className="text-center py-12 bg-surface/50 rounded-3xl border border-surfaceHighlight border-dashed">
-                        <p className="text-zinc-500">Nenhum empréstimo ativo no momento.</p>
+                        <p className="text-zinc-500">Nenhum apoio mútuo ativo no momento.</p>
                     </div>
                 )}
 
@@ -262,8 +262,8 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
                             {loan.status === 'APPROVED' && (
                                 <div className="mb-4">
                                     <div className="flex justify-between text-xs mb-1">
-                                        <span className="text-zinc-500">{loan.paidInstallmentsCount || 0} de {loan.installments} parcelas</span>
-                                        <span className="text-zinc-400">{progressPercentage.toFixed(0)}% pago</span>
+                                        <span className="text-zinc-500">{loan.paidInstallmentsCount || 0} de {loan.installments} reposições</span>
+                                        <span className="text-zinc-400">{progressPercentage.toFixed(0)}% reposto</span>
                                     </div>
                                     <div className="w-full bg-background rounded-full h-2 overflow-hidden">
                                         <div
