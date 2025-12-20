@@ -463,11 +463,38 @@ export default function App() {
             </Routes>
 
             {showReferral && (
-              <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-                <div className="bg-surface rounded-3xl p-6 w-full max-w-sm relative">
-                  <button onClick={() => setShowReferral(false)} className="absolute top-4 right-4 text-zinc-500">✕</button>
-                  <h3 className="text-xl font-bold text-white mb-4">Indique e Ganhe</h3>
-                  <p className="text-zinc-400">Seu código: <strong className="text-white">{state.currentUser.referralCode}</strong></p>
+              <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setShowReferral(false)}>
+                <div className="bg-surface border border-surfaceHighlight rounded-3xl p-8 w-full max-w-sm relative animate-in fade-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
+                  <button onClick={() => setShowReferral(false)} className="absolute top-4 right-4 text-zinc-500 hover:text-white">✕</button>
+
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 bg-primary-500/10 rounded-2xl flex items-center justify-center text-primary-400 mx-auto mb-4">
+                      <Users size={32} />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">Convidar Novo Membro</h3>
+                    <p className="text-zinc-400 text-sm">O Cred30 é exclusivo. Use seu link para convidar pessoas de confiança.</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="bg-background border border-surfaceHighlight rounded-xl p-4">
+                      <p className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Seu Código</p>
+                      <p className="text-white font-mono text-lg font-bold tracking-wider">{state.currentUser.referralCode}</p>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        const link = `${window.location.origin}/auth?ref=${state.currentUser.referralCode}`;
+                        navigator.clipboard.writeText(link);
+                        setShowSuccess({ isOpen: true, title: 'Copiado!', message: 'Link de convite copiado com sucesso.' });
+                      }}
+                      className="w-full bg-primary-500 hover:bg-primary-400 text-black font-bold py-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-primary-500/20"
+                    >
+                      <Copy size={18} />
+                      Copiar Link de Convite
+                    </button>
+
+                    <p className="text-[10px] text-zinc-500 text-center italic">Você ganha R$ 5,00 por indicação ativa.</p>
+                  </div>
                 </div>
               </div>
             )}

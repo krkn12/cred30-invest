@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Users, KeyRound, Lock, QrCode, Repeat, ArrowLeft, Mail, ShieldCheck, XCircle, ChevronRight, Check, Copy } from 'lucide-react';
 import { loginUser, registerUser, resetPassword, verify2FA, apiService } from '../../../application/services/storage.service';
 import { TermsAcceptanceModal } from '../ui/TermsAcceptanceModal';
@@ -36,6 +36,16 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
     const [pendingUser, setPendingUser] = useState<User | null>(null);
 
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
+    // Capturar código de indicação da URL se existir
+    React.useEffect(() => {
+        const ref = searchParams.get('ref');
+        if (ref) {
+            setReferralCode(ref.toUpperCase());
+            setIsRegister(true); // Se tem link de indicação, provavelmente quer cadastrar
+        }
+    }, [searchParams]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -224,8 +234,9 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
                                     </div>
                                     <div className="relative">
                                         <Repeat className="absolute left-3 top-2.5 sm:top-3 text-zinc-500" size={18} />
-                                        <input type="text" placeholder="Código de Indicação (Opcional)" value={referralCode} onChange={e => setReferralCode(e.target.value)} className="w-full bg-background border border-surfaceHighlight rounded-lg sm:rounded-xl py-2.5 sm:py-3 pl-10 text-sm sm:text-base text-white focus:border-primary-500 outline-none transition" />
+                                        <input type="text" placeholder="Código de Indicação (Obrigatorio)" value={referralCode} onChange={e => setReferralCode(e.target.value)} className="w-full bg-background border border-primary-500/30 rounded-lg sm:rounded-xl py-2.5 sm:py-3 pl-10 text-sm sm:text-base text-white focus:border-primary-500 outline-none transition" required />
                                     </div>
+                                    <p className="text-[10px] text-zinc-500 px-1 italic">O Cred30 é exclusivo. Registros exigem um convite.</p>
                                 </>
                             )}
 
