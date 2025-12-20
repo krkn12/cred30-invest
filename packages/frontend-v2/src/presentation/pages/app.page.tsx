@@ -17,6 +17,7 @@ const WelcomePage = lazy(() => import('./welcome.page'));
 const TermsPage = lazy(() => import('./terms.page'));
 const PrivacyPage = lazy(() => import('./privacy.page'));
 const SecurityPage = lazy(() => import('./security.page'));
+const DownloadPage = lazy(() => import('./download.page'));
 const Dashboard = lazy(() => import('../components/views/Dashboard').then(m => ({ default: m.Dashboard })));
 const SettingsView = lazy(() => import('../components/views/SettingsView').then(m => ({ default: m.SettingsView })));
 const InvestView = lazy(() => import('../components/views/InvestView').then(m => ({ default: m.InvestView })));
@@ -340,6 +341,7 @@ export default function App() {
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/security" element={<SecurityPage />} />
+            <Route path="/download" element={<DownloadPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>

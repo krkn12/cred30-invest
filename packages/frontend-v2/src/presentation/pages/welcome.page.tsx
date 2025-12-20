@@ -208,7 +208,11 @@ const WelcomePage = () => {
             </div>
             <span className="text-lg font-bold">Cred30</span>
           </div>
-          <div className="flex gap-8 text-zinc-500 text-sm font-medium">
+          <div className="flex flex-wrap justify-center gap-6 sm:gap-8 text-zinc-500 text-sm font-medium">
+            <button onClick={() => navigate('/download')} className="hover:text-cyan-400 transition-colors flex items-center gap-1">
+              <Download size={14} />
+              Baixar App
+            </button>
             <button onClick={() => navigate('/terms')} className="hover:text-white transition-colors">Termos</button>
             <button onClick={() => navigate('/privacy')} className="hover:text-white transition-colors">Privacidade</button>
             <button onClick={() => navigate('/security')} className="hover:text-white transition-colors">Segurança</button>
