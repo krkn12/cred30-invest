@@ -41,6 +41,11 @@ class ApiService {
     this.token = localStorage.getItem('authToken');
   }
 
+  // Verificar se o usuário está autenticado
+  isAuthenticated(): boolean {
+    return !!this.token;
+  }
+
   // Método privado para obter headers comuns
   private getHeaders() {
     const headers: Record<string, string> = {
