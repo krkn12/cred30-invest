@@ -36,7 +36,7 @@ const PrivacyPage = () => {
                         <Lock size={14} /> Conforme LGPD
                     </div>
                     <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-3 sm:mb-4 tracking-tight">Política de Privacidade</h1>
-                    <p className="text-zinc-400 text-sm sm:text-lg">Última atualização: 19 de Dezembro de 2024</p>
+                    <p className="text-zinc-400 text-sm sm:text-lg">Última atualização: 20 de Dezembro de 2024</p>
                 </div>
 
                 <div className="space-y-8 sm:space-y-12">
@@ -118,6 +118,7 @@ const PrivacyPage = () => {
                         </p>
                         <ul className="text-zinc-400 text-xs sm:text-sm space-y-2 ml-2">
                             <li><strong className="text-white">• Gateway de Pagamento:</strong> Dados necessários para processar pagamentos são transmitidos ao Mercado Pago de forma segura.</li>
+                            <li><strong className="text-white">• Parceiros de Publicidade:</strong> Informações técnicas não identificáveis (como IP e tipo de dispositivo) podem ser compartilhadas com parceiros de mídia (ex: Adsterra) para exibição de anúncios.</li>
                             <li><strong className="text-white">• Obrigação Legal:</strong> Mediante ordem judicial ou requisição de autoridades competentes.</li>
                             <li><strong className="text-white">• Proteção:</strong> Para investigar fraudes ou proteger a integridade do sistema.</li>
                         </ul>
@@ -192,11 +193,16 @@ const PrivacyPage = () => {
                     {/* Seção 7 */}
                     <section className="bg-zinc-900/30 border border-white/5 p-5 sm:p-8 rounded-2xl sm:rounded-3xl">
                         <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-3 text-purple-400">
-                            <FileCheck size={22} /> 7. Cookies e Rastreamento
+                            <FileCheck size={22} /> 7. Cookies e Publicidade
                         </h2>
-                        <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
-                            A Cred30 utiliza apenas cookies essenciais para manter sua sessão ativa e autenticada. <strong className="text-white">Não utilizamos</strong> cookies de rastreamento, pixels de publicidade ou ferramentas de análise de comportamento.
+                        <p className="text-zinc-300 text-sm sm:text-base leading-relaxed mb-4">
+                            A Cred30 utiliza cookies essenciais para o funcionamento do sistema e cookies de terceiros para fins de publicidade:
                         </p>
+                        <ul className="text-zinc-400 text-xs sm:text-sm space-y-2 ml-2">
+                            <li><strong className="text-white">• Cookies Essenciais:</strong> Necessários para manter sua sessão ativa e segura.</li>
+                            <li><strong className="text-white">• Cookies de Terceiros:</strong> Nossos parceiros de publicidade (ex: Adsterra) podem utilizar cookies e tecnologias similares para coletar informações técnicas e exibir anúncios relevantes.</li>
+                        </ul>
+                        <p className="text-zinc-500 text-[10px] mt-4 italic">Você pode gerenciar ou desabilitar cookies diretamente nas configurações do seu navegador.</p>
                     </section>
                 </div>
 

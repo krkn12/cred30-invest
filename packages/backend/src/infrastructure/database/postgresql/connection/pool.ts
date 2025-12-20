@@ -134,6 +134,16 @@ export const initializeDatabase = async () => {
           await client.query('ALTER TABLE users ADD COLUMN two_factor_enabled BOOLEAN DEFAULT FALSE');
         }
 
+        const termsColumn = await client.query(`
+          SELECT column_name FROM information_schema.columns
+          WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'accepted_terms_at'
+        `);
+
+        if (termsColumn.rows.length === 0) {
+          console.log('Adicionando coluna accepted_terms_at à tabela users...');
+          await client.query('ALTER TABLE users ADD COLUMN accepted_terms_at TIMESTAMP');
+        }
+
         console.log('Tabela users verificada e atualizada com sucesso');
       }
     }
@@ -157,6 +167,7 @@ export const initializeDatabase = async () => {
         reset_password_token VARCHAR(255),
         two_factor_secret TEXT,
         two_factor_enabled BOOLEAN DEFAULT FALSE,
+        accepted_terms_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
