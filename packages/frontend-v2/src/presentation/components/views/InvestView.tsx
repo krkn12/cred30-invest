@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TrendingUp, X as XIcon } from 'lucide-react';
 import { QUOTA_PRICE } from '../../../shared/constants/app.constants';
+import { AdBanner } from '../ui/AdBanner';
 
 export const InvestView = ({ onBuy }: { onBuy: (qty: number, method: 'PIX' | 'BALANCE' | 'CARD') => void }) => {
     const [qty, setQty] = useState(1);
@@ -80,6 +81,13 @@ export const InvestView = ({ onBuy }: { onBuy: (qty: number, method: 'PIX' | 'BA
             >
                 {method === 'CARD' ? 'Ir para Pagamento Seguro' : 'Confirmar Compra'}
             </button>
+
+            <div className="mt-6">
+                <AdBanner
+                    type="TIP"
+                    description="Receba cashback em todas as suas compras com os cartões parceiros."
+                />
+            </div>
 
             {/* Confirmation Modal */}
             {showConfirm && (

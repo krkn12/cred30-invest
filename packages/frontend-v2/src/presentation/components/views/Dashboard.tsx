@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { AppState, User } from '../../../domain/types/common.types';
 import { QUOTA_PRICE } from '../../../shared/constants/app.constants';
+import { AdBanner } from '../ui/AdBanner';
 import { fastForwardTime, deleteUserAccount } from '../../../application/services/storage.service';
 import { SettingsView } from './SettingsView';
 
@@ -295,6 +296,19 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                     </div>
                     <span className="text-xs font-medium text-zinc-300">VIP</span>
                 </button>
+            </div>
+
+            {/* Ofertas Parceiras (Monetização Não Intrusiva) */}
+            <div className="space-y-3">
+                <div className="flex items-center justify-between px-1">
+                    <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider">Recomendações</h3>
+                    <span className="text-[10px] text-zinc-600">Patrocinado</span>
+                </div>
+                <AdBanner
+                    type="NATIVE"
+                    title="Cartão de Crédito Black"
+                    description="Limite de até R$ 50.000 com aprovação imediata para membros Cred30."
+                />
             </div>
 
             {/* Recent Transactions (Extrato) */}

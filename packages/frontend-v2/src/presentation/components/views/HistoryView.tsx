@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowDownLeft, ArrowUpRight, Clock, CheckCircle2, XCircle, Search, Filter, Calendar, DollarSign, TrendingUp, TrendingDown, Receipt, ChevronDown } from 'lucide-react';
 import { Transaction } from '../../../domain/types/common.types';
+import { AdBanner } from '../ui/AdBanner';
 
 interface HistoryViewProps {
     transactions: Transaction[];
@@ -270,6 +271,15 @@ export const HistoryView = ({ transactions }: HistoryViewProps) => {
                             </div>
                         </div>
                     ))}
+
+                    <div className="pt-4">
+                        <AdBanner
+                            type="BANNER"
+                            title="Aumente seu Score Hoje"
+                            description="Nossos parceiros ajudam você a limpar seu nome e conseguir mais crédito."
+                            actionText="ABRIR OFERTA"
+                        />
+                    </div>
                 </div>
             )}
         </div>

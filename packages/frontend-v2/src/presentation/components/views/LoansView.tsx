@@ -3,6 +3,7 @@ import { DollarSign, AlertTriangle, X as XIcon, CheckCircle2, ShieldCheck, Clock
 import { Loan, User } from '../../../domain/types/common.types';
 import { apiService } from '../../../application/services/api.service';
 import { downloadLoanContract, createContractData } from '../../../application/services/contract.service';
+import { AdBanner } from '../ui/AdBanner';
 
 interface LoansViewProps {
     loans: Loan[];
@@ -191,6 +192,13 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
                             >
                                 {creditLimit?.totalLimit === 0 ? 'Crédito Bloqueado' : 'Solicitar Empréstimo'}
                             </button>
+
+                            <div className="mt-4 shadow-sm">
+                                <AdBanner
+                                    type="TIP"
+                                    description="Precisa de mais? Clientes VIP têm acesso a linhas de crédito especiais."
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
