@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Shield, PiggyBank, CreditCard, Download, Smartphone, X as XIcon, Share } from 'lucide-react';
+import { ArrowRight, Shield, PiggyBank, CreditCard, Download, Smartphone, X as XIcon, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // Interface para o evento de instalação do PWA
@@ -12,279 +12,183 @@ const WelcomePage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
-  const [showInstallModal, setShowInstallModal] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [showIosGuide, setShowIosGuide] = useState(false);
   const navigate = useNavigate();
 
-  // Detectar o tipo de dispositivo
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const isAndroid = /Android/.test(navigator.userAgent);
-
-  const stats = [
-    { value: "R$ 50", label: "Cota Mínima" },
-    { value: "85%", label: "Lucro Rateado" },
-    { value: "PIX", label: "Aportes e Resgates" },
-    { value: "24/7", label: "Disponibilidade" }
-  ];
-
-  const coreFeatures = [
-    {
-      icon: <PiggyBank className="w-6 h-6" />,
-      title: "Investimentos",
-      desc: "Cotas a partir de R$ 50,00 com rendimento diário real."
-    },
-    {
-      icon: <CreditCard className="w-6 h-6" />,
-      title: "Crédito Instantâneo",
-      desc: "Empréstimos aprovados baseados no seu score interno."
-    },
-    {
-      icon: <Shield className="w-6 h-6" />,
-      title: "Segurança Total",
-      desc: "Segurança de alto nível e garantias baseadas em lastro real e transparente."
-    }
-  ];
+  // Detectar iOS
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 
   useEffect(() => {
     setIsLoaded(true);
 
-    // Verificar se já está instalado (modo standalone)
     if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true) {
       setIsInstalled(true);
     }
 
-    // Capturar o evento de instalação do PWA
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    // Detectar quando o app for instalado
     window.addEventListener('appinstalled', () => {
       setIsInstalled(true);
       setDeferredPrompt(null);
+      setIsDownloading(false);
     });
 
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
-
-  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleInstallClick = async () => {
     setIsDownloading(true);
+    setDownloadProgress(0);
 
-    // Se tiver o prompt nativo (Android/Chrome), dispara NA HORA
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setDeferredPrompt(null);
+    // Simulação de download rápido (1.5 segundos)
+    const interval = setInterval(() => {
+      setDownloadProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return prev + 5;
+      });
+    }, 50);
+
+    // Após o "download" terminar
+    setTimeout(async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') setDeferredPrompt(null);
+        setIsDownloading(false);
+      } else if (isIOS) {
+        setShowIosGuide(true);
+        setIsDownloading(false);
+      } else {
+        // Fallback para outros casos
+        setIsDownloading(false);
+        alert('Para baixar, use o menu do seu navegador e clique em "Instalar App"');
       }
-      setIsDownloading(false);
-    } else {
-      // Se for iOS ou não tiver prompt, mostra as instruções mas já deixa o botão pronto
-      setShowInstallModal(true);
-      setIsDownloading(false);
-    }
-  };
-
-  const handleGetStarted = () => {
-    navigate('/auth');
+    }, 1600);
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white selection:bg-cyan-500/30">
-      {/* Aurora Background Effect */}
+    <div className="min-h-screen bg-zinc-950 text-white selection:bg-cyan-500/30 font-sans">
+      {/* Background Aurora */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-cyan-500/10 rounded-full blur-[120px] animate-pulse"></div>
         <div className="absolute top-[20%] -right-[10%] w-[30%] h-[50%] bg-blue-600/5 rounded-full blur-[100px]"></div>
       </div>
 
-      {/* Navigation */}
+      {/* Nav */}
       <nav className={`relative z-10 px-6 py-8 transition-all duration-1000 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
         <div className="max-w-6xl mx-auto flex justify-between items-center bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-4 rounded-2xl">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-tr from-cyan-400 to-blue-600 rounded-xl flex items-center justify-center text-black font-bold text-xl">
-              C
-            </div>
+            <div className="w-10 h-10 bg-gradient-to-tr from-cyan-400 to-blue-600 rounded-xl flex items-center justify-center text-black font-bold text-xl uppercase">C</div>
             <span className="text-xl font-bold tracking-tight">Cred<span className="text-cyan-400">30</span></span>
           </div>
-          <div className="flex items-center gap-6">
-            <button
-              onClick={handleGetStarted}
-              className="text-white/70 hover:text-white transition-colors font-medium text-sm"
-            >
-              Já sou membro (Entrar)
-            </button>
-            <button
-              onClick={handleGetStarted}
-              className="bg-white text-black font-bold px-6 py-2.5 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-white/10"
-            >
-              Participar
-            </button>
-          </div>
+          <button onClick={() => navigate('/auth')} className="bg-white text-black font-bold px-6 py-2.5 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-white/10 text-sm">
+            Entrar
+          </button>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative z-10 px-6 pt-20 pb-16">
+      {/* Hero */}
+      <section className="relative z-10 px-6 pt-12 pb-16">
         <div className="max-w-4xl mx-auto text-center">
-          <div className={`inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 rounded-full text-emerald-400 text-sm font-bold mb-8 transition-all duration-700 delay-100 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            <Shield size={16} /> Sistema Cooperativo 100% Transparente
+          <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 rounded-full text-emerald-400 text-xs font-bold mb-8">
+            <Shield size={14} /> Sistema Cooperativo 100% Transparente
           </div>
-          <h1 className={`text-6xl md:text-8xl font-extrabold mb-8 tracking-tighter leading-[0.9] transition-all duration-1000 delay-200 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight leading-[1] text-white">
             A cooperativa que <br />
             <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent italic">valoriza</span> seu tempo.
           </h1>
-          <p className={`text-xl text-zinc-400 mb-12 max-w-2xl mx-auto leading-relaxed transition-all duration-1000 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            Simples, transparente e desenhado para o futuro.
-            Torne-se membro em minutos e comece a rentabilizar seu capital hoje.
+          <p className="text-lg text-zinc-400 mb-10 max-w-xl mx-auto leading-relaxed">
+            Torne-se membro em minutos e comece a rentabilizar seu capital hoje com total segurança.
           </p>
-          <div className={`flex flex-col sm:flex-row gap-4 justify-center transition-all duration-1000 delay-400 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+
+          <div className="flex flex-col gap-4 max-w-md mx-auto">
             <button
-              onClick={handleGetStarted}
-              className="bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold py-5 px-10 rounded-2xl transition-all hover:scale-105 flex items-center justify-center gap-3 text-lg"
+              onClick={() => navigate('/auth')}
+              className="bg-cyan-500 hover:bg-cyan-400 text-black font-black py-5 px-10 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 text-lg shadow-xl shadow-cyan-500/20"
             >
               Filiar-se agora
               <ArrowRight className="w-5 h-5" />
             </button>
 
-            {/* Botão Instalar App - sempre visível se não instalado */}
+            {/* BOTÃO DE DOWNLOAD DIRETO COM PROGRESSO */}
             {!isInstalled && (
               <button
                 onClick={handleInstallClick}
                 disabled={isDownloading}
-                className="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-5 px-8 rounded-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 text-lg border border-zinc-700 disabled:opacity-70"
+                className="relative overflow-hidden bg-zinc-900 hover:bg-zinc-800 text-white font-bold py-5 px-10 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 text-lg border border-zinc-700 disabled:opacity-90"
               >
-                {isDownloading ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                ) : (
-                  <Download className="w-5 h-5" />
+                {/* Barra de Progresso Interna */}
+                {isDownloading && (
+                  <div
+                    className="absolute inset-y-0 left-0 bg-cyan-500/20 transition-all duration-75"
+                    style={{ width: `${downloadProgress}%` }}
+                  />
                 )}
-                {isDownloading ? 'Baixando...' : 'Baixar App'}
+
+                <div className="relative z-10 flex items-center gap-3">
+                  {isDownloading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin"></div>
+                      <span>Baixando {downloadProgress}%...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-6 h-6 text-cyan-400" />
+                      <span>Baixar App Grátis</span>
+                    </>
+                  )}
+                </div>
               </button>
             )}
 
-            {/* Badge de app instalado */}
             {isInstalled && (
-              <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-6 py-4 rounded-2xl text-emerald-400 font-medium">
+              <div className="flex items-center justify-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-6 py-4 rounded-2xl text-emerald-400 font-bold">
                 <Smartphone className="w-5 h-5" />
-                App Instalado ✓
+                App Instalado com Sucesso ✓
               </div>
             )}
+
+            <p className="text-zinc-500 text-xs font-medium">Download rápido • 0.5 MB • 100% Seguro</p>
           </div>
         </div>
       </section>
 
-      {/* Dynamic Stats Grid */}
-      <section className={`relative z-10 px-6 py-12 transition-all duration-1000 delay-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5 border border-white/5 rounded-3xl overflow-hidden backdrop-blur-sm">
-            {stats.map((stat, index) => (
-              <div key={index} className="bg-zinc-950 p-10 text-center hover:bg-zinc-900/50 transition-colors group">
-                <div className="text-3xl md:text-5xl font-extrabold text-white mb-2 group-hover:text-cyan-400 transition-colors uppercase">{stat.value}</div>
-                <div className="text-xs text-zinc-500 font-bold uppercase tracking-widest">{stat.label}</div>
-              </div>
-            ))}
+      {/* Footer Minimal */}
+      <footer className="relative z-10 px-6 py-12">
+        <div className="max-w-6xl mx-auto text-center border-t border-white/5 pt-8">
+          <p className="text-zinc-600 text-[10px] uppercase tracking-widest mb-4">© 2024 Cred30 Tecnologia Cooperativa</p>
+          <div className="flex justify-center gap-6 text-zinc-500 text-xs font-bold uppercase transition-colors">
+            <button onClick={() => navigate('/terms')} className="hover:text-white">Termos</button>
+            <button onClick={() => navigate('/privacy')} className="hover:text-white">Privacidade</button>
           </div>
-        </div>
-      </section>
-
-      {/* Minimal Features Card */}
-      <section className={`relative z-10 px-6 py-24 transition-all duration-1000 delay-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
-        <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
-          {coreFeatures.map((f, i) => (
-            <div key={i} className="bg-zinc-900/30 border border-white/5 p-8 rounded-3xl hover:bg-zinc-900/50 transition-all group">
-              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-cyan-400 mb-6 group-hover:bg-cyan-500 group-hover:text-black transition-all">
-                {f.icon}
-              </div>
-              <h3 className="text-2xl font-bold mb-3">{f.title}</h3>
-              <p className="text-zinc-400 leading-relaxed text-sm">
-                {f.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Footer Minimalist */}
-      <footer className="relative z-10 px-6 py-20 border-t border-white/5">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center text-white font-bold text-sm border border-white/10">
-              C
-            </div>
-            <span className="text-lg font-bold">Cred30</span>
-          </div>
-          <div className="flex flex-wrap justify-center gap-6 sm:gap-8 text-zinc-500 text-sm font-medium">
-            <button onClick={() => navigate('/terms')} className="hover:text-white transition-colors">Termos</button>
-            <button onClick={() => navigate('/privacy')} className="hover:text-white transition-colors">Privacidade</button>
-            <button onClick={() => navigate('/security')} className="hover:text-white transition-colors">Segurança</button>
-          </div>
-          <p className="text-zinc-600 text-xs">
-            © 2024 Cred30. Tecnologia para liberdade financeira.
-          </p>
         </div>
       </footer>
 
-      {/* Modal de Instruções de Instalação (Simples e Transparente) */}
-      {showInstallModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowInstallModal(false)}>
-          <div className="bg-zinc-900/90 border border-zinc-700/50 rounded-3xl p-8 w-full max-w-sm relative shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setShowInstallModal(false)} className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors">
-              <XIcon size={20} />
-            </button>
-
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-cyan-500/10 rounded-2xl flex items-center justify-center text-cyan-400 mx-auto mb-4">
-                <Download size={32} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Instalar App</h3>
-              <p className="text-zinc-400 text-sm">Siga os passos rápidos abaixo:</p>
-            </div>
-
-            {isIOS ? (
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 group">
-                  <div className="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500/10 transition-colors">
-                    <Share size={20} />
-                  </div>
-                  <p className="text-zinc-300 text-sm font-medium">1. Toque em <span className="text-white font-bold">Compartilhar</span></p>
-                </div>
-                <div className="flex items-center gap-4 group">
-                  <div className="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500/10 transition-colors text-xl font-bold">
-                    +
-                  </div>
-                  <p className="text-zinc-300 text-sm font-medium">2. Toque em <span className="text-white font-bold">Adicionar à Tela de Início</span></p>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 group">
-                  <div className="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500/10 transition-colors text-xl font-bold">
-                    ⋮
-                  </div>
-                  <p className="text-zinc-300 text-sm font-medium">1. Toque no <span className="text-white font-bold">Menu</span> do navegador</p>
-                </div>
-                <div className="flex items-center gap-4 group">
-                  <div className="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500/10 transition-colors">
-                    <Download size={20} />
-                  </div>
-                  <p className="text-zinc-300 text-sm font-medium">2. Toque em <span className="text-white font-bold">Instalar App</span></p>
-                </div>
-              </div>
-            )}
-
-            <button
-              onClick={() => setShowInstallModal(false)}
-              className="w-full mt-10 py-4 bg-white text-black font-extrabold rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-lg"
-            >
-              Entendido
-            </button>
+      {/* GUIA IOS (APENAS SETA E DOWNLOAD) */}
+      {showIosGuide && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex flex-col items-center justify-end pb-20 px-6" onClick={() => setShowIosGuide(false)}>
+          <div className="w-full max-w-xs text-center animate-bounce mb-8">
+            <Download size={48} className="text-cyan-400 mx-auto mb-4" />
+            <h3 className="text-xl font-black text-white mb-2">DOWNLOAD INICIADO!</h3>
+            <p className="text-zinc-400 text-sm">Toque no ícone de <span className="text-white font-bold">compartilhar</span> abaixo e depois em <span className="text-white font-bold">"Adicionar à Tela de Início"</span></p>
           </div>
+
+          <div className="text-cyan-500 animate-pulse">
+            <ChevronDown size={64} />
+          </div>
+
+          <button onClick={() => setShowIosGuide(false)} className="mt-12 bg-zinc-800 text-white px-8 py-3 rounded-full font-bold text-sm">
+            Fechar
+          </button>
         </div>
       )}
     </div>
