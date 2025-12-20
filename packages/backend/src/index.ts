@@ -21,16 +21,29 @@ import { initializeScheduler } from './scheduler';
 
 const app = new Hono();
 
-// Middleware para compressão
-app.use('*', compress());
-
-// Middleware para CORS
+// 1. Middleware para CORS (Deve ser o primeiro para lidar com Preflight OPTIONS)
 app.use('*', cors({
-  origin: (origin) => origin, // Permite qualquer origem mantendo suporte a credentials: true
+  origin: (origin) => {
+    const allowedOrigins = [
+      'https://cred30.site',
+      'https://www.cred30.site',
+      'https://cred30-prod-app-2025.web.app',
+      'https://cred30-prod-app-2025.firebaseapp.com'
+    ];
+    if (!origin || allowedOrigins.includes(origin) || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      return origin;
+    }
+    return allowedOrigins[0];
+  },
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma', 'Expires', 'X-Requested-With', 'Accept', 'Origin'],
   credentials: true,
+  exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
+  maxAge: 600,
 }));
+
+// 2. Middleware para compressão
+app.use('*', compress());
 
 async function startServer() {
   try {

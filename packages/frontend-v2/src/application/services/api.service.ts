@@ -533,40 +533,17 @@ class ApiService {
     });
   }
 
-  // Notificações em tempo real (SSE)
-  listenToNotifications(onNotification: (data: any) => void): () => void {
+  // Notificações em tempo real (SSE) - DESATIVADO TEMPORARIAMENTE PARA ESTABILIDADE
+  listenToNotifications(_onNotification: (data: any) => void): () => void {
+    /* 
     if (!this.token) return () => { };
 
     const url = `${API_BASE_URL}/notifications/stream?token=${this.token}`;
     const eventSource = new EventSource(url);
 
-    eventSource.addEventListener('TRANSACTION_STATUS_CHANGED', (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        onNotification(data);
-      } catch (e) {
-        console.error('Erro ao processar notificação SSE:', e);
-      }
-    });
-
-    eventSource.addEventListener('LOAN_STATUS_CHANGED', (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        onNotification(data);
-      } catch (e) {
-        console.error('Erro ao processar notificação SSE:', e);
-      }
-    });
-
-    eventSource.onerror = (error) => {
-      console.error('Erro na conexão SSE:', error);
-      eventSource.close();
-    };
-
-    return () => {
-      eventSource.close();
-      console.log('Conexão SSE fechada');
-    };
+    ...
+    */
+    return () => { };
   }
 }
 
