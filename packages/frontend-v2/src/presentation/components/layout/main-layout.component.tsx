@@ -124,7 +124,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, currentView, onC
             Cred<span className="text-primary-400">30</span>
           </h1>
         </div>
-        <nav className="flex-1 px-4 space-y-2">
+        <nav className="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar">
           {navItems.map((item) => (
             <button
               key={item.id}
@@ -205,8 +205,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, currentView, onC
       </div>
 
       {/* Sticky Ad Footer (Sempre Visível Desktop & Mobile) */}
-      <div className="fixed bottom-0 left-0 right-0 z-[100] bg-black border-t border-zinc-800 p-1 pb-1 md:pl-72 transition-all duration-300">
-        <div className="mx-auto max-w-md md:max-w-2xl">
+      <div className="fixed bottom-0 left-0 md:left-72 right-0 z-[100] bg-black border-t border-zinc-800 p-1 pb-1 transition-all duration-300">
+        <div className="mx-auto max-w-md md:max-w-3xl">
           <AdBanner type="BANNER" title="Parceiro em Destaque" description="Confira esta oferta especial para membros Cred30." actionText="VER OFERTA" />
         </div>
       </div>
