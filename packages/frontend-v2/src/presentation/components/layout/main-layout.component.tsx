@@ -204,10 +204,10 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, currentView, onC
         ))}
       </div>
 
-      {/* Sticky Ad Footer (Sempre Visível Desktop & Mobile) */}
-      <div className="fixed bottom-0 left-0 md:left-72 right-0 z-[100] bg-black border-t border-zinc-800 p-1 pb-1 transition-all duration-300">
-        <div className="mx-auto max-w-md md:max-w-3xl">
-          <AdBanner type="BANNER" title="Parceiro em Destaque" description="Confira esta oferta especial para membros Cred30." actionText="VER OFERTA" />
+      {/* Sticky Ad Footer (Apenas Mobile - No PC polui muito) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-black border-t border-zinc-800 p-1 pb-1">
+        <div className="mx-auto max-w-md">
+          <AdBanner type="BANNER" title="Parceiro em Destaque" description="Confira esta oferta especial." actionText="ABRIR" />
         </div>
       </div>
     </div>
