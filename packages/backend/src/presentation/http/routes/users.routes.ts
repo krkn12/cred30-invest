@@ -293,7 +293,7 @@ userRoutes.post('/reward-ad', authMiddleware, async (c) => {
     const user = c.get('user') as UserContext;
     const pool = getDbPool(c);
 
-    // 1. Verificar limite diário de recompensas por anúncio (evitar abuso)
+    // 1. Verificar limite diário (REMOVIDO: Usuário pode ver ilimitado)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -304,14 +304,9 @@ userRoutes.post('/reward-ad', authMiddleware, async (c) => {
     );
 
     const adsToday = parseInt(checkLimitRes.rows[0].count);
-    const DAILY_LIMIT = 5;
+    // const DAILY_LIMIT = 5; 
 
-    if (adsToday >= DAILY_LIMIT) {
-      return c.json({
-        success: false,
-        message: 'Limite diário de prêmios atingido. Volte amanhã!'
-      }, 400);
-    }
+    // if (adsToday >= DAILY_LIMIT) { ... }
 
     // 2. Aplicar Recompensa (Score +5)
     // O Score é um bem digital que não custa dinheiro ao sistema, 
