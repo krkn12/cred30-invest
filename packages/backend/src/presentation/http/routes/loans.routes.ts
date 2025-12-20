@@ -139,8 +139,8 @@ loanRoutes.get('/available-limit', authMiddleware, async (c) => {
       success: true,
       data: {
         totalLimit: limit,
-        activeDebt,
-        remainingLimit
+        activeDebt: activeDebt,
+        remainingLimit: remainingLimit
       }
     });
   } catch (error) {
@@ -165,13 +165,12 @@ loanRoutes.post('/request', authMiddleware, async (c) => {
     );
 
     if (lateLoansResult.rows.length > 0) {
-      // Aplicar penalidade de score por atraso (se ainda não foi aplicada hoje, por exemplo, 
-      // mas aqui aplicaremos a cada tentativa de novo empréstimo como aviso)
-      await updateScore(pool, user.id, -50, 'Tentativa de novo empréstimo com parcelas em atraso');
+      // Aplicar penalidade de score por atraso
+      await updateScore(pool, user.id, -50, 'Tentativa de novo apoio com compromissos em atraso');
 
       return c.json({
         success: false,
-        message: 'Você possui empréstimos em atraso. Regularize sua situação para solicitar novos créditos.'
+        message: 'Você possui compromissos em atraso. Regularize sua situação para solicitar novos apoios.'
       }, 400);
     }
 
@@ -257,7 +256,7 @@ loanRoutes.post('/request', authMiddleware, async (c) => {
 
     return c.json({
       success: true,
-      message: `Empréstimo concedido! R$ ${amountToDisburse.toFixed(2)} creditados (descontado R$ ${originationFee.toFixed(2)} de seguro/taxas).`,
+      message: `Apoio Mútuo concedido! R$ ${amountToDisburse.toFixed(2)} creditados (descontado R$ ${originationFee.toFixed(2)} de taxa de sustentabilidade).`,
       data: {
         loanId: loanId.data,
         totalRepayment: totalWithInterest,
@@ -291,13 +290,13 @@ loanRoutes.post('/repay', authMiddleware, async (c) => {
     );
 
     if (loanResult.rows.length === 0) {
-      return c.json({ success: false, message: 'Empréstimo não encontrado' }, 404);
+      return c.json({ success: false, message: 'Apoio Mútuo não encontrado' }, 404);
     }
 
     const loan = loanResult.rows[0];
 
     if (loan.status !== 'APPROVED') {
-      return c.json({ success: false, message: 'Empréstimo não está ativo para pagamento' }, 400);
+      return c.json({ success: false, message: 'Apoio Mútuo não disponível para reposição' }, 400);
     }
 
     // Calcular separação entre principal e juros
@@ -319,7 +318,7 @@ loanRoutes.post('/repay', authMiddleware, async (c) => {
 
     // Se estiver usando saldo, verificar se tem saldo suficiente
     if (useBalance && user.balance < totalRepayment) {
-      return c.json({ success: false, message: 'Saldo insuficiente para pagar o empréstimo' }, 400);
+      return c.json({ success: false, message: 'Saldo insuficiente para a reposição do apoio' }, 400);
     }
 
     // Se estiver usando saldo, deduzir do usuário
@@ -343,7 +342,7 @@ loanRoutes.post('/repay', authMiddleware, async (c) => {
         if (paymentMethod === 'card' && token) {
           mpData = await createCardPayment({
             amount: finalCost,
-            description: `Pagamento total de emprestimo no Cred30`,
+            description: `Reposição total de apoio no sistema Cred30`,
             email: user.email,
             external_reference: `REPAY_${loanId}_${Date.now()}`,
             token,
@@ -353,7 +352,7 @@ loanRoutes.post('/repay', authMiddleware, async (c) => {
         } else {
           mpData = await createPixPayment({
             amount: finalCost,
-            description: `Pagamento total de emprestimo no Cred30`,
+            description: `Reposição total de apoio no sistema Cred30`,
             email: user.email,
             external_reference: `REPAY_${loanId}_${Date.now()}`
           });
@@ -371,7 +370,7 @@ loanRoutes.post('/repay', authMiddleware, async (c) => {
       [
         user.id,
         finalCost,
-        `Pagamento de empréstimo (${useBalance ? 'Saldo' : (mpData ? 'Mercado Pago' : 'Externo')}) - Aguardando Confirmação`,
+        `Reposição de Apoio Mútuo (${useBalance ? 'Saldo' : (mpData ? 'Mercado Pago' : 'Externo')}) - Aguardando Confirmação`,
         JSON.stringify({
           loanId,
           useBalance,
@@ -390,7 +389,7 @@ loanRoutes.post('/repay', authMiddleware, async (c) => {
 
     return c.json({
       success: true,
-      message: 'Pagamento enviado para análise! Aguarde confirmação.',
+      message: 'Reposição enviada para análise! Aguarde confirmação.',
       data: {
         transactionId: transaction.rows[0].id,
         principalAmount,
@@ -511,7 +510,7 @@ loanRoutes.post('/repay-installment', authMiddleware, async (c) => {
 
       return c.json({
         success: true,
-        message: 'Código de pagamento gerado! Aguarde confirmação do administrador.',
+        message: 'Código de reposição gerado! Aguarde a confirmação da cooperativa.',
         data: {
           transactionId: transaction.rows[0].id,
           remainingAmount: remainingAmountPre,
@@ -527,7 +526,7 @@ loanRoutes.post('/repay-installment', authMiddleware, async (c) => {
 
     // Se estiver usando saldo, verificar se tem saldo suficiente
     if (user.balance < installmentAmount) {
-      return c.json({ success: false, message: 'Saldo insuficiente para pagar esta parcela' }, 400);
+      return c.json({ success: false, message: 'Saldo insuficiente para a reposição desta parcela' }, 400);
     }
 
     // Deduzir do usuário
@@ -585,7 +584,7 @@ loanRoutes.post('/repay-installment', authMiddleware, async (c) => {
       [
         user.id,
         installmentAmount,
-        `Pagamento parcela (Saldo) - ${newPaidAmount >= parseFloat(loan.total_repayment) ? 'Empréstimo Quitado' : 'Restante: R$ ' + (parseFloat(loan.total_repayment) - newPaidAmount).toFixed(2)}`,
+        `Reposição de parcela (Saldo) - ${newPaidAmount >= parseFloat(loan.total_repayment) ? 'Compromisso Finalizado' : 'Restante: R$ ' + (parseFloat(loan.total_repayment) - newPaidAmount).toFixed(2)}`,
         JSON.stringify({
           loanId,
           installmentAmount,

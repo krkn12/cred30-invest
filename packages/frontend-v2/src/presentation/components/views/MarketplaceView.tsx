@@ -3,7 +3,7 @@ import {
     ShoppingBag, Tag, Search, Filter, PlusCircle,
     ShieldCheck, Truck, Package, CheckCircle2,
     Clock, DollarSign, ArrowLeft, Image as ImageIcon,
-    ChevronRight, Info, AlertCircle, ExternalLink, Star
+    ChevronRight, Info, AlertCircle, ExternalLink, Star, X as XIcon, RefreshCw
 } from 'lucide-react';
 import { AdBanner } from '../ui/AdBanner';
 import { AppState, User } from '../../../domain/types/common.types';
@@ -35,6 +35,48 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
 
     const categories = ['ELETRÔNICOS', 'SERVIÇOS', 'MODA', 'CASA', 'VEÍCULOS', 'OUTROS'];
 
+    const [uploading, setUploading] = useState(false);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'cred30_preset'); // Nome do preset público
+            formData.append('cloud_name', 'diu2htzxk');
+
+            const res = await fetch(`https://api.cloudinary.com/v1_1/diu2htzxk/image/upload`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await res.json();
+            if (data.secure_url) {
+                setNewListing({ ...newListing, imageUrl: data.secure_url });
+                onSuccess('Imagem Enviada', 'Sua foto foi salva na nuvem com sucesso!');
+            } else {
+                console.error('Cloudinary Error Detail:', data);
+                const errorMsg = data.error?.message || 'Falha no upload';
+                if (errorMsg.includes('unsigned')) {
+                    onError('Configuração Necessária', 'Vá no Cloudinary e mude o preset "cred30_preset" para "Unsigned".');
+                } else {
+                    onError('Erro no Upload', errorMsg);
+                }
+                throw new Error(errorMsg);
+            }
+        } catch (e: any) {
+            console.error('Upload catch:', e);
+            if (!e.message.includes('Configuração')) {
+                onError('Erro de Conexão', 'Não foi possível enviar a imagem. Verifique sua internet.');
+            }
+        } finally {
+            setUploading(false);
+        }
+    };
+
     useEffect(() => {
         fetchListings();
         fetchMyOrders();
@@ -42,7 +84,7 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
 
     const fetchListings = async () => {
         try {
-            const token = localStorage.getItem('cred30_auth_token');
+            const token = localStorage.getItem('authToken');
             const res = await fetch(`${import.meta.env.VITE_API_URL}/marketplace/listings`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -55,7 +97,7 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
 
     const fetchMyOrders = async () => {
         try {
-            const token = localStorage.getItem('cred30_auth_token');
+            const token = localStorage.getItem('authToken');
             const res = await fetch(`${import.meta.env.VITE_API_URL}/marketplace/my-orders`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -70,7 +112,7 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
         e.preventDefault();
         setLoading(true);
         try {
-            const token = localStorage.getItem('cred30_auth_token');
+            const token = localStorage.getItem('authToken');
             const res = await fetch(`${import.meta.env.VITE_API_URL}/marketplace/create`, {
                 method: 'POST',
                 headers: {
@@ -102,7 +144,7 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
 
         setLoading(true);
         try {
-            const token = localStorage.getItem('cred30_auth_token');
+            const token = localStorage.getItem('authToken');
             const res = await fetch(`${import.meta.env.VITE_API_URL}/marketplace/buy`, {
                 method: 'POST',
                 headers: {
@@ -132,7 +174,7 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
 
         setLoading(true);
         try {
-            const token = localStorage.getItem('cred30_auth_token');
+            const token = localStorage.getItem('authToken');
             const res = await fetch(`${import.meta.env.VITE_API_URL}/marketplace/order/${orderId}/receive`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -324,6 +366,64 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
                                 placeholder="Conte mais sobre o produto, estado de conservação..."
                                 className="w-full bg-background border border-surfaceHighlight rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition resize-none"
                             />
+                        </div>
+
+                        <div>
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1">Foto do Produto</label>
+                            <div className="mt-2 flex flex-col gap-4">
+                                {newListing.imageUrl ? (
+                                    <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-zinc-900 border border-surfaceHighlight">
+                                        <img src={newListing.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => setNewListing({ ...newListing, imageUrl: '' })}
+                                            className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full shadow-lg hover:bg-red-600 transition"
+                                        >
+                                            <XIcon size={16} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <label className="w-full aspect-video rounded-2xl border-2 border-dashed border-zinc-700 hover:border-primary-500/50 hover:bg-primary-500/5 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 group">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleFileChange}
+                                            className="hidden"
+                                        />
+                                        <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-500 group-hover:text-primary-400 group-hover:bg-primary-500/10 transition-all">
+                                            <PlusCircle size={24} />
+                                        </div>
+                                        <div className="text-center flex flex-col items-center gap-2">
+                                            {uploading ? (
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <RefreshCw size={24} className="text-primary-400 animate-spin" />
+                                                    <p className="text-xs font-bold text-primary-400">Subindo para nuvem...</p>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="bg-primary-500 text-black px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter mb-2 shadow-lg">
+                                                        Tirar ou Escolher Foto
+                                                    </div>
+                                                    <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-black">Toque para selecionar da sua galeria</p>
+                                                </>
+                                            )}
+                                        </div>
+                                    </label>
+                                )}
+
+                                <div className="space-y-2">
+                                    <p className="text-[10px] font-bold text-zinc-600 uppercase text-center">Ou use um link externo</p>
+                                    <div className="relative">
+                                        <input
+                                            value={newListing.imageUrl.startsWith('data:') ? '' : newListing.imageUrl}
+                                            onChange={e => setNewListing({ ...newListing, imageUrl: e.target.value })}
+                                            placeholder="https://imgur.com/foto.jpg"
+                                            className="w-full bg-background border border-surfaceHighlight rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition pl-10 text-xs"
+                                        />
+                                        <ImageIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="bg-primary-900/20 border border-primary-500/20 rounded-xl p-4">

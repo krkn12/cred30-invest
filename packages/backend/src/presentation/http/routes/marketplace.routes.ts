@@ -14,7 +14,7 @@ const createListingSchema = z.object({
     description: z.string().min(10),
     price: z.number().positive(),
     category: z.string().optional(),
-    imageUrl: z.string().url().optional(),
+    imageUrl: z.string().optional(),
 });
 
 const buyListingSchema = z.object({

@@ -149,7 +149,7 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
           user.id,
           'BUY_QUOTA',
           totalWithServiceFee,
-          `Compra de ${quantity} cota(s) (+ R$ ${serviceFee.toFixed(2)} taxa) - APROVADA`,
+          `Aquisição de ${quantity} participação(ões) (+ R$ ${serviceFee.toFixed(2)} taxa de sustentabilidade) - APROVADA`,
           'APPROVED',
           { quantity, useBalance, paymentMethod: 'balance', serviceFee }
         );
@@ -158,8 +158,8 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
           throw new Error(transactionResult.error);
         }
 
-        // 5. Atualizar Score por investimento
-        await updateScore(client, user.id, SCORE_REWARDS.QUOTA_PURCHASE * quantity, `Compra de ${quantity} cotas`);
+        // 5. Atualizar Score por participação
+        await updateScore(client, user.id, SCORE_REWARDS.QUOTA_PURCHASE * quantity, `Aquisição de ${quantity} participações`);
 
         return {
           transactionId: transactionResult.transactionId,
@@ -176,7 +176,7 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
           if (paymentMethod === 'card' && token) {
             mpData = await createCardPayment({
               amount: finalCost,
-              description: `Compra de ${quantity} cota(s) no Cred30`,
+              description: `Aquisição de ${quantity} participação(ões) no sistema Cred30`,
               email: user.email,
               external_reference,
               token,
@@ -187,7 +187,7 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
           } else {
             mpData = await createPixPayment({
               amount: finalCost,
-              description: `Compra de ${quantity} cota(s) no Cred30`,
+              description: `Aquisição de ${quantity} participação(ões) no sistema Cred30`,
               email: user.email,
               external_reference
             });
@@ -202,7 +202,7 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
           user.id,
           'BUY_QUOTA',
           finalCost,
-          `Compra de ${quantity} cota(s) - ${mpData ? 'Mercado Pago' : 'Aguardando Aprovação'}`,
+          `Aquisição de ${quantity} participação(ões) - ${mpData ? 'Mercado Pago' : 'Aguardando Aprovação'}`,
           'PENDING',
           {
             quantity,
@@ -242,8 +242,8 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
     }
 
     const message = result.data?.immediateApproval
-      ? `Compra de ${result.data?.quantity} cota(s) aprovada imediatamente!`
-      : 'Solicitação de compra enviada! Aguarde a aprovação do administrador.';
+      ? `Aquisição de ${result.data?.quantity} participação(ões) aprovada imediatamente!`
+      : 'Solicitação de participação enviada! Aguarde a confirmação da cooperativa.';
 
     return c.json({
       success: true,
@@ -291,7 +291,7 @@ quotaRoutes.post('/sell', authMiddleware, async (c) => {
     if (activeLoans > 0) {
       return c.json({
         success: false,
-        message: 'Operação bloqueada: Você possui empréstimos em aberto. Quite seus débitos antes de vender cotas.'
+        message: 'Operação bloqueada: Você possui compromissos ativos. Quite seus débitos antes de ceder participações.'
       }, 400);
     }
 
@@ -302,7 +302,7 @@ quotaRoutes.post('/sell', authMiddleware, async (c) => {
     );
 
     if (quotaResult.rows.length === 0) {
-      return c.json({ success: false, message: 'Cota não encontrada' }, 404);
+      return c.json({ success: false, message: 'Participação não encontrada' }, 404);
     }
 
     const quota = quotaResult.rows[0];
@@ -368,20 +368,20 @@ quotaRoutes.post('/sell', authMiddleware, async (c) => {
         );
       }
 
-      // Criar transação de venda
+      // Criar transação de cessão
       await client.query(
         `INSERT INTO transactions (user_id, type, amount, description, status, metadata)
          VALUES ($1, 'SELL_QUOTA', $2, $3, 'APPROVED', $4)`,
         [
           user.id,
           finalAmount,
-          `Resgate de cota ${isEarlyExit ? '(Multa 40%)' : '(Integral)'}`,
+          `Cessão de participação ${isEarlyExit ? '(Multa 40%)' : '(Integral)'}`,
           JSON.stringify({
             originalAmount,
             penaltyAmount: isEarlyExit ? penaltyAmount : 0,
             profitAmount: isEarlyExit ? penaltyAmount : 0, // Multa vai para o lucro
             isEarlyExit,
-            note: isEarlyExit ? 'Multa de 40% aplicada (direcionada para lucro de juros)' : 'Resgate integral sem penalidade'
+            note: isEarlyExit ? 'Multa de 40% aplicada (direcionada para lucro de juros)' : 'Cessão integral sem penalidade'
           })
         ]
       );
@@ -405,7 +405,7 @@ quotaRoutes.post('/sell', authMiddleware, async (c) => {
 
     return c.json({
       success: true,
-      message: 'Cota resgatada com sucesso! Valor creditado no saldo.',
+      message: 'Participação cedida com sucesso! Valor creditado no saldo.',
       data: {
         finalAmount,
         penaltyAmount: isEarlyExit ? penaltyAmount : 0,
@@ -438,7 +438,7 @@ quotaRoutes.post('/sell-all', authMiddleware, async (c) => {
     if (activeLoans > 0) {
       return c.json({
         success: false,
-        message: 'Operação bloqueada: Você possui empréstimos em aberto. Quite seus débitos antes de vender cotas.'
+        message: 'Operação bloqueada: Você possui compromissos ativos. Quite seus débitos antes de ceder participações.'
       }, 400);
     }
 
@@ -451,7 +451,7 @@ quotaRoutes.post('/sell-all', authMiddleware, async (c) => {
     const userQuotas = userQuotasResult.rows;
 
     if (userQuotas.length === 0) {
-      return c.json({ success: false, message: 'Você não possui cotas para vender' }, 400);
+      return c.json({ success: false, message: 'Você não possui participações para cessão' }, 400);
     }
 
     // Calcular valores
