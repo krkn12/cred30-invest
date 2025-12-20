@@ -19,7 +19,7 @@ const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   secretPhrase: z.string().optional().or(z.literal('')),
-  twoFactorCode: z.string().length(6).optional(),
+  twoFactorCode: z.string().length(6).optional().or(z.literal('')),
 });
 
 const registerSchema = z.object({
