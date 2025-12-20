@@ -25,19 +25,30 @@ export const AdBanner = ({ type, title, description, actionText }: AdBannerProps
                 className="bg-gradient-to-br from-primary-900/20 to-surface border border-primary-500/20 rounded-2xl p-4 flex items-center justify-between group cursor-pointer hover:border-primary-500/40 transition-all"
             >
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center text-primary-400">
+                    <div className="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center text-primary-400 shrink-0">
                         <Star size={24} className="fill-primary-500/20" />
                     </div>
                     <div>
-                        <h4 className="text-sm font-bold text-white group-hover:text-primary-400 transition-colors">
-                            {title || 'Oferta Exclusiva Cred30'}
-                        </h4>
+                        <div className="flex items-center gap-2 mb-0.5">
+                            <h4 className="text-sm font-bold text-white group-hover:text-primary-400 transition-colors">
+                                {title || 'Oferta Exclusiva Cred30'}
+                            </h4>
+                            <span className="text-[8px] bg-zinc-800 text-zinc-500 px-1 rounded border border-zinc-700">EXTERNO</span>
+                        </div>
                         <p className="text-xs text-zinc-500 max-w-[200px]">
                             {description || 'Descubra como aumentar seus rendimentos hoje.'}
                         </p>
                     </div>
                 </div>
-                <ExternalLink size={18} className="text-zinc-600 group-hover:text-primary-400 transition-colors" />
+                <div className="flex items-center gap-2">
+                    <ExternalLink size={18} className="text-zinc-600 group-hover:text-primary-400 transition-colors" />
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setIsVisible(false); }}
+                        className="p-2 text-zinc-700 hover:text-white transition-colors"
+                    >
+                        <X size={14} />
+                    </button>
+                </div>
             </div>
         );
     }
@@ -78,7 +89,7 @@ export const AdBanner = ({ type, title, description, actionText }: AdBannerProps
     return (
         <div
             onClick={handleClick}
-            className="flex items-center gap-3 p-3 bg-zinc-900/50 border border-zinc-800 rounded-xl cursor-pointer hover:bg-zinc-800 transition-colors group"
+            className="flex items-center gap-3 p-3 bg-zinc-900/50 border border-zinc-800 rounded-xl cursor-pointer hover:bg-zinc-800 transition-colors group relative"
         >
             <div className="w-8 h-8 bg-zinc-800 rounded-full flex items-center justify-center text-zinc-500 group-hover:text-primary-400">
                 <Info size={16} />
@@ -86,8 +97,15 @@ export const AdBanner = ({ type, title, description, actionText }: AdBannerProps
             <div className="flex-1">
                 <p className="text-[10px] text-zinc-500 leading-tight">
                     {description || 'Dica: Conheça os cartões parceiros com aprovação facilitada.'}
+                    <span className="ml-1 opacity-50 italic">(Parceiro Externo)</span>
                 </p>
             </div>
+            <button
+                onClick={(e) => { e.stopPropagation(); setIsVisible(false); }}
+                className="opacity-0 group-hover:opacity-100 p-1 text-zinc-600 hover:text-white transition-all"
+            >
+                <X size={12} />
+            </button>
             <ExternalLink size={12} className="text-zinc-700" />
         </div>
     );

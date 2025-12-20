@@ -326,6 +326,10 @@ export default function App() {
   }
 
   const handleClaimReward = async () => {
+    const confirmAd = window.confirm("Você está sendo redirecionado para uma oferta de parceiro externo. A Cred30 não se responsabiliza pelo conteúdo exibido fora de nossa plataforma. Deseja continuar?");
+
+    if (!confirmAd) return;
+
     // Abrir o Smartlink do Adsterra em uma nova aba para gerar receita
     window.open('https://www.effectivegatecpm.com/ec4mxdzvs?key=a9eefff1a8aa7769523373a66ff484aa', '_blank');
 
