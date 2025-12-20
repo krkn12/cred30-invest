@@ -1,3 +1,4 @@
+import packageJson from '../package.json';
 import 'dotenv/config';
 import dns from 'node:dns';
 dns.setDefaultResultOrder('ipv4first');
@@ -116,7 +117,7 @@ async function startServer() {
     app.route('/api/notifications', notificationRoutes);
     // Rota de health check
     app.get('/api/health', (c) => {
-      return c.json({ status: 'ok', version: '1.0.1', timestamp: new Date().toISOString() });
+      return c.json({ status: 'ok', version: packageJson.version, timestamp: new Date().toISOString() });
     });
 
     const port = process.env.PORT || 3001;

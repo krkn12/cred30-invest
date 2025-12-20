@@ -1,7 +1,7 @@
 {
   "name": "cred30",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Plataforma Fintech Cred30 - Monorepo",
   "workspaces": [
     "packages/*"
@@ -28,7 +28,10 @@
     "docker:dev": "docker-compose -f docker/docker-compose.dev.yml up",
     "migrate:db": "cd packages/backend && npm run migrate:db",
     "seed:db": "cd packages/backend && npm run seed:db",
-    "reset:db": "cd packages/backend && npm run reset:db"
+    "reset:db": "cd packages/backend && npm run reset:db",
+    "bump": "npm version patch --no-git-tag-version && cd packages/backend && npm version patch --no-git-tag-version && cd ../frontend-v2 && npm version patch --no-git-tag-version",
+    "deploy": "git add . && git commit -m \"chore: update version and deploy\" && git push origin master && npm run build:frontend && firebase deploy --only hosting",
+    "release": "npm run bump && npm run deploy"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.0.0",

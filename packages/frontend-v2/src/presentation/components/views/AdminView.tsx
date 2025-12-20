@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import packageJson from '../../../../package.json';
 import {
     ShieldCheck, RefreshCw, LogOut, Users, PieChart, DollarSign, PiggyBank, Coins, ArrowUpFromLine, ArrowDownLeft, TrendingUp, Clock, ArrowUpRight, Check, X as XIcon, AlertTriangle, Settings as SettingsIcon, ShoppingBag as ShoppingBagIcon
 } from 'lucide-react';
@@ -220,7 +221,7 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                                 </span>
-                                <p className="text-xs text-zinc-400 font-bold uppercase tracking-[0.2em]">Servidor Ativo • v1.0.1</p>
+                                <p className="text-xs text-zinc-400 font-bold uppercase tracking-[0.2em]">Servidor Ativo • v{packageJson.version}</p>
                             </div>
                         </div>
                     </div>

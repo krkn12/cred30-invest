@@ -8,16 +8,17 @@ Este documento explica como realizar o deploy do Frontend e do Backend, além de
 
 O projeto está configurado com **Integração Contínua (CI/CD)**. Isso significa que você não precisa fazer o deploy manualmente via terminal na maioria das vezes.
 
-### Fluxo Automático
-Sempre que você rodar os comandos abaixo no seu terminal local, o deploy será iniciado:
+### Fluxo Completo de Lançamento (Recomendado)
+Para atualizar a versão e enviar para produção em um único comando:
 ```bash
-git add .
-git commit -m "Descricao da sua alteracao"
-git push origin master
+npm run release
 ```
+*Este comando executa o `bump` (+0.0.1) e o `deploy` automaticamente.*
 
-- **Backend**: O **Render.com** detecta o `push` na branch `master` e inicia o build automaticamente.
-- **Frontend**: O **GitHub Actions** detecta o `push` e inicia o build e o deploy para o **Firebase Hosting**.
+### Componentes Internos
+Caso queira rodar os passos separadamente:
+- `npm run bump`: Apenas incrementa a versão em todos os pacotes.
+- `npm run deploy`: Apenas gera a build e envia para os servidores.
 
 ---
 
