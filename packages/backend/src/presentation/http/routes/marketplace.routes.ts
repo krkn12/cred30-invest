@@ -37,10 +37,12 @@ marketplaceRoutes.get('/listings', authMiddleware, async (c) => {
 
         return c.json({
             success: true,
-            listings: result.rows.map(l => ({
-                ...l,
-                price: parseFloat(l.price)
-            }))
+            data: {
+                listings: result.rows.map(l => ({
+                    ...l,
+                    price: parseFloat(l.price)
+                }))
+            }
         });
     } catch (error) {
         console.error('Erro ao listar anúncios:', error);
@@ -56,7 +58,17 @@ marketplaceRoutes.post('/create', authMiddleware, async (c) => {
         const user = c.get('user') as UserContext;
         const pool = getDbPool(c);
         const body = await c.req.json();
-        const { title, description, price, category, imageUrl } = createListingSchema.parse(body);
+        const parseResult = createListingSchema.safeParse(body);
+
+        if (!parseResult.success) {
+            return c.json({
+                success: false,
+                message: 'Dados do anúncio inválidos',
+                errors: parseResult.error.errors
+            }, 400);
+        }
+
+        const { title, description, price, category, imageUrl } = parseResult.data;
 
         const result = await pool.query(
             `INSERT INTO marketplace_listings (seller_id, title, description, price, category, image_url)
@@ -253,7 +265,12 @@ marketplaceRoutes.get('/my-orders', authMiddleware, async (c) => {
             [user.id]
         );
 
-        return c.json({ success: true, orders: result.rows });
+        return c.json({
+            success: true,
+            data: {
+                orders: result.rows
+            }
+        });
     } catch (error) {
         console.error('Erro ao listar pedidos:', error);
         return c.json({ success: false, message: 'Erro ao buscar seu histórico' }, 500);

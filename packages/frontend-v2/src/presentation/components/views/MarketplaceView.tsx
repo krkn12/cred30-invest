@@ -8,6 +8,7 @@ import {
 import { AdBanner } from '../ui/AdBanner';
 import { AppState, User } from '../../../domain/types/common.types';
 import { MARKETPLACE_ESCROW_FEE_RATE } from '../../../shared/constants/app.constants';
+import { apiService } from '../../../application/services/api.service';
 
 interface MarketplaceViewProps {
     state: AppState;
@@ -84,56 +85,54 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
 
     const fetchListings = async () => {
         try {
-            const token = localStorage.getItem('authToken');
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/marketplace/listings`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (data.success) setListings(data.listings);
+            const response = await apiService.get<any>('/marketplace/listings');
+            if (response.success) setListings(response.data?.listings || []);
         } catch (e) {
-            console.error(e);
+            console.error('Fetch listings error:', e);
         }
     };
 
     const fetchMyOrders = async () => {
         try {
-            const token = localStorage.getItem('authToken');
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/marketplace/my-orders`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (data.success) setMyOrders(data.orders);
+            const response = await apiService.get<any>('/marketplace/my-orders');
+            if (response.success) setMyOrders(response.data?.orders || []);
         } catch (e) {
-            console.error(e);
+            console.error('Fetch orders error:', e);
         }
     };
 
     const handleCreateListing = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const priceNum = parseFloat(newListing.price);
+        if (isNaN(priceNum) || priceNum <= 0) {
+            onError('Preço Inválido', 'Por favor, coloque um valor válido para o item.');
+            return;
+        }
+
+        if (!newListing.imageUrl) {
+            onError('Foto Obrigatória', 'Por favor, selecione uma foto para o seu produto.');
+            return;
+        }
+
         setLoading(true);
         try {
-            const token = localStorage.getItem('authToken');
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/marketplace/create`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    ...newListing,
-                    price: parseFloat(newListing.price)
-                })
+            const response = await apiService.post<any>('/marketplace/create', {
+                ...newListing,
+                price: priceNum
             });
-            const data = await res.json();
-            if (data.success) {
+
+            if (response.success) {
                 onSuccess('Parabéns!', 'Seu item já está à venda no Mercado Cred30.');
                 setView('browse');
                 fetchListings();
+                setNewListing({ title: '', description: '', price: '', category: 'OUTROS', imageUrl: '' });
             } else {
-                onError('Erro', data.message);
+                onError('Erro', response.message);
             }
-        } catch (e) {
-            onError('Erro', 'Não foi possível publicar seu anúncio.');
+        } catch (e: any) {
+            console.error('Create listing error:', e);
+            onError('Falha no Anúncio', e.message || 'Não foi possível publicar seu anúncio. Verifique os dados.');
         } finally {
             setLoading(false);
         }
@@ -144,26 +143,17 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
 
         setLoading(true);
         try {
-            const token = localStorage.getItem('authToken');
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/marketplace/buy`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ listingId })
-            });
-            const data = await res.json();
-            if (data.success) {
-                onSuccess('Compra Realizada!', data.message);
+            const response = await apiService.post<any>('/marketplace/buy', { listingId });
+            if (response.success) {
+                onSuccess('Compra Realizada!', response.message);
                 setView('my-orders');
                 fetchMyOrders();
                 onRefresh(); // Update balance
             } else {
-                onError('Falha na Compra', data.message);
+                onError('Falha na Compra', response.message);
             }
-        } catch (e) {
-            onError('Erro', 'Erro ao processar sua compra.');
+        } catch (e: any) {
+            onError('Erro', e.message || 'Erro ao processar sua compra.');
         } finally {
             setLoading(false);
         }
@@ -174,21 +164,15 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
 
         setLoading(true);
         try {
-            const token = localStorage.getItem('authToken');
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/marketplace/order/${orderId}/receive`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (data.success) {
-                onSuccess('Sucesso!', 'Você confirmou o recebimento. Dinheiro liberado.');
+            const response = await apiService.post<any>(`/marketplace/order/${orderId}/receive`, {});
+            if (response.success) {
+                onSuccess('Sucesso!', 'Valor liberado para o vendedor.');
                 fetchMyOrders();
-                onRefresh();
             } else {
-                onError('Erro', data.message);
+                onError('Erro', response.message);
             }
-        } catch (e) {
-            onError('Erro', 'Erro ao processar liberação.');
+        } catch (e: any) {
+            onError('Erro', e.message || 'Erro ao processar liberação.');
         } finally {
             setLoading(false);
         }
