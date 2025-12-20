@@ -538,7 +538,7 @@ export const initializeDatabase = async () => {
 
     // --- NOVO MERCADO CRED30 (P2P MARKETPLACE) ---
 
-    // Tabela de Anúncios (OLX STYLE)
+    // Tabela de Anúncios (OLX STYLE) com suporte a impulsionamento
     await client.query(`
       CREATE TABLE IF NOT EXISTS marketplace_listings (
         id SERIAL PRIMARY KEY,
@@ -549,9 +549,17 @@ export const initializeDatabase = async () => {
         category VARCHAR(50) DEFAULT 'OUTROS',
         image_url TEXT,
         status VARCHAR(20) DEFAULT 'ACTIVE', -- ACTIVE, SOLD, PAUSED, DELETED
+        is_boosted BOOLEAN DEFAULT FALSE,
+        boost_expires_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
+    `);
+
+    // Garantir que as colunas de impulsionamento existem (para bancos legados)
+    await client.query(`
+      ALTER TABLE marketplace_listings ADD COLUMN IF NOT EXISTS is_boosted BOOLEAN DEFAULT FALSE;
+      ALTER TABLE marketplace_listings ADD COLUMN IF NOT EXISTS boost_expires_at TIMESTAMP;
     `);
 
     // Tabela de Pedidos / Escrow (Garantia Cred30)
@@ -589,6 +597,13 @@ export const initializeDatabase = async () => {
       CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
       CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);
       CREATE INDEX IF NOT EXISTS idx_transactions_created_at ON transactions(created_at);
+    `);
+
+    // Adicionar campos de monetização na tabela de usuários
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS membership_type VARCHAR(20) DEFAULT 'FREE'; -- FREE, PRO
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS last_reward_at TIMESTAMP;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS total_dividends_earned DECIMAL(12, 2) DEFAULT 0;
     `);
 
     // Criar tabelas de auditoria e webhooks

@@ -408,20 +408,39 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
                                             </div>
                                         </div>
                                         <div className="p-4 flex-1 flex flex-col">
-                                            <h3 className="font-bold text-white text-base mb-1 line-clamp-1">{item.title}</h3>
+                                            <div className="flex justify-between items-start mb-1">
+                                                <h3 className="font-bold text-white text-base line-clamp-1">{item.title}</h3>
+                                                {item.is_boosted && (
+                                                    <div className="bg-primary-500/10 text-primary-400 text-[8px] px-1.5 py-0.5 rounded border border-primary-500/20 flex items-center gap-1 font-black">
+                                                        <Zap size={8} /> DESTAQUE
+                                                    </div>
+                                                )}
+                                            </div>
                                             <p className="text-xs text-zinc-500 mb-4 line-clamp-2 h-8">{item.description}</p>
 
-                                            <div className="mt-auto pt-4 border-t border-surfaceHighlight flex items-center justify-between">
-                                                <span className="text-lg font-black text-primary-400">{formatCurrency(parseFloat(item.price))}</span>
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedItem(item);
-                                                        setView('details');
-                                                    }}
-                                                    className="bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg text-xs font-black transition active:scale-95 flex items-center gap-2"
-                                                >
-                                                    COMPRAR AGORA
-                                                </button>
+                                            <div className="mt-auto pt-4 border-t border-surfaceHighlight flex flex-col gap-3">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-lg font-black text-primary-400">{formatCurrency(parseFloat(item.price))}</span>
+                                                    {item.seller_id === state.currentUser?.id ? (
+                                                        <button
+                                                            onClick={() => handleBoostListing(item.id)}
+                                                            disabled={item.is_boosted}
+                                                            className={`text-[9px] font-black px-3 py-1.5 rounded-lg flex items-center gap-1 transition ${item.is_boosted ? 'bg-zinc-800 text-zinc-500' : 'bg-primary-500/10 text-primary-400 hover:bg-primary-500 hover:text-black'}`}
+                                                        >
+                                                            <Zap size={10} /> {item.is_boosted ? 'IMPULSIONADO' : 'IMPULSIONAR'}
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedItem(item);
+                                                                setView('details');
+                                                            }}
+                                                            className="bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg text-xs font-black transition active:scale-95 flex items-center gap-2"
+                                                        >
+                                                            COMPRAR AGORA
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

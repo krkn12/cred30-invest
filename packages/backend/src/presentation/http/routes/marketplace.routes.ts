@@ -32,7 +32,7 @@ marketplaceRoutes.get('/listings', authMiddleware, async (c) => {
        FROM marketplace_listings l 
        JOIN users u ON l.seller_id = u.id 
        WHERE l.status = 'ACTIVE' 
-       ORDER BY l.created_at DESC`
+       ORDER BY l.is_boosted DESC, l.created_at DESC`
         );
 
         return c.json({
@@ -275,6 +275,70 @@ marketplaceRoutes.get('/my-orders', authMiddleware, async (c) => {
     } catch (error) {
         console.error('Erro ao listar pedidos:', error);
         return c.json({ success: false, message: 'Erro ao buscar seu histórico' }, 500);
+    }
+});
+
+/**
+ * Impulsionar um anúncio (Monetização)
+ */
+marketplaceRoutes.post('/boost', authMiddleware, async (c) => {
+    try {
+        const user = c.get('user') as UserContext;
+        const pool = getDbPool(c);
+        const { listingId } = await c.req.json();
+        const BOOST_FEE = 5.00; // R$ 5,00 para impulsionar por 7 dias
+
+        const result = await executeInTransaction(pool, async (client) => {
+            // 1. Verificar se o anúncio pertence ao usuário e está ativo
+            const listingRes = await client.query(
+                'SELECT * FROM marketplace_listings WHERE id = $1 AND seller_id = $2 AND status = $3',
+                [listingId, user.id, 'ACTIVE']
+            );
+
+            if (listingRes.rows.length === 0) throw new Error('Anúncio não encontrado ou inválido');
+
+            // 2. Verificar saldo do usuário
+            const userRes = await client.query('SELECT balance FROM users WHERE id = $1', [user.id]);
+            if (parseFloat(userRes.rows[0].balance) < BOOST_FEE) throw new Error('Saldo insuficiente para impulsionar');
+
+            // 3. Cobrar taxa e atualizar anúncio
+            await client.query('UPDATE users SET balance = balance - $1 WHERE id = $2', [BOOST_FEE, user.id]);
+
+            const expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + 7);
+
+            await client.query(
+                'UPDATE marketplace_listings SET is_boosted = TRUE, boost_expires_at = $1 WHERE id = $2',
+                [expiresAt, listingId]
+            );
+
+            // 4. Distribuir dividendos (15% para cotistas)
+            const feeForProfit = BOOST_FEE * 0.15;
+            const feeForOperational = BOOST_FEE * 0.85;
+
+            await client.query(
+                'UPDATE system_config SET system_balance = system_balance + $1, profit_pool = profit_pool + $2',
+                [feeForOperational, feeForProfit]
+            );
+
+            // 5. Registrar transação
+            await createTransaction(
+                client,
+                user.id,
+                'MARKET_BOOST',
+                -BOOST_FEE,
+                `Impulsionamento de Anúncio: ${listingRes.rows[0].title}`,
+                'APPROVED'
+            );
+
+            return { success: true };
+        });
+
+        if (!result.success) return c.json({ success: false, message: result.error }, 400);
+        return c.json({ success: true, message: 'Seu anúncio foi impulsionado! Ele aparecerá no topo por 7 dias.' });
+    } catch (error: any) {
+        console.error('Error boosting listing:', error);
+        return c.json({ success: false, message: error.message || 'Erro ao impulsionar anúncio' }, 500);
     }
 });
 

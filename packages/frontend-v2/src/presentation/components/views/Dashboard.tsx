@@ -4,7 +4,7 @@ import {
     Users, Gamepad2, TrendingUp, DollarSign, ArrowUpFromLine,
     Repeat, Crown, Clock, ArrowDownLeft, ArrowUpRight,
     PieChart, AlertTriangle, LogOut, Star, Zap,
-    ShoppingBag, Tag, PlusCircle, ShieldCheck, ChevronRight, Wallet
+    ShoppingBag, Tag, PlusCircle, ShieldCheck, ChevronRight, Wallet, Coins
 } from 'lucide-react';
 import { AppState, User } from '../../../domain/types/common.types';
 import { QUOTA_PRICE } from '../../../shared/constants/app.constants';
@@ -27,9 +27,10 @@ interface DashboardProps {
     onChangePassword: (oldPass: string, newPass: string) => Promise<void>;
     onClaimReward: () => Promise<void>;
     onMarketplace: () => void;
+    onEarn: () => void;
 }
 
-export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onReinvest, onRefer, onVip, onLogout, onSuccess, onError, onChangePassword, onClaimReward, onMarketplace }: DashboardProps) => {
+export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onReinvest, onRefer, onVip, onLogout, onSuccess, onError, onChangePassword, onClaimReward, onMarketplace, onEarn }: DashboardProps) => {
     const user = state.currentUser!;
 
     const { userQuotas, totalInvested, totalCurrentValue, totalEarnings, earningsPercentage } = useMemo(() => {
@@ -206,22 +207,22 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* Tarefa: Assistir Anúncio */}
+                        {/* Novo Atalho: Central de Ganhos */}
                         <div className="bg-background/50 border border-surfaceHighlight rounded-xl p-4 flex items-center justify-between group hover:border-yellow-500/30 transition-all">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-yellow-500/10 rounded-lg flex items-center justify-center text-yellow-500">
-                                    <Gamepad2 size={20} />
+                                    <Coins size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-white">Anúncio Premiado</p>
-                                    <p className="text-[10px] text-zinc-400">+5 Pontos de Score</p>
+                                    <p className="text-sm font-bold text-white">Ganhos Diários</p>
+                                    <p className="text-[10px] text-zinc-400">Vídeos & Assinatura PRO</p>
                                 </div>
                             </div>
                             <button
-                                onClick={onClaimReward}
+                                onClick={onEarn}
                                 className="bg-yellow-500 hover:bg-yellow-400 text-black text-[10px] font-black px-3 py-2 rounded-lg transition-transform active:scale-95 shadow-lg shadow-yellow-500/20"
                             >
-                                ASSISTIR
+                                ACESSAR
                             </button>
                         </div>
 

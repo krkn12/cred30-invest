@@ -29,6 +29,7 @@ const SlotMachine = lazy(() => import('../components/features/slot-machine.compo
 const AIAssistant = lazy(() => import('../components/features/ai-assistant.component').then(m => ({ default: m.AIAssistant })));
 const HistoryView = lazy(() => import('../components/views/HistoryView').then(m => ({ default: m.HistoryView })));
 const MarketplaceView = lazy(() => import('../components/views/MarketplaceView').then(m => ({ default: m.MarketplaceView })));
+const EarnView = lazy(() => import('../components/views/EarnView').then(m => ({ default: m.EarnView })));
 
 import { ConfirmModal } from '../components/ui/ConfirmModal';
 
@@ -408,6 +409,7 @@ export default function App() {
                     }}
                     onClaimReward={handleClaimReward}
                     onMarketplace={() => navigate('/app/marketplace')}
+                    onEarn={() => navigate('/app/earn')}
                   />
                 </Suspense>
               } />
@@ -474,20 +476,11 @@ export default function App() {
                   />
                 </Suspense>
               } />
+              <Route path="marketplace" element={<Suspense fallback={null}><MarketplaceView state={state} onBack={() => navigate('/app/dashboard')} onSuccess={(title, message) => setShowSuccess({ isOpen: true, title, message })} onError={(title, message) => setShowError({ isOpen: true, title, message })} onRefresh={refreshState} /></Suspense>} />
+              <Route path="earn" element={<Suspense fallback={null}><EarnView state={state} onBack={() => navigate('/app/dashboard')} onSuccess={(title, message) => setShowSuccess({ isOpen: true, title, message })} onError={(title, message) => setShowError({ isOpen: true, title, message })} onRefresh={refreshState} /></Suspense>} />
               <Route path="history" element={
                 <Suspense fallback={null}>
                   <HistoryView transactions={state.transactions.filter(t => t.userId === state.currentUser!.id)} />
-                </Suspense>
-              } />
-              <Route path="marketplace" element={
-                <Suspense fallback={null}>
-                  <MarketplaceView
-                    state={state}
-                    onBack={() => navigate('/app/dashboard')}
-                    onSuccess={(t, m) => setShowSuccess({ isOpen: true, title: t, message: m })}
-                    onError={(t, m) => setShowError({ isOpen: true, title: t, message: m })}
-                    onRefresh={refreshState}
-                  />
                 </Suspense>
               } />
               <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
@@ -608,7 +601,7 @@ export default function App() {
             />
           </Layout>
         } />
-      </Routes>
+      </Routes >
     </>
   );
 }

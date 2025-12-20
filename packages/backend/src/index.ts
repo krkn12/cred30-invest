@@ -18,6 +18,7 @@ import { productsRoutes } from './presentation/http/routes/products.routes';
 import { webhookRoutes } from './presentation/http/routes/webhooks.routes';
 import { notificationRoutes } from './presentation/http/routes/notifications.routes';
 import { marketplaceRoutes } from './presentation/http/routes/marketplace.routes';
+import { monetizationRoutes } from './presentation/http/routes/monetization.routes';
 import { pool, initializeDatabase, setDbPool } from './infrastructure/database/postgresql/connection/pool';
 import { initializeScheduler } from './scheduler';
 
@@ -117,6 +118,7 @@ async function startServer() {
     app.route('/api/webhooks', webhookRoutes);
     app.route('/api/notifications', notificationRoutes);
     app.route('/api/marketplace', marketplaceRoutes);
+    app.route('/api/monetization', monetizationRoutes);
     // Rota de health check
     app.get('/api/health', (c) => {
       return c.json({ status: 'ok', version: packageJson.version, timestamp: new Date().toISOString() });

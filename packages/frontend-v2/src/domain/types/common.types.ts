@@ -10,6 +10,7 @@ export interface User {
   score?: number;
   secretPhrase?: string;
   twoFactorEnabled?: boolean;
+  membership_type?: 'FREE' | 'PRO';
 }
 
 export interface Quota {

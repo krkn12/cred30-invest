@@ -22,7 +22,8 @@ export const distributeProfits = async (pool: Pool | PoolClient): Promise<any> =
                 FROM users u
                 LEFT JOIN loans l ON l.user_id = u.id
                 LEFT JOIN transactions t ON t.user_id = u.id
-                WHERE l.id IS NOT NULL OR t.type = 'GAME_BET'
+                WHERE l.id IS NOT NULL 
+                   OR t.type IN ('GAME_BET', 'MARKET_BOOST', 'AD_REWARD', 'MEMBERSHIP_UPGRADE')
             )
             SELECT q.user_id, COUNT(q.id) as quota_count
             FROM quotas q
