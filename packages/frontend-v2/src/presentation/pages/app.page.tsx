@@ -507,27 +507,27 @@ export default function App() {
               />
 
               {showSuccess.isOpen && (
-                <div className="fixed bottom-24 left-4 right-4 md:left-auto md:right-8 md:w-96 z-[200] animate-in slide-in-from-bottom-5 duration-300">
-                  <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-4 backdrop-blur-xl">
-                    <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shrink-0"><Check size={24} /></div>
-                    <div className="flex-1">
-                      <h4 className="text-white font-bold text-sm tracking-tight">{showSuccess.title}</h4>
-                      <p className="text-zinc-400 text-xs">{showSuccess.message}</p>
+                <div className="fixed bottom-24 left-4 right-4 md:top-6 md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-auto md:min-w-[400px] z-[9999] animate-in slide-in-from-bottom-5 md:slide-in-from-top-5 duration-300 pointer-events-none">
+                  <div className="bg-[#050505] border border-emerald-500/30 rounded-2xl p-4 flex items-center gap-4 shadow-2xl shadow-emerald-900/40 pointer-events-auto ring-1 ring-emerald-500/20">
+                    <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-black shrink-0 shadow-lg shadow-emerald-500/30"><Check size={24} strokeWidth={3} /></div>
+                    <div className="flex-1 pr-4">
+                      <h4 className="text-white font-black text-sm tracking-tight uppercase">{showSuccess.title}</h4>
+                      <p className="text-zinc-400 text-xs font-medium leading-relaxed">{showSuccess.message}</p>
                     </div>
-                    <button onClick={() => setShowSuccess({ ...showSuccess, isOpen: false })} className="text-zinc-500 hover:text-white">✕</button>
+                    <button onClick={() => setShowSuccess({ ...showSuccess, isOpen: false })} className="text-zinc-500 hover:text-white transition-colors bg-zinc-900/50 p-2 rounded-lg"><XIcon size={16} /></button>
                   </div>
                 </div>
               )}
 
               {showError.isOpen && (
-                <div className="fixed bottom-24 left-4 right-4 md:left-auto md:right-8 md:w-96 z-[200] animate-in slide-in-from-bottom-5 duration-300">
-                  <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center gap-4 backdrop-blur-xl">
-                    <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center text-white shrink-0"><AlertTriangle size={24} /></div>
-                    <div className="flex-1">
-                      <h4 className="text-white font-bold text-sm tracking-tight">{showError.title}</h4>
-                      <p className="text-zinc-400 text-xs">{showError.message}</p>
+                <div className="fixed bottom-24 left-4 right-4 md:top-6 md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-auto md:min-w-[400px] z-[9999] animate-in slide-in-from-bottom-5 md:slide-in-from-top-5 duration-300 pointer-events-none">
+                  <div className="bg-[#050505] border border-red-500/30 rounded-2xl p-4 flex items-center gap-4 shadow-2xl shadow-red-900/40 pointer-events-auto ring-1 ring-red-500/20">
+                    <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-red-500/30"><AlertTriangle size={24} strokeWidth={3} /></div>
+                    <div className="flex-1 pr-4">
+                      <h4 className="text-white font-black text-sm tracking-tight uppercase">{showError.title}</h4>
+                      <p className="text-zinc-400 text-xs font-medium leading-relaxed">{showError.message}</p>
                     </div>
-                    <button onClick={() => setShowError({ ...showError, isOpen: false })} className="text-zinc-500 hover:text-white">✕</button>
+                    <button onClick={() => setShowError({ ...showError, isOpen: false })} className="text-zinc-500 hover:text-white transition-colors bg-zinc-900/50 p-2 rounded-lg"><XIcon size={16} /></button>
                   </div>
                 </div>
               )}

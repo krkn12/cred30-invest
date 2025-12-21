@@ -28,6 +28,10 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
     const [buyMethod, setBuyMethod] = useState<'balance' | 'credit'>('balance');
     const [selectedInstallments, setSelectedInstallments] = useState(1);
 
+    // Novos estados de entrega e contato
+    const [deliveryAddress, setDeliveryAddress] = useState('');
+    const [contactPhone, setContactPhone] = useState('');
+
     // Form states
     const [newListing, setNewListing] = useState({
         title: '',
@@ -243,10 +247,16 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
 
         setLoading(true);
         try {
-            const response = await apiService.post<any>('/marketplace/buy', { listingId });
+            const response = await apiService.post<any>('/marketplace/buy', {
+                listingId,
+                deliveryAddress,
+                contactPhone
+            });
             if (response.success) {
                 onSuccess('Compra Realizada!', response.message);
                 setView('my-orders');
+                setDeliveryAddress('');
+                setContactPhone('');
                 fetchMyOrders();
                 onRefresh(); // Update balance
             } else {
@@ -305,11 +315,15 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
         try {
             const response = await apiService.post<any>('/marketplace/buy-on-credit', {
                 listingId,
-                installments: selectedInstallments
+                installments: selectedInstallments,
+                deliveryAddress,
+                contactPhone
             });
             if (response.success) {
                 onSuccess('Apoio Aprovado!', response.message);
                 setView('my-orders');
+                setDeliveryAddress('');
+                setContactPhone('');
                 fetchMyOrders();
                 onRefresh();
             } else {
@@ -712,6 +726,27 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
                                     <div className="text-white font-black">{formatCurrency(isBuyer ? parseFloat(order.amount) : parseFloat(order.seller_amount))}</div>
                                 </div>
 
+                                {/* Dados de Entrega (Visível para ambos) */}
+                                {(order.delivery_address || order.contact_phone) && (
+                                    <div className="bg-zinc-800/30 p-3 rounded-xl space-y-2 border border-zinc-700/30">
+                                        <p className="text-[10px] uppercase font-bold text-zinc-500 mb-1 flex items-center gap-1">
+                                            <Truck size={12} /> Detalhes de Envio
+                                        </p>
+                                        {order.delivery_address && (
+                                            <div className="text-xs text-zinc-300">
+                                                <span className="text-zinc-500 block text-[9px]">Endereço:</span>
+                                                {order.delivery_address}
+                                            </div>
+                                        )}
+                                        {order.contact_phone && (
+                                            <div className="text-xs text-zinc-300">
+                                                <span className="text-zinc-500 block text-[9px]">Contato:</span>
+                                                {order.contact_phone}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
                                 {isBuyer && order.status === 'WAITING_SHIPPING' && (
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-2 text-[10px] text-zinc-500 bg-zinc-800/30 p-2 rounded-lg">
@@ -843,22 +878,56 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
                             )}
                         </div>
 
+                        {/* Dados de Entrega */}
+                        <div className="bg-background/40 rounded-2xl p-6 mb-6 space-y-4">
+                            <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                                <Truck size={14} /> Dados para Entrega
+                            </h4>
+
+                            <div>
+                                <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1">Endereço Completo</label>
+                                <textarea
+                                    value={deliveryAddress}
+                                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                                    placeholder="Rua, Número, Bairro, Cidade - CEP (e ponto de referência)"
+                                    rows={3}
+                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 mt-1 resize-none text-xs"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1">WhatsApp para Contato</label>
+                                <input
+                                    type="tel"
+                                    value={contactPhone}
+                                    onChange={(e) => setContactPhone(e.target.value)}
+                                    placeholder="(00) 00000-0000"
+                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 mt-1 text-xs"
+                                />
+                            </div>
+
+                            <p className="text-[10px] text-zinc-500 italic leading-tight">
+                                * Esses dados serão enviados apenas ao vendedor após a confirmação do pagamento.
+                            </p>
+                        </div>
+
                         <div className="space-y-4">
                             <div className="flex items-center gap-3 text-xs text-zinc-400">
                                 <ShieldCheck size={18} className="text-primary-400" />
                                 <span>Compra protegida pela Garantia Cred30</span>
                             </div>
-                            <div className="flex items-center gap-3 text-xs text-zinc-400">
-                                <Truck size={18} className="text-zinc-500" />
-                                <span>Combine a entrega diretamente com o vendedor</span>
-                            </div>
 
                             <button
                                 onClick={() => buyMethod === 'balance' ? handleBuy(selectedItem.id) : handleBuyOnCredit(selectedItem.id)}
-                                disabled={loading || (buyMethod === 'credit' && state.currentUser!.score < MARKET_CREDIT_MIN_SCORE)}
-                                className="w-full bg-primary-600 hover:bg-primary-500 text-white font-black py-4 rounded-2xl shadow-lg transition active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
+                                disabled={loading || (buyMethod === 'credit' && state.currentUser!.score < MARKET_CREDIT_MIN_SCORE) || deliveryAddress.length < 10 || contactPhone.length < 8}
+                                className="w-full bg-primary-600 hover:bg-primary-500 text-white font-black py-4 rounded-2xl shadow-lg transition active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 text-lg disabled:cursor-not-allowed"
                             >
-                                <ShoppingBag /> {loading ? 'PROCESSANDO...' : (buyMethod === 'credit' ? 'SOLICITAR APOIO SOCIAL' : 'COMPRAR AGORA')}
+                                <ShoppingBag />
+                                {loading ? 'PROCESSANDO...' : (
+                                    deliveryAddress.length < 10 || contactPhone.length < 8
+                                        ? 'PREENCHA A ENTREGA'
+                                        : (buyMethod === 'credit' ? 'SOLICITAR APOIO SOCIAL' : 'COMPRAR AGORA')
+                                )}
                             </button>
                         </div>
                     </div>
