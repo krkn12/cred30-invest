@@ -90,8 +90,8 @@ const TermsPage = () => {
                                 <p className="text-zinc-400 text-xs sm:text-sm">85% das sobras operacionais (taxas e anúncios) são distribuídas como bônus de participação. Não há promessa de rendimento fixo ou garantido.</p>
                             </div>
                             <div className="bg-zinc-900/50 p-5 sm:p-6 rounded-xl sm:rounded-2xl border border-white/5">
-                                <h3 className="font-bold mb-2 text-white">Cessão de Participação</h3>
-                                <p className="text-zinc-400 text-xs sm:text-sm">As participações podem ser cedidas de volta ao fundo pelo valor patrimonial atualizado, conforme disponibilidade de liquidez do grupo.</p>
+                                <h3 className="font-bold mb-2 text-white">Cessão e Carência (Regra de 1 Ano)</h3>
+                                <p className="text-zinc-400 text-xs sm:text-sm">As participações têm carência de 1 ano (365 dias) para resgate integral. Resgates antes desse prazo implicam em multa de 40% sobre o valor, destinada ao fundo de reserva.</p>
                             </div>
                             <div className="bg-zinc-900/50 p-5 sm:p-6 rounded-xl sm:rounded-2xl border border-white/5">
                                 <h3 className="font-bold mb-2 text-white">Fundo de Reserva</h3>

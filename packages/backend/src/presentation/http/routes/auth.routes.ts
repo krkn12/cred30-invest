@@ -250,17 +250,9 @@ authRoutes.post('/register', async (c) => {
         return c.json({ success: false, message: 'Código de indicação inválido. O Cred30 é exclusivo para convidados.' }, 403);
       }
 
-      // Aplicar bônus de indicação
-      await pool.query(
-        'UPDATE users SET balance = balance + $1 WHERE id = $2',
-        [5.00, referrerId]
-      );
-
-      // Registrar transação de bônus
-      await pool.query(
-        'INSERT INTO transactions (user_id, type, amount, description, status) VALUES ($1, $2, $3, $4, $5)',
-        [referrerId, 'REFERRAL_BONUS', 5.00, `Bônus indicação: ${validatedData.name} (${inputCode})`, 'APPROVED']
-      );
+      // 3. NÃO PAGAR BÔNUS IMEDIATAMENTE (Para evitar quebra de caixa)
+      // O bônus será pago apenas quando o indicado comprar sua primeira cota.
+      // Apenas garantimos que o referrerId foi encontrado para vincular ao usuário.
     }
 
     // Criar novo usuário

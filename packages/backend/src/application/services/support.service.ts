@@ -117,10 +117,12 @@ export class SupportService {
                     
                     Informações Chave do Cred30:
                     - Cotas: Custam R$ 50,00. Representam participação e geram dividendos (excedentes).
+                    - Resgates de Cotas: Carência de 1 ano para resgate integral. Se sacar antes, paga multa de 40%.
                     - Apoio Mútuo (Empréstimo): Crédito baseado no score e cotas. Taxa de sustentabilidade de 20%. Pagamento em até 12x. Não requer consulta ao SPC/Serasa, pois é baseado na confiança da comunidade (Score).
                     - Saques: Via PIX do saldo disponível. Taxa Zero se tiver cotas equivalentes ao saque.
                     - Score: Pontos ganhos por pagar em dia, assistir vídeos e completar tarefas. Aumenta limite de apoio.
                     - Jogos/Vídeos: Formas de ganhar saldo extra e score assistindo anúncios.
+                    - Indicação: Ganhe saldo por indicar amigos. O valor cai direto no seu Saldo Pessoal, mesmo que não tenha dinheiro no caixa do sistema (excedentes).
                     
                     Instruções:
                     1. Responda à dúvida do usuário de forma concisa e útil (máximo 4 frases).

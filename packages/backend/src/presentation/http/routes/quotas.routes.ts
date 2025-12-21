@@ -158,7 +158,39 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
           throw new Error(transactionResult.error);
         }
 
-        // 5. Atualizar Score por participação
+        // 5. Pagamento de Bônus de Indicação (Sustentável: Sai da Receita da Cota)
+        // Se o usuário foi indicado por alguém, pagamos R$ 5,00 ao indicador agora.
+        const currentUserRes = await client.query('SELECT referred_by FROM users WHERE id = $1', [user.id]);
+        const referredByCode = currentUserRes.rows[0]?.referred_by;
+
+        if (referredByCode) {
+          // Tentar achar usuário dono do código
+          const referrerRes = await client.query('SELECT id, name FROM users WHERE referral_code = $1', [referredByCode]);
+
+          if (referrerRes.rows.length > 0) {
+            const referrerId = referrerRes.rows[0].id;
+            const bonusAmount = 5.00; // Valor fixo por conversão (CPA)
+
+            // Creditar bônus
+            await client.query('UPDATE users SET balance = balance + $1 WHERE id = $2', [bonusAmount, referrerId]);
+
+            // Registrar Custo de Marketing (Indicação) no Sistema
+            // Isso garante que o caixa reflete a saída dos R$ 5,00 (50 entrou - 5 saiu = 45 líquido)
+            await client.query('UPDATE system_config SET total_manual_costs = total_manual_costs + $1', [bonusAmount]);
+
+            // Registrar transação
+            await createTransaction(
+              client,
+              referrerId,
+              'REFERRAL_BONUS',
+              bonusAmount,
+              `Bônus por indicação: ${user.name} comprou cota(s)`,
+              'APPROVED'
+            );
+          }
+        }
+
+        // 6. Atualizar Score por participação
         await updateScore(client, user.id, SCORE_REWARDS.QUOTA_PURCHASE * quantity, `Aquisição de ${quantity} participações`);
 
         return {
