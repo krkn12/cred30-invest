@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    Users, Gamepad2, TrendingUp, DollarSign, ArrowUpFromLine,
+    Users, Gamepad2, TrendingUp, DollarSign, ArrowUpFromLine, BookOpen,
     Repeat, Crown, Clock, ArrowDownLeft, ArrowUpRight,
     PieChart, AlertTriangle, LogOut, Star, Zap,
     ShoppingBag, Tag, PlusCircle, ShieldCheck, ChevronRight, Wallet, Coins
@@ -28,9 +28,10 @@ interface DashboardProps {
     onClaimReward: () => Promise<void>;
     onMarketplace: () => void;
     onEarn: () => void;
+    onEducation: () => void;
 }
 
-export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onReinvest, onRefer, onVip, onLogout, onSuccess, onError, onChangePassword, onClaimReward, onMarketplace, onEarn }: DashboardProps) => {
+export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onReinvest, onRefer, onVip, onLogout, onSuccess, onError, onChangePassword, onClaimReward, onMarketplace, onEarn, onEducation }: DashboardProps) => {
     const user = state.currentUser!;
 
     const { userQuotas, totalInvested, totalCurrentValue, totalEarnings, earningsPercentage } = useMemo(() => {
@@ -284,6 +285,13 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                         <Gamepad2 size={24} />
                     </div>
                     <span className="text-xs font-medium text-zinc-300">Jogos</span>
+                </button>
+
+                <button onClick={onEducation} className="flex flex-col items-center gap-2 min-w-[72px] group shrink-0">
+                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-zinc-800 flex items-center justify-center text-blue-400 group-hover:bg-blue-900/40 transition-all border border-zinc-700 shadow-lg group-active:scale-95">
+                        <BookOpen size={24} />
+                    </div>
+                    <span className="text-xs font-medium text-zinc-300">Aprender</span>
                 </button>
 
                 <button onClick={onMarketplace} className="flex flex-col items-center gap-2 min-w-[72px] group shrink-0">

@@ -381,6 +381,7 @@ export default function App() {
                       onClaimReward={handleClaimAdReward}
                       onMarketplace={() => navigate('/app/marketplace')}
                       onEarn={() => navigate('/app/earn')}
+                      onEducation={() => navigate('/app/education')}
                     />
                   </Suspense>
                 } />
