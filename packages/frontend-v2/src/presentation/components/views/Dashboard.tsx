@@ -207,43 +207,49 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* Novo Atalho: Central de Ganhos */}
-                        <div className="bg-background/50 border border-surfaceHighlight rounded-xl p-4 flex items-center justify-between group hover:border-yellow-500/30 transition-all">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-yellow-500/10 rounded-lg flex items-center justify-center text-yellow-500">
-                                    <Coins size={20} />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold text-white">Ganhos Diários</p>
-                                    <p className="text-[10px] text-zinc-400">Vídeos & Assinatura PRO</p>
-                                </div>
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                        {/* 1. Jogar & Ganhar */}
+                        <div onClick={onGames} className="bg-zinc-900/50 border border-zinc-800 p-3 rounded-xl flex flex-col items-center justify-center text-center gap-2 cursor-pointer hover:bg-zinc-800 transition-colors group hover:border-purple-500/30">
+                            <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform shadow-lg shadow-purple-900/20">
+                                <Gamepad2 size={20} />
                             </div>
-                            <button
-                                onClick={onEarn}
-                                className="bg-yellow-500 hover:bg-yellow-400 text-black text-[10px] font-black px-3 py-2 rounded-lg transition-transform active:scale-95 shadow-lg shadow-yellow-500/20"
-                            >
-                                ACESSAR
-                            </button>
+                            <div>
+                                <p className="text-xs font-bold text-white">Jogar</p>
+                                <p className="text-[10px] text-zinc-500">Divirta-se e ganhe</p>
+                            </div>
                         </div>
 
-                        {/* Tarefa: Indicação (Existente facilitada) */}
-                        <div className="bg-background/50 border border-surfaceHighlight rounded-xl p-4 flex items-center justify-between group hover:border-primary-500/30 transition-all">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-primary-500/10 rounded-lg flex items-center justify-center text-primary-400">
-                                    <Users size={20} />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold text-white">Novo Membro</p>
-                                    <p className="text-[10px] text-zinc-400">+R$ 5,00 de Bônus</p>
-                                </div>
+                        {/* 2. Aprender (Education) */}
+                        <div onClick={onEducation} className="bg-zinc-900/50 border border-zinc-800 p-3 rounded-xl flex flex-col items-center justify-center text-center gap-2 cursor-pointer hover:bg-zinc-800 transition-colors group hover:border-blue-500/30">
+                            <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform shadow-lg shadow-blue-900/20">
+                                <BookOpen size={20} />
                             </div>
-                            <button
-                                onClick={onRefer}
-                                className="bg-primary-500 hover:bg-primary-400 text-black text-[10px] font-black px-3 py-2 rounded-lg transition-transform active:scale-95 shadow-lg shadow-primary-500/20"
-                            >
-                                CONVIDAR
-                            </button>
+                            <div>
+                                <p className="text-xs font-bold text-white">Aprender</p>
+                                <p className="text-[10px] text-zinc-500">Estude e monetize</p>
+                            </div>
+                        </div>
+
+                        {/* 3. Tarefas (Antigo Ganhos Diários) */}
+                        <div onClick={onEarn} className="bg-zinc-900/50 border border-zinc-800 p-3 rounded-xl flex flex-col items-center justify-center text-center gap-2 cursor-pointer hover:bg-zinc-800 transition-colors group hover:border-yellow-500/30">
+                            <div className="w-10 h-10 bg-yellow-500/20 rounded-full flex items-center justify-center text-yellow-500 group-hover:scale-110 transition-transform shadow-lg shadow-yellow-900/20">
+                                <Coins size={20} />
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold text-white">Tarefas</p>
+                                <p className="text-[10px] text-zinc-500">Mural de ofertas</p>
+                            </div>
+                        </div>
+
+                        {/* 4. Indicar (Referral) */}
+                        <div onClick={onRefer} className="bg-zinc-900/50 border border-zinc-800 p-3 rounded-xl flex flex-col items-center justify-center text-center gap-2 cursor-pointer hover:bg-zinc-800 transition-colors group hover:border-primary-500/30">
+                            <div className="w-10 h-10 bg-primary-500/20 rounded-full flex items-center justify-center text-primary-400 group-hover:scale-110 transition-transform shadow-lg shadow-primary-900/20">
+                                <Users size={20} />
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold text-white">Indicar</p>
+                                <p className="text-[10px] text-zinc-500">Convide amigos</p>
+                            </div>
                         </div>
                     </div>
 
