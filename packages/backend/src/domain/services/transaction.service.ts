@@ -268,6 +268,39 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
 
     await updateScore(client, transaction.user_id, SCORE_REWARDS.QUOTA_PURCHASE * qty, `Compra de ${qty} cotas`);
 
+    // --- PAGAMENTO DE BÔNUS DE INDICAÇÃO (R$ 5,00) ---
+    // Apenas se for dinheiro novo (não useBalance), ou conforme regra de negócio global.
+    // Como a transação foi aprovada e dinheiro entrou (ou saldo foi debitado), pagamos o bônus.
+
+    // 1. Verificar se usuário tem indicador
+    const userRes = await client.query('SELECT referred_by, name FROM users WHERE id = $1', [transaction.user_id]);
+    const buyer = userRes.rows[0];
+
+    if (buyer?.referred_by) {
+      const referrerRes = await client.query('SELECT id FROM users WHERE referral_code = $1', [buyer.referred_by]);
+
+      if (referrerRes.rows.length > 0) {
+        const referrerId = referrerRes.rows[0].id;
+        const bonusAmount = 5.00;
+
+        // Creditar Bônus
+        await updateUserBalance(client, referrerId, bonusAmount, 'credit');
+
+        // Registrar custo no sistema
+        await client.query('UPDATE system_config SET total_manual_costs = total_manual_costs + $1', [bonusAmount]);
+
+        // Registrar Transação do Bônus
+        await createTransaction(
+          client,
+          referrerId,
+          'REFERRAL_BONUS',
+          bonusAmount,
+          `Bônus por indicação: ${buyer.name} comprou cota(s)`,
+          'APPROVED'
+        );
+      }
+    }
+
     if (!metadata.useBalance) {
       const paymentMethod = metadata.paymentMethod || 'pix';
       const baseCost = metadata.baseCost ? parseFloat(metadata.baseCost) : parseFloat(transaction.amount);

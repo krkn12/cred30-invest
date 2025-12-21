@@ -19,11 +19,15 @@ const createListingSchema = z.object({
 
 const buyListingSchema = z.object({
     listingId: z.number().int(),
+    deliveryAddress: z.string().min(10, 'Endereço muito curto').optional(),
+    contactPhone: z.string().min(8, 'Telefone inválido').optional(),
 });
 
 const buyOnCreditSchema = z.object({
     listingId: z.number().int(),
     installments: z.number().int().min(1).max(MARKET_CREDIT_MAX_INSTALLMENTS),
+    deliveryAddress: z.string().min(10, 'Endereço muito curto').optional(),
+    contactPhone: z.string().min(8, 'Telefone inválido').optional(),
 });
 
 /**
@@ -55,9 +59,6 @@ marketplaceRoutes.get('/listings', authMiddleware, async (c) => {
     }
 });
 
-/**
- * Criar um novo anúncio no Mercado Cred30
- */
 marketplaceRoutes.post('/create', authMiddleware, async (c) => {
     try {
         const user = c.get('user') as UserContext;
@@ -66,10 +67,9 @@ marketplaceRoutes.post('/create', authMiddleware, async (c) => {
         const parseResult = createListingSchema.safeParse(body);
 
         if (!parseResult.success) {
-            console.error('Validation error creating listing:', parseResult.error.errors);
             return c.json({
                 success: false,
-                message: 'Dados do anúncio inválidos: ' + parseResult.error.errors.map(e => e.message).join(', '),
+                message: 'Dados inválidos',
                 errors: parseResult.error.errors
             }, 400);
         }
@@ -88,111 +88,65 @@ marketplaceRoutes.post('/create', authMiddleware, async (c) => {
             message: 'Anúncio publicado com sucesso!'
         });
     } catch (error) {
-        if (error instanceof z.ZodError) {
-            return c.json({ success: false, message: 'Dados inválidos', errors: error.errors }, 400);
-        }
         console.error('Erro ao criar anúncio:', error);
         return c.json({ success: false, message: 'Erro ao publicar anúncio' }, 500);
     }
 });
 
-/**
- * Comprar um item (Inicia o processo de Escrow/Garantia)
- * O valor é retirado do saldo do comprador e fica retido pelo sistema.
- */
-/**
- * Comprar parcelado via Crediário Cred30 (Financiamento Social)
- * A plataforma antecipa o valor para o vendedor e o comprador paga parcelado.
- */
 marketplaceRoutes.post('/buy-on-credit', authMiddleware, async (c) => {
     try {
         const user = c.get('user') as UserContext;
         const pool = getDbPool(c);
         const body = await c.req.json();
-        const { listingId, installments } = buyOnCreditSchema.parse(body);
+        const { listingId, installments, deliveryAddress, contactPhone } = buyOnCreditSchema.parse(body);
 
-        // 1. Verificar Score Mínimo
         const userResult = await pool.query('SELECT score FROM users WHERE id = $1', [user.id]);
         const userScore = userResult.rows[0]?.score || 0;
 
         if (userScore < MARKET_CREDIT_MIN_SCORE) {
-            return c.json({
-                success: false,
-                message: `Seu Score (${userScore}) é insuficiente para o Crediário Cred30. O mínimo necessário é ${MARKET_CREDIT_MIN_SCORE}.`
-            }, 403);
+            return c.json({ success: false, message: `Score insuficiente (${userScore}). Mínimo: ${MARKET_CREDIT_MIN_SCORE}.` }, 403);
         }
 
-        // 2. Buscar anúncio
-        const listingResult = await pool.query(
-            'SELECT * FROM marketplace_listings WHERE id = $1 AND status = $2',
-            [listingId, 'ACTIVE']
-        );
-
-        if (listingResult.rows.length === 0) {
-            return c.json({ success: false, message: 'Este item não está mais disponível.' }, 404);
-        }
+        const listingResult = await pool.query('SELECT * FROM marketplace_listings WHERE id = $1 AND status = $2', [listingId, 'ACTIVE']);
+        if (listingResult.rows.length === 0) return c.json({ success: false, message: 'Item indisponível.' }, 404);
 
         const listing = listingResult.rows[0];
-
-        if (listing.seller_id === user.id) {
-            return c.json({ success: false, message: 'Você não pode financiar seu próprio item.' }, 400);
-        }
+        if (listing.seller_id === user.id) return c.json({ success: false, message: 'Você não pode comprar de si mesmo.' }, 400);
 
         const price = parseFloat(listing.price);
         const totalInterestRate = MARKET_CREDIT_INTEREST_RATE * installments;
         const totalAmountWithInterest = price * (1 + totalInterestRate);
-        const installmentValue = totalAmountWithInterest / installments;
 
         const result = await executeInTransaction(pool, async (client) => {
-            // 3. Verificar se o caixa do sistema suporta honrar esse pagamento ao vendedor
             const systemConfig = await lockSystemConfig(client);
-            if (parseFloat(systemConfig.system_balance) < price) {
-                throw new Error('O sistema atingiu o limite de financiamentos diários. Tente novamente amanhã.');
-            }
+            if (parseFloat(systemConfig.system_balance) < price) throw new Error('Limite diário de financiamento atingido.');
 
-            // 4. Marcar anúncio como VENDIDO
             await client.query('UPDATE marketplace_listings SET status = $1 WHERE id = $2', ['SOLD', listingId]);
 
-            // 5. Criar o Pedido com status de Garantia (Escrow) e método CRED30_CREDIT
             const orderResult = await client.query(
-                `INSERT INTO marketplace_orders (listing_id, buyer_id, seller_id, amount, fee_amount, seller_amount, status, payment_method)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
-                [listingId, user.id, listing.seller_id, price, price * MARKETPLACE_ESCROW_FEE_RATE, price * (1 - MARKETPLACE_ESCROW_FEE_RATE), 'WAITING_SHIPPING', 'CRED30_CREDIT']
+                `INSERT INTO marketplace_orders (listing_id, buyer_id, seller_id, amount, fee_amount, seller_amount, status, payment_method, delivery_address, contact_phone)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
+                [listingId, user.id, listing.seller_id, price, price * MARKETPLACE_ESCROW_FEE_RATE, price * (1 - MARKETPLACE_ESCROW_FEE_RATE), 'WAITING_SHIPPING', 'CRED30_CREDIT', deliveryAddress, contactPhone]
             );
-
             const orderId = orderResult.rows[0].id;
 
-            // 6. Criar o registro de "Empréstimo/Dívida" para o comprador
             await client.query(
                 `INSERT INTO loans (user_id, amount, installments, interest_rate, total_repayment, status, description, metadata)
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-                [user.id, price, installments, MARKET_CREDIT_INTEREST_RATE, totalAmountWithInterest, 'APPROVED', `Compra no Mercado: ${listing.title}`, JSON.stringify({ orderId, listingId, type: 'MARKET_FINANCING' })]
+                [user.id, price, installments, MARKET_CREDIT_INTEREST_RATE, totalAmountWithInterest, 'APPROVED', `Compra: ${listing.title}`, JSON.stringify({ orderId, listingId, type: 'MARKET_FINANCING' })]
             );
 
-            // 7. Registrar transação informativa no extrato
-            await createTransaction(
-                client,
-                user.id,
-                'MARKET_PURCHASE_CREDIT',
-                totalAmountWithInterest,
-                `Compra Parcelada: ${listing.title} (${installments}x de R$ ${installmentValue.toFixed(2)})`,
-                'APPROVED',
-                { orderId, listingId, installments }
-            );
+            await createTransaction(client, user.id, 'MARKET_PURCHASE_CREDIT', totalAmountWithInterest, `Compra Parcelada: ${listing.title}`, 'APPROVED', { orderId, listingId });
 
-            return { orderId, totalAmountWithInterest };
+            return { orderId };
         });
 
         if (!result.success) return c.json({ success: false, message: result.error }, 400);
+        return c.json({ success: true, message: 'Financiamento Aprovado!', data: { orderId: result.data?.orderId } });
 
-        return c.json({
-            success: true,
-            message: `Financiamento Social Aprovado! Você pagará ${installments}x de R$ ${installmentValue.toFixed(2)}.`,
-            data: { orderId: result.data?.orderId }
-        });
     } catch (error) {
-        console.error('Erro ao comprar no crediário:', error);
-        return c.json({ success: false, message: 'Erro ao processar financiamento social' }, 500);
+        console.error('Buy Credit Error:', error);
+        return c.json({ success: false, message: 'Erro ao processar' }, 500);
     }
 });
 
@@ -201,76 +155,40 @@ marketplaceRoutes.post('/buy', authMiddleware, async (c) => {
         const user = c.get('user') as UserContext;
         const pool = getDbPool(c);
         const body = await c.req.json();
-        const { listingId } = buyListingSchema.parse(body);
+        const { listingId, deliveryAddress, contactPhone } = buyListingSchema.parse(body);
 
-        // Buscar anúncio
-        const listingResult = await pool.query(
-            'SELECT * FROM marketplace_listings WHERE id = $1 AND status = $2',
-            [listingId, 'ACTIVE']
-        );
-
-        if (listingResult.rows.length === 0) {
-            return c.json({ success: false, message: 'Este item não está mais disponível.' }, 404);
-        }
+        const listingResult = await pool.query('SELECT * FROM marketplace_listings WHERE id = $1 AND status = $2', [listingId, 'ACTIVE']);
+        if (listingResult.rows.length === 0) return c.json({ success: false, message: 'Item indisponível.' }, 404);
 
         const listing = listingResult.rows[0];
-
-        // Impedir compra de si mesmo
-        if (listing.seller_id === user.id) {
-            return c.json({ success: false, message: 'Você não pode comprar seu próprio item.' }, 400);
-        }
+        if (listing.seller_id === user.id) return c.json({ success: false, message: 'Você não pode comprar de si mesmo.' }, 400);
 
         const price = parseFloat(listing.price);
         const fee = price * MARKETPLACE_ESCROW_FEE_RATE;
         const sellerAmount = price - fee;
 
         const result = await executeInTransaction(pool, async (client) => {
-            // 1. Verificar e bloquear saldo do comprador
             const balanceCheck = await lockUserBalance(client, user.id, price);
-            if (!balanceCheck.success) {
-                throw new Error('Saldo insuficiente para realizar a compra.');
-            }
+            if (!balanceCheck.success) throw new Error('Saldo insuficiente.');
 
-            // 2. Deduzir saldo do comprador
             await updateUserBalance(client, user.id, price, 'debit');
-
-            // 3. Marcar anúncio como VENDIDO
             await client.query('UPDATE marketplace_listings SET status = $1 WHERE id = $2', ['SOLD', listingId]);
 
-            // 4. Criar o Pedido com status de Garantia (Escrow)
             const orderResult = await client.query(
-                `INSERT INTO marketplace_orders (listing_id, buyer_id, seller_id, amount, fee_amount, seller_amount, status, payment_method)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
-                [listingId, user.id, listing.seller_id, price, fee, sellerAmount, 'WAITING_SHIPPING', 'BALANCE']
-            );
-
+                `INSERT INTO marketplace_orders (listing_id, buyer_id, seller_id, amount, fee_amount, seller_amount, status, payment_method, delivery_address, contact_phone)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
+                [listingId, user.id, listing.seller_id, price, fee, sellerAmount, 'WAITING_SHIPPING', 'BALANCE', deliveryAddress, contactPhone]
             const orderId = orderResult.rows[0].id;
 
-            // 5. Registrar transação no extrato do comprador
-            await createTransaction(
-                client,
-                user.id,
-                'MARKET_PURCHASE',
-                price,
-                `Compra no Mercado: ${listing.title} (Garantia Ativa)`,
-                'APPROVED',
-                { orderId, listingId }
-            );
-
+            await createTransaction(client, user.id, 'MARKET_PURCHASE', price, `Compra: ${listing.title}`, 'APPROVED', { orderId, listingId });
             return { orderId };
         });
 
-        if (!result.success) {
-            return c.json({ success: false, message: result.error }, 400);
-        }
+        if (!result.success) return c.json({ success: false, message: result.error }, 400);
+        return c.json({ success: true, message: 'Compra realizada!', orderId: result.data?.orderId });
 
-        return c.json({
-            success: true,
-            message: 'Compra realizada! O valor está seguro com a Cred30 até que você receba o produto.',
-            orderId: result.data?.orderId
-        });
     } catch (error) {
-        console.error('Erro ao comprar item:', error);
+        console.error('Buy Balance Error:', error);
         return c.json({ success: false, message: 'Erro ao processar compra' }, 500);
     }
 });
