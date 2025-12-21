@@ -21,13 +21,27 @@ import { marketplaceRoutes } from './presentation/http/routes/marketplace.routes
 import { educationRoutes } from './presentation/http/routes/education.routes'; // Import correto no topo
 import { initializeScheduler } from './scheduler';
 
+import { logger } from 'hono/logger';
+import { monetizationRoutes } from './presentation/http/routes/monetization.routes';
+import { supportRoutes } from './presentation/http/routes/support.routes';
+import { monetizationRoutes as monetizationRoutesAlt } from './presentation/http/routes/monetization.routes'; // Caso haja conflito
+import { initializeDatabase, pool } from './infrastructure/database/postgresql/connection/pool';
+
 const app = new Hono();
 
-// ... (middlewares)
+// Middlewares Globais
+app.use('*', cors());
+app.use('*', compress());
+app.use('*', logger());
 
 async function startServer() {
   try {
-    // ... (inicialização DB)
+    // Inicialização do Banco de Dados e Tabelas
+    console.log('--- Iniciando Cred30 Backend ---');
+    await initializeDatabase();
+
+    // Inicialização do Agendador (Scheduler)
+    initializeScheduler(pool);
 
     // Rotas
     app.route('/api/auth', authRoutes);
@@ -44,22 +58,27 @@ async function startServer() {
     app.route('/api/marketplace', marketplaceRoutes);
     app.route('/api/monetization', monetizationRoutes);
     app.route('/api/support', supportRoutes);
-    app.route('/api/education', educationRoutes); // Rota adicionada corretamente aqui
+    app.route('/api/education', educationRoutes);
 
     // Rota de health check
     app.get('/api/health', (c) => {
-      return c.json({ status: 'ok', version: packageJson.version, timestamp: new Date().toISOString() });
+      return c.json({
+        status: 'ok',
+        version: packageJson.version,
+        db: 'connected',
+        timestamp: new Date().toISOString()
+      });
     });
 
     const port = process.env.PORT || 3001;
-    console.log(`Servidor rodando na porta ${port}`);
+    console.log(`🚀 Servidor pronto na porta ${port}`);
 
     serve({
       fetch: app.fetch,
       port: Number(port),
     });
   } catch (error) {
-    console.error('Erro ao conectar ao PostgreSQL:', error);
+    console.error('❌ Erro fatal no boot do servidor:', error);
     process.exit(1);
   }
 }

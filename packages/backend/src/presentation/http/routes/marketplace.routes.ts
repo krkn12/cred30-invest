@@ -2,9 +2,11 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { getDbPool } from '../../../infrastructure/database/postgresql/connection/pool';
-import { MARKETPLACE_ESCROW_FEE_RATE, MARKET_CREDIT_INTEREST_RATE, MARKET_CREDIT_MAX_INSTALLMENTS, MARKET_CREDIT_MIN_SCORE } from '../../../shared/constants/business.constants';
+import { MARKETPLACE_ESCROW_FEE_RATE, MARKET_CREDIT_INTEREST_RATE, MARKET_CREDIT_MAX_INSTALLMENTS, MARKET_CREDIT_MIN_SCORE, MARKET_CREDIT_MIN_QUOTAS } from '../../../shared/constants/business.constants';
 import { UserContext } from '../../../shared/types/hono.types';
 import { executeInTransaction, lockUserBalance, updateUserBalance, createTransaction, lockSystemConfig } from '../../../domain/services/transaction.service';
+import { calculateUserLoanLimit } from '../../../application/services/credit-analysis.service';
+import { updateScore } from '../../../application/services/score.service';
 
 const marketplaceRoutes = new Hono();
 
@@ -128,20 +130,45 @@ marketplaceRoutes.post('/buy-on-credit', authMiddleware, async (c) => {
         const body = await c.req.json();
         const { listingId, installments, deliveryAddress, contactPhone } = buyOnCreditSchema.parse(body);
 
-        const userResult = await pool.query('SELECT score FROM users WHERE id = $1', [user.id]);
-        const userScore = userResult.rows[0]?.score || 0;
+        const userResult = await pool.query(`
+            SELECT u.score, COUNT(q.id) as quota_count 
+            FROM users u 
+            LEFT JOIN quotas q ON u.id = q.user_id AND q.status = 'ACTIVE'
+            WHERE u.id = $1
+            GROUP BY u.id
+        `, [user.id]);
+
+        const userData = userResult.rows[0];
+        const userScore = userData?.score || 0;
+        const quotaCount = parseInt(userData?.quota_count || '0');
 
         if (userScore < MARKET_CREDIT_MIN_SCORE) {
             return c.json({ success: false, message: `Score insuficiente (${userScore}). Mínimo: ${MARKET_CREDIT_MIN_SCORE}.` }, 403);
         }
 
+        if (quotaCount < MARKET_CREDIT_MIN_QUOTAS) {
+            return c.json({ success: false, message: `Você precisa ter pelo menos ${MARKET_CREDIT_MIN_QUOTAS} cota ativa para comprar parcelado. Isso garante a segurança da comunidade.` }, 403);
+        }
+
+        // Verificação de Limite de Crédito Dinâmico
+        const availableLimit = await calculateUserLoanLimit(pool, user.id);
         const listingResult = await pool.query('SELECT * FROM marketplace_listings WHERE id = $1 AND status = $2', [listingId, 'ACTIVE']);
+
         if (listingResult.rows.length === 0) return c.json({ success: false, message: 'Item indisponível.' }, 404);
 
         const listing = listingResult.rows[0];
+        const price = parseFloat(listing.price);
+
+        if (price > availableLimit) {
+            return c.json({
+                success: false,
+                message: `Limite de crédito insuficiente. Seu limite atual é R$ ${availableLimit.toFixed(2)}, mas o produto custa R$ ${price.toFixed(2)}.`,
+                data: { limit: availableLimit }
+            }, 403);
+        }
+
         if (listing.seller_id === user.id) return c.json({ success: false, message: 'Você não pode comprar de si mesmo.' }, 400);
 
-        const price = parseFloat(listing.price);
         const totalInterestRate = MARKET_CREDIT_INTEREST_RATE * installments;
         const totalAmountWithInterest = price * (1 + totalInterestRate);
 
@@ -223,8 +250,151 @@ marketplaceRoutes.post('/buy', authMiddleware, async (c) => {
 });
 
 /**
+ * Abrir Disputa (Problemas com o produto ou entrega)
+ */
+marketplaceRoutes.post('/order/:id/dispute', authMiddleware, async (c) => {
+    try {
+        const user = c.get('user') as UserContext;
+        const pool = getDbPool(c);
+        const orderId = c.req.param('id');
+        const { reason } = await c.req.json();
+
+        if (!reason) return c.json({ success: false, message: 'O motivo da disputa é obrigatório.' }, 400);
+
+        const result = await pool.query(
+            `UPDATE marketplace_orders 
+             SET status = 'DISPUTE', dispute_reason = $1, disputed_at = NOW(), updated_at = NOW()
+             WHERE id = $2 AND (buyer_id = $3 OR seller_id = $3) AND status IN ('WAITING_SHIPPING', 'IN_TRANSIT', 'DELIVERED')
+             RETURNING *`,
+            [reason, orderId, user.id]
+        );
+
+        if (result.rows.length === 0) {
+            return c.json({ success: false, message: 'Pedido não encontrado ou status não permite disputa.' }, 404);
+        }
+
+        return c.json({
+            success: true,
+            message: 'Disputa aberta com sucesso. O saldo foi congelado e nossa equipe de suporte irá analisar o caso.'
+        });
+    } catch (error) {
+        console.error('Dispute Error:', error);
+        return c.json({ success: false, message: 'Erro ao abrir disputa' }, 500);
+    }
+});
+
+/**
  * Confirmar recebimento (Comprador libera os fundos para o vendedor)
  */
+/**
+ * Cancelar Pedido (Pelo Comprador ou Vendedor)
+ * Só pode cancelar se não tiver sido finalizado/completo
+ */
+marketplaceRoutes.post('/order/:id/cancel', authMiddleware, async (c) => {
+    try {
+        const user = c.get('user') as UserContext;
+        const pool = getDbPool(c);
+        const orderId = c.req.param('id');
+
+        // Buscar pedido
+        const orderRes = await pool.query(
+            'SELECT * FROM marketplace_orders WHERE id = $1 AND (buyer_id = $2 OR seller_id = $3)',
+            [orderId, user.id, user.id]
+        );
+
+        if (orderRes.rows.length === 0) return c.json({ success: false, message: 'Pedido não encontrado.' }, 404);
+        const order = orderRes.rows[0];
+
+        if (order.status === 'COMPLETED' || order.status === 'CANCELLED') {
+            return c.json({ success: false, message: 'Este pedido não pode mais ser cancelado.' }, 400);
+        }
+
+        const result = await executeInTransaction(pool, async (client) => {
+            // 1. Atualizar pedido para CANCELLED
+            await client.query('UPDATE marketplace_orders SET status = $1, updated_at = NOW() WHERE id = $2', ['CANCELLED', orderId]);
+
+            // 2. Colocar o anúncio como ACTIVE novamente
+            await client.query('UPDATE marketplace_listings SET status = $1 WHERE id = $2', ['ACTIVE', order.listing_id]);
+
+            // 3. Estornar Comprador
+            if (order.payment_method === 'BALANCE') {
+                await updateUserBalance(client, order.buyer_id, parseFloat(order.amount), 'credit');
+                await createTransaction(client, order.buyer_id, 'MARKET_REFUND', parseFloat(order.amount), `Estorno: Pedido #${orderId} cancelado`, 'APPROVED');
+            } else if (order.payment_method === 'CRED30_CREDIT') {
+                // Cancelar o empréstimo (Loan) vinculado
+                await client.query(
+                    "UPDATE loans SET status = 'CANCELLED' WHERE status = 'APPROVED' AND metadata->>'orderId' = $1 AND user_id = $2",
+                    [orderId.toString(), order.buyer_id]
+                );
+                await createTransaction(client, order.buyer_id, 'MARKET_REFUND_CREDIT', 0, `Estorno Crédito: Pedido #${orderId} cancelado`, 'APPROVED');
+            }
+
+            return { success: true };
+        });
+
+        if (!result.success) return c.json({ success: false, message: result.error }, 400);
+        return c.json({ success: true, message: 'Pedido cancelado e valores estornados com sucesso!' });
+    } catch (error) {
+        console.error('Cancel Order Error:', error);
+        return c.json({ success: false, message: 'Erro ao cancelar pedido' }, 500);
+    }
+});
+
+/**
+ * Avaliar Parceiro (Comprador avalia Vendedor e vice-versa)
+ * Notas de -5 a 5, impactando Score
+ */
+marketplaceRoutes.post('/order/:id/rate', authMiddleware, async (c) => {
+    try {
+        const user = c.get('user') as UserContext;
+        const pool = getDbPool(c);
+        const orderId = c.req.param('id');
+        const { rating } = await c.req.json();
+
+        if (rating < -5 || rating > 5) {
+            return c.json({ success: false, message: 'Avaliação deve ser entre -5 e 5.' }, 400);
+        }
+
+        const orderRes = await pool.query('SELECT * FROM marketplace_orders WHERE id = $1', [orderId]);
+        if (orderRes.rows.length === 0) return c.json({ success: false, message: 'Pedido não encontrado.' }, 404);
+
+        const order = orderRes.rows[0];
+        if (order.status !== 'COMPLETED') {
+            return c.json({ success: false, message: 'Você só pode avaliar pedidos concluídos.' }, 400);
+        }
+
+        const isBuyer = order.buyer_id === user.id;
+        const isSeller = order.seller_id === user.id;
+        if (!isBuyer && !isSeller) return c.json({ success: false, message: 'Acesso negado.' }, 403);
+
+        const result = await executeInTransaction(pool, async (client) => {
+            const targetUserId = isBuyer ? order.seller_id : order.buyer_id;
+            const columnToUpdate = isBuyer ? 'seller_rating' : 'buyer_rating';
+
+            // Verificar se já avaliou
+            if (order[columnToUpdate] !== null) {
+                throw new Error('Você já avaliou esta transação.');
+            }
+
+            // 1. Registrar avaliação no pedido
+            await client.query(`UPDATE marketplace_orders SET ${columnToUpdate} = $1 WHERE id = $2`, [rating, orderId]);
+
+            // 2. Impactar Score (Rating x 10)
+            const scoreImpact = rating * 10;
+            const reason = isBuyer ? `Avaliação de comprador no pedido #${orderId}` : `Avaliação de vendedor no pedido #${orderId}`;
+            await updateScore(client, targetUserId, scoreImpact, reason);
+
+            return { success: true };
+        });
+
+        if (!result.success) return c.json({ success: false, message: result.error }, 400);
+        return c.json({ success: true, message: 'Sua avaliação foi enviada e impactou a reputação do parceiro!' });
+    } catch (error) {
+        console.error('Rating Error:', error);
+        return c.json({ success: false, message: 'Erro ao processar avaliação' }, 500);
+    }
+});
+
 marketplaceRoutes.post('/order/:id/receive', authMiddleware, async (c) => {
     try {
         const user = c.get('user') as UserContext;
@@ -310,7 +480,8 @@ marketplaceRoutes.get('/my-orders', authMiddleware, async (c) => {
 
         const result = await pool.query(
             `SELECT o.*, l.title, l.image_url, 
-              ub.name as buyer_name, us.name as seller_name,
+              ub.name as buyer_name, ub.contact_phone as buyer_phone_order,
+              us.name as seller_name,
               ln.installments, ln.interest_rate, ln.total_repayment
        FROM marketplace_orders o
        JOIN marketplace_listings l ON o.listing_id = l.id

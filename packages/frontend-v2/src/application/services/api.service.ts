@@ -370,12 +370,7 @@ class ApiService {
     return response.data;
   }
 
-  async updateSystemBalance(newBalance: number): Promise<void> {
-    await this.request<void>('/admin/system-balance', {
-      method: 'POST',
-      body: JSON.stringify({ newBalance }),
-    });
-  }
+
 
   async addProfitToPool(amountToAdd: number): Promise<void> {
     await this.request<void>('/admin/profit-pool', {
@@ -384,17 +379,7 @@ class ApiService {
     });
   }
 
-  async processAdminAction(id: string, type: 'TRANSACTION' | 'LOAN', action: 'APPROVE' | 'REJECT'): Promise<void> {
-    console.log('Enviando para API:', { id, type, action });
-    // Enviar ID como string conforme esperado pelo schema
-    const requestBody = JSON.stringify({ id, type, action });
-    console.log('Corpo da requisição:', requestBody);
 
-    await this.request<void>('/admin/process-action', {
-      method: 'POST',
-      body: requestBody,
-    });
-  }
 
   async distributeDividends(): Promise<any> {
     const response = await this.request<any>('/admin/distribute-dividends', {
@@ -405,14 +390,7 @@ class ApiService {
 
 
 
-  // Aprovar pagamento de empréstimo (LEGACY - substituído por processAdminAction)
-  async approvePayment(transactionId: string): Promise<any> {
-    const response = await this.request<any>('/admin/approve-payment', {
-      method: 'POST',
-      body: JSON.stringify({ transactionId }),
-    });
-    return response.data;
-  }
+
 
   // Fila de Pagamentos (Payout Queue)
   async getPayoutQueue(): Promise<any> {
@@ -427,32 +405,11 @@ class ApiService {
     });
   }
 
-  // Rejeitar pagamento de empréstimo
-  async rejectPayment(transactionId: string): Promise<any> {
-    const response = await this.request<any>('/admin/reject-payment', {
-      method: 'POST',
-      body: JSON.stringify({ transactionId }),
-    });
-    return response.data;
-  }
 
-  // Aprovar saque
-  async approveWithdrawal(transactionId: string): Promise<any> {
-    const response = await this.request<any>('/admin/approve-withdrawal', {
-      method: 'POST',
-      body: JSON.stringify({ transactionId }),
-    });
-    return response.data;
-  }
 
-  // Rejeitar saque
-  async rejectWithdrawal(transactionId: string): Promise<any> {
-    const response = await this.request<any>('/admin/reject-withdrawal', {
-      method: 'POST',
-      body: JSON.stringify({ transactionId }),
-    });
-    return response.data;
-  }
+
+
+
 
   // Obter limite de crédito disponível (Estilo Nubank)
   async getAvailableLimit(): Promise<{ totalLimit: number; activeDebt: number; remainingLimit: number }> {

@@ -4,9 +4,8 @@ import { User } from '../../../domain/types/common.types';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { get2FASetup, verify2FA } from '../../../application/services/storage.service';
 
-export const SettingsView = ({ user, onSimulateTime, onLogout, onDeleteAccount, onChangePassword, onRefresh }: {
+export const SettingsView = ({ user, onLogout, onDeleteAccount, onChangePassword, onRefresh }: {
     user: User,
-    onSimulateTime: () => void,
     onLogout: () => void,
     onDeleteAccount: (code?: string) => void,
     onChangePassword: (oldPass: string, newPass: string) => Promise<void>,

@@ -310,21 +310,13 @@ adminRoutes.get('/payout-queue', adminMiddleware, async (c) => {
        ORDER BY user_quotas DESC, user_score DESC, t.created_at ASC`
     );
 
-    // Buscar empréstimos (apoio mútuo) aguardando pagamento
-    const loansResult = await pool.query(
-      `SELECT l.*, u.name as user_name, u.email as user_email, l.pix_key_to_receive as user_pix, u.score as user_score,
-              (SELECT COUNT(*) FROM quotas q WHERE q.user_id = l.user_id AND q.status = 'ACTIVE') as user_quotas
-       FROM loans l
-       LEFT JOIN users u ON l.user_id = u.id
-       WHERE l.payout_status = 'PENDING_PAYMENT'
-       ORDER BY user_quotas DESC, user_score DESC, l.created_at ASC`
-    );
+
 
     return c.json({
       success: true,
       data: {
         transactions: transactionsResult.rows,
-        loans: loansResult.rows
+        loans: [] // Retornar vazio para compatibilidade
       }
     });
   } catch (error) {
@@ -347,10 +339,7 @@ adminRoutes.post('/confirm-payout', adminMiddleware, auditMiddleware('CONFIRM_PA
           [new Date(), id]
         );
       } else {
-        await client.query(
-          "UPDATE loans SET payout_status = 'PAID', approved_at = $1 WHERE id = $2",
-          [new Date(), id]
-        );
+        throw new Error('Tipo de confirmação não suportado');
       }
     });
 
@@ -1401,4 +1390,66 @@ adminRoutes.delete('/referral-codes/:id', adminMiddleware, auditMiddleware('DELE
   }
 });
 
+// Resolver Disputa de Marketplace
+const resolveDisputeSchema = z.object({
+  orderId: z.number(),
+  resolution: z.enum(['REFUND_BUYER', 'RELEASE_TO_SELLER']),
+  penaltyUserId: z.number().optional(), // Usuário que agiu de má fé para perder score
+});
+
+adminRoutes.post('/marketplace/resolve-dispute', adminMiddleware, async (c) => {
+  try {
+    const body = await c.req.json();
+    const { orderId, resolution, penaltyUserId } = resolveDisputeSchema.parse(body);
+    const pool = getDbPool(c);
+
+    // 1. Buscar o pedido em disputa
+    const orderRes = await pool.query('SELECT * FROM marketplace_orders WHERE id = $1 AND status = \'DISPUTE\'', [orderId]);
+    if (orderRes.rows.length === 0) return c.json({ success: false, message: 'Disputa não encontrada.' }, 404);
+    const order = orderRes.rows[0];
+
+    const result = await executeInTransaction(pool, async (client) => {
+      if (resolution === 'REFUND_BUYER') {
+        // Estornar Comprador (Igual ao cancelamento)
+        await client.query('UPDATE marketplace_orders SET status = \'CANCELLED\', updated_at = NOW() WHERE id = $1', [orderId]);
+        await client.query('UPDATE marketplace_listings SET status = \'ACTIVE\' WHERE id = $1', [order.listing_id]);
+
+        if (order.payment_method === 'BALANCE') {
+          await updateUserBalance(client, order.buyer_id, parseFloat(order.amount), 'credit');
+          await createTransaction(client, order.buyer_id, 'MARKET_REFUND', parseFloat(order.amount), `Disputa Resolvida: Estorno do Pedido #${orderId}`, 'APPROVED');
+        } else if (order.payment_method === 'CRED30_CREDIT') {
+          await client.query("UPDATE loans SET status = 'CANCELLED' WHERE status = 'APPROVED' AND metadata->>'orderId' = $1", [orderId.toString()]);
+        }
+      } else {
+        // Liberar para o Vendedor (Igual à finalização)
+        await client.query('UPDATE marketplace_orders SET status = \'COMPLETED\', updated_at = NOW() WHERE id = $1', [orderId]);
+
+        const sellerAmount = parseFloat(order.seller_amount);
+        if (order.payment_method === 'CRED30_CREDIT') {
+          await client.query('UPDATE system_config SET system_balance = system_balance - $1', [order.amount]);
+        }
+        await updateUserBalance(client, order.seller_id, sellerAmount, 'credit');
+
+        // Taxas
+        const feeAmount = parseFloat(order.fee_amount);
+        await client.query('UPDATE system_config SET system_balance = system_balance + $1, profit_pool = profit_pool + $2', [feeAmount * 0.85, feeAmount * 0.15]);
+
+        await createTransaction(client, order.seller_id, 'MARKET_SALE', sellerAmount, `Disputa Resolvida: Venda #${orderId} Liberada`, 'APPROVED', { orderId });
+      }
+
+      // Aplicar Penalidade se houver culpado claro
+      if (penaltyUserId) {
+        await updateScore(client, penaltyUserId, -100, `Penalidade: Má fé em disputa de marketplace (#${orderId})`);
+      }
+
+      return { success: true };
+    });
+
+    return c.json({ success: true, message: `Disputa resolvida: ${resolution}` });
+  } catch (error: any) {
+    return c.json({ success: false, message: error.message }, 500);
+  }
+});
+
 export { adminRoutes };
+

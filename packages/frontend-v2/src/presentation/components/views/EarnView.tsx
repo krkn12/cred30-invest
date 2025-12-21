@@ -110,7 +110,7 @@ export const EarnView = ({ state, onBack, onSuccess, onError, onRefresh, onUpgra
                     <div className="bg-background/50 rounded-2xl p-4 border border-surfaceHighlight mb-6 flex items-center justify-between">
                         <div className="flex flex-col">
                             <span className="text-[10px] text-zinc-500 uppercase font-black">Recompensa</span>
-                            <span className="text-lg font-black text-white">+ R$ 0,05 / +2 Score</span>
+                            <span className="text-lg font-black text-white">+ R$ 0,002 / +5 Score</span>
                         </div>
                         <PlayCircle size={32} className="text-primary-400" />
                     </div>

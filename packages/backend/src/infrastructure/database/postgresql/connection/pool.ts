@@ -108,7 +108,7 @@ export const initializeDatabase = async () => {
 
         if (scoreColumn.rows.length === 0) {
           console.log('Adicionando coluna score à tabela users...');
-          await client.query('ALTER TABLE users ADD COLUMN score INTEGER DEFAULT 300');
+          await client.query('ALTER TABLE users ADD COLUMN score INTEGER DEFAULT 0');
         }
 
         const verifiedColumn = await client.query(`
@@ -161,7 +161,7 @@ export const initializeDatabase = async () => {
         referral_code VARCHAR(10) UNIQUE,
         referred_by VARCHAR(10),
         is_admin BOOLEAN DEFAULT FALSE,
-        score INTEGER DEFAULT 300,
+        score INTEGER DEFAULT 0,
         is_email_verified BOOLEAN DEFAULT FALSE,
         verification_code VARCHAR(10),
         reset_password_token VARCHAR(255),
@@ -598,11 +598,23 @@ export const initializeDatabase = async () => {
         payment_method VARCHAR(20), -- BALANCE, PIX, etc
         delivery_address TEXT,
         contact_phone VARCHAR(20),
+        dispute_reason TEXT,
+        disputed_at TIMESTAMP,
+        buyer_rating INTEGER, -- -5 a 5
+        seller_rating INTEGER, -- -5 a 5
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         tracking_code VARCHAR(100),
         dispute_reason TEXT
       )
+    `);
+
+    // Garantir colunas novas
+    await client.query(`
+      ALTER TABLE marketplace_orders ADD COLUMN IF NOT EXISTS dispute_reason TEXT;
+      ALTER TABLE marketplace_orders ADD COLUMN IF NOT EXISTS disputed_at TIMESTAMP;
+      ALTER TABLE marketplace_orders ADD COLUMN IF NOT EXISTS buyer_rating INTEGER;
+      ALTER TABLE marketplace_orders ADD COLUMN IF NOT EXISTS seller_rating INTEGER;
     `);
 
     // --- SISTEMA DE SUPORTE VIA CHAT (IA + HUMANO) ---
@@ -648,39 +660,62 @@ export const initializeDatabase = async () => {
       CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
       CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);
       CREATE INDEX IF NOT EXISTS idx_transactions_created_at ON transactions(created_at);
+
+    --Novos índices para otimização batch e admin
+      CREATE INDEX IF NOT EXISTS idx_transactions_payout_pending ON transactions(payout_status) WHERE payout_status = 'PENDING_PAYMENT';
+      CREATE INDEX IF NOT EXISTS idx_loans_payout_pending ON loans(payout_status) WHERE payout_status = 'PENDING_PAYMENT';
+      CREATE INDEX IF NOT EXISTS idx_transactions_user_type_idx ON transactions(user_id, type);
+      CREATE INDEX IF NOT EXISTS idx_loans_user_status_active ON loans(user_id, status) WHERE status IN('APPROVED', 'PAYMENT_PENDING');
+      CREATE INDEX IF NOT EXISTS idx_users_score_desc ON users(score DESC);
     `);
+
+    // Otimização de precisão decimal e estatísticas
+    await client.query(`
+      ALTER TABLE system_config ALTER COLUMN system_balance TYPE DECIMAL(20, 2);
+      ALTER TABLE system_config ALTER COLUMN profit_pool TYPE DECIMAL(20, 2);
+      ALTER TABLE system_config ALTER COLUMN total_tax_reserve TYPE DECIMAL(20, 2);
+      ALTER TABLE system_config ALTER COLUMN total_operational_reserve TYPE DECIMAL(20, 2);
+      ALTER TABLE system_config ALTER COLUMN total_owner_profit TYPE DECIMAL(20, 2);
+      ALTER TABLE system_config ALTER COLUMN total_gateway_costs TYPE DECIMAL(20, 2);
+      
+      ANALYZE users;
+      ANALYZE transactions;
+      ANALYZE loans;
+      ANALYZE quotas;
+    `);
+
 
     // Adicionar campos de monetização na tabela de usuários
     await client.query(`
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS membership_type VARCHAR(20) DEFAULT 'FREE'; -- FREE, PRO
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS membership_type VARCHAR(20) DEFAULT 'FREE'; --FREE, PRO
       ALTER TABLE users ADD COLUMN IF NOT EXISTS last_reward_at TIMESTAMP;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS total_dividends_earned DECIMAL(12, 2) DEFAULT 0;
     `);
 
     // Criar tabelas de auditoria e webhooks
     await client.query(`
-      CREATE TABLE IF NOT EXISTS audit_logs (
-          id SERIAL PRIMARY KEY,
-          user_id INTEGER REFERENCES users(id),
-          action VARCHAR(100) NOT NULL,
-          entity_type VARCHAR(50),
-          entity_id VARCHAR(100),
-          old_values JSONB,
-          new_values JSONB,
-          ip_address VARCHAR(45),
-          user_agent TEXT,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
+      CREATE TABLE IF NOT EXISTS audit_logs(
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id),
+      action VARCHAR(100) NOT NULL,
+      entity_type VARCHAR(50),
+      entity_id VARCHAR(100),
+      old_values JSONB,
+      new_values JSONB,
+      ip_address VARCHAR(45),
+      user_agent TEXT,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
 
-      CREATE TABLE IF NOT EXISTS webhook_logs (
-          id SERIAL PRIMARY KEY,
-          provider VARCHAR(50) NOT NULL,
-          payload JSONB NOT NULL,
-          status VARCHAR(20) DEFAULT 'PENDING',
-          error_message TEXT,
-          processed_at TIMESTAMP WITH TIME ZONE,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
+      CREATE TABLE IF NOT EXISTS webhook_logs(
+      id SERIAL PRIMARY KEY,
+      provider VARCHAR(50) NOT NULL,
+      payload JSONB NOT NULL,
+      status VARCHAR(20) DEFAULT 'PENDING',
+      error_message TEXT,
+      processed_at TIMESTAMP WITH TIME ZONE,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
 
       CREATE INDEX IF NOT EXISTS idx_audit_user_id ON audit_logs(user_id);
       CREATE INDEX IF NOT EXISTS idx_audit_action ON audit_logs(action);

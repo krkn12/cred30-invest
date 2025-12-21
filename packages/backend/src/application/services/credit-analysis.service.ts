@@ -8,46 +8,38 @@ import { QUOTA_PRICE, VIP_LEVELS } from '../../shared/constants/business.constan
  */
 export const calculateUserLoanLimit = async (pool: Pool | PoolClient, userId: string): Promise<number> => {
     try {
-        // 1. Dados base do usuário (Score e Tempo de conta)
-        const userRes = await pool.query(
-            'SELECT score, created_at FROM users WHERE id = $1',
-            [userId]
-        );
-        if (userRes.rows.length === 0) return 0;
-        const user = userRes.rows[0];
+        // 1, 2 e 3. Dados consolidados do usuário (Score, Cotas e Histórico)
+        // Redução de 3 queries para 1
+        const userDataRes = await pool.query(`
+            SELECT 
+                u.score, u.created_at,
+                (SELECT COALESCE(SUM(current_value), 0) FROM quotas WHERE user_id = $1 AND status = 'ACTIVE') as total_quotas_value,
+                (SELECT COUNT(*) FROM loans WHERE user_id = $1) as total_requests,
+                (SELECT COUNT(*) FROM loans WHERE user_id = $1 AND status = 'PAID') as paid_loans,
+                (SELECT COUNT(*) FROM loans WHERE user_id = $1 AND status = 'APPROVED' AND due_date < NOW()) as overdue_loans
+            FROM users u
+            WHERE u.id = $1
+        `, [userId]);
 
-        // 2. Patrimônio no sistema (Cotas ATIVAS)
-        const quotasRes = await pool.query(
-            "SELECT COALESCE(SUM(current_value), 0) as total FROM quotas WHERE user_id = $1 AND status = 'ACTIVE'",
-            [userId]
-        );
-        const totalQuotasValue = parseFloat(quotasRes.rows[0].total);
+        if (userDataRes.rows.length === 0) return 0;
+        const userData = userDataRes.rows[0];
 
-        // 3. Histórico de Pagamentos
-        const loansRes = await pool.query(
-            `SELECT 
-                COUNT(*) as total_requests,
-                COUNT(*) FILTER (WHERE status = 'PAID') as paid_loans,
-                COUNT(*) FILTER (WHERE status = 'APPROVED' AND due_date < NOW()) as overdue_loans
-             FROM loans WHERE user_id = $1`,
-            [userId]
-        );
-        const stats = loansRes.rows[0];
-        const hasOverdue = parseInt(stats.overdue_loans) > 0;
-        const paidCount = parseInt(stats.paid_loans);
+        const user = { score: userData.score, created_at: userData.created_at };
+        const totalQuotasValue = parseFloat(userData.total_quotas_value);
+        const hasOverdue = parseInt(userData.overdue_loans) > 0;
+        const paidCount = parseInt(userData.paid_loans);
 
-        // 4. CAIXA OPERACIONAL DISPONÍVEL (Nova Trava)
-        // Caixa Bruto = (Total de Cotas ATIVAS * QUOTA_PRICE)
-        // Emprestado = (Total Emprestado Ativo)
-        // Reserva Liquidez = 30% do Caixa Bruto (Sempre mantido para saques de cotas)
-        const systemQuotasRes = await pool.query(
-            "SELECT COUNT(*) as count FROM quotas WHERE status = 'ACTIVE'"
-        );
-        const systemActiveLoansRes = await pool.query(
-            "SELECT COALESCE(SUM(amount), 0) as total FROM loans WHERE status IN ('APPROVED', 'PAYMENT_PENDING')"
-        );
-        const systemQuotasCount = parseInt(systemQuotasRes.rows[0].count);
-        const systemTotalLoaned = parseFloat(systemActiveLoansRes.rows[0].total);
+        // 4. CAIXA OPERACIONAL DISPONÍVEL (Consolidado)
+        // Redução de 2 queries para 1
+        const systemStatsRes = await pool.query(`
+            SELECT 
+                (SELECT COUNT(*)::int FROM quotas WHERE status = 'ACTIVE') as quotas_count,
+                (SELECT COALESCE(SUM(amount), 0)::float FROM loans WHERE status IN ('APPROVED', 'PAYMENT_PENDING')) as total_loaned
+        `);
+
+        const systemQuotasCount = systemStatsRes.rows[0].quotas_count;
+        const systemTotalLoaned = systemStatsRes.rows[0].total_loaned;
+
 
         const grossCash = systemQuotasCount * QUOTA_PRICE;
         const liquidityReserve = grossCash * 0.30; // 30% de reserva para saques
@@ -64,8 +56,12 @@ export const calculateUserLoanLimit = async (pool: Pool | PoolClient, userId: st
             return 0;
         }
 
-        // A. Limite Base por Score
-        const scoreLimit = (user.score || 0) * 5;
+        // A. Limite Base por Score (Multiplicador Dinâmico por Confiança)
+        let scoreMultiplier = 2; // Base conservadora
+        if (user.score >= 700) scoreMultiplier = 5;
+        else if (user.score >= 500) scoreMultiplier = 3.5;
+
+        const scoreLimit = (user.score || 0) * scoreMultiplier;
 
         // B. Alavancagem por Cotas Dinâmica (VIP)
         let quotaMultiplier = VIP_LEVELS.BRONZE.multiplier;

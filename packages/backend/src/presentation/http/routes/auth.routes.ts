@@ -265,7 +265,7 @@ authRoutes.post('/register', async (c) => {
 
     const newUserResult = await pool.query(
       `INSERT INTO users (name, email, password_hash, secret_phrase, pix_key, balance, referral_code, is_admin, score, two_factor_secret, two_factor_enabled, is_email_verified, accepted_terms_at)
-       VALUES ($1, $2, $3, $4, $5, 0, $6, $7, 300, $8, FALSE, TRUE, CURRENT_TIMESTAMP)
+       VALUES ($1, $2, $3, $4, $5, 0, $6, $7, 0, $8, FALSE, TRUE, CURRENT_TIMESTAMP)
        RETURNING id, name, email, pix_key, balance, score, created_at, referral_code, is_admin`,
       [
         validatedData.name,

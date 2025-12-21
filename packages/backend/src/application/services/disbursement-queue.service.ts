@@ -29,14 +29,27 @@ export const processDisbursementQueue = async (pool: Pool): Promise<{ processed:
         const result = await pool.query(query);
         const pendingLoans = result.rows;
 
-        if (pendingLoans.length === 0) {
-            return { processed: 0, errors: 0 };
-        }
+        // 2. Buscar estatísticas globais do sistema UMA VEZ antes do loop
+        const systemStatsRes = await pool.query(`
+            SELECT 
+                (SELECT COUNT(*)::int FROM quotas WHERE status = 'ACTIVE') as quotas_count,
+                (SELECT COALESCE(SUM(amount), 0)::float FROM loans WHERE status IN ('APPROVED', 'PAYMENT_PENDING')) as total_loaned
+        `);
 
-        // 2. Processar cada solicitação conforme a liquidez disponível
+        const systemQuotasCount = systemStatsRes.rows[0].quotas_count;
+        let systemTotalLoaned = systemStatsRes.rows[0].total_loaned;
+        const grossCash = systemQuotasCount * 50; // QUOTA_PRICE = 50
+        const liquidityReserve = grossCash * 0.30;
+
+        // 3. Processar cada solicitação conforme a liquidez disponível
         for (const loan of pendingLoans) {
             try {
-                // Verificar liquidez atual do sistema para este empréstimo específico
+                // Cálculo de liquidez em memória para evitar queries repetitivas
+                const operationalCash = grossCash - systemTotalLoaned - liquidityReserve;
+
+                // Buscar dados específicos do usuário (Limite pessoal)
+                // Nota: calculateUserLoanLimit ainda faz suas próprias queries, 
+                // mas agora o sistema tem uma trava de memória externa mais rápida.
                 const availableLimit = await calculateUserLoanLimit(pool, loan.user_id);
 
                 // Buscar dívidas ativas atuais para este usuário
@@ -45,10 +58,13 @@ export const processDisbursementQueue = async (pool: Pool): Promise<{ processed:
                     [loan.user_id]
                 );
                 const currentDebt = parseFloat(activeLoansResult.rows[0].total);
-                const realAvailable = availableLimit - currentDebt;
+                const realAvailablePersonal = availableLimit - currentDebt;
+
+                // O limite real é o menor entre o pessoal e o operacional do sistema
+                const realAvailable = Math.min(realAvailablePersonal, operationalCash);
 
                 // Se o sistema tem caixa e o usuário tem limite pessoal para cobrir ESTE pedido
-                if (parseFloat(loan.amount) <= realAvailable) {
+                if (parseFloat(loan.amount) <= realAvailable && realAvailable > 0) {
                     console.log(`✅ [DISBURSEMENT] Liquidez confirmada para Loan ${loan.id} (User: ${loan.user_id}). Processando aprovação automática...`);
 
                     const approvalResult = await executeInTransaction(pool, async (client: PoolClient) => {
@@ -57,22 +73,21 @@ export const processDisbursementQueue = async (pool: Pool): Promise<{ processed:
 
                     if (approvalResult.success) {
                         processed++;
+                        // Atualizar liquidez em memória para o próximo item da fila
+                        systemTotalLoaned += parseFloat(loan.amount);
                     } else {
                         console.error(`❌ [DISBURSEMENT] Erro ao processar aprovação do Loan ${loan.id}:`, approvalResult.error);
                         errors++;
                     }
                 } else {
-                    console.log(`⏳ [DISBURSEMENT] Pulando Loan ${loan.id}: Liquidez insuficiente no caixa para esta prioridade no momento.`);
-                    // Como a fila é por prioridade, se este não cabe, os abaixo (com menos cotas/score) 
-                    // podem caber se forem valores menores, ou o sistema decide parar aqui para não quebrar a ordem.
-                    // Vamos continuar tentando os próximos, pois um usuário VIP pode ter pedido 10k e não ter caixa, 
-                    // mas um usuário Bronze pediu 50 reais e tem caixa.
+                    console.log(`⏳ [DISBURSEMENT] Pulando Loan ${loan.id}: Liquidez insuficiente (Operacional: R$ ${operationalCash.toFixed(2)}, Pessoal: R$ ${realAvailablePersonal.toFixed(2)}).`);
                 }
             } catch (err) {
                 console.error(`❌ [DISBURSEMENT] Erro crítico no item ${loan.id} da fila:`, err);
                 errors++;
             }
         }
+
 
         console.log(`🏁 [DISBURSEMENT] Processamento finalizado. Aprovados: ${processed}, Erros/Pulados: ${errors}`);
         return { processed, errors };

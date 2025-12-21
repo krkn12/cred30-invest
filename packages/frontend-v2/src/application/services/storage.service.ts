@@ -202,11 +202,7 @@ export const saveState = (state: AppState): void => {
 
 // --- Admin Logic ---
 
-export const updateSystemBalance = async (newBalance: number): Promise<void> => {
-  await apiService.updateSystemBalance(newBalance);
-  // Limpar cache após atualização
-  clearPendingItemsCache();
-};
+
 
 export const updateProfitPool = async (amountToAdd: number): Promise<void> => {
   await apiService.addProfitToPool(amountToAdd);
@@ -214,137 +210,20 @@ export const updateProfitPool = async (amountToAdd: number): Promise<void> => {
   clearPendingItemsCache();
 };
 
-// Cache para evitar múltiplas chamadas ao dashboard
-let cachedPendingItems: { transactions: any[], loans: any[] } | null = null;
-let lastCacheTime = 0;
-const CACHE_DURATION = 10000; // 10 segundos de cache (aumentado para reduzir chamadas)
+const CACHE_DURATION = 10000; // 10 segundos de cache (mantido para compatibilidade se necessário)
 
 // Cache para dashboard administrativo
 let cachedDashboard: any = null;
 let lastDashboardCacheTime = 0;
 const DASHBOARD_CACHE_DURATION = 15000; // 15 segundos de cache para dashboard
 
-export const getPendingItems = async () => {
-  try {
-    const now = Date.now();
 
-    // Limpar cache temporariamente para forçar nova chamada
-    cachedPendingItems = null;
-    lastCacheTime = 0;
 
-    // Sempre buscar dados novos para garantir atualização
-    console.log('Forçando nova busca de itens pendentes (sem cache)');
-
-    console.log('Buscando itens pendentes do dashboard...');
-    const dashboard = await apiService.getAdminDashboard();
-    console.log('Dashboard recebido:', dashboard);
-
-    // Acessar dados aninhados corretamente
-    const pendingTransactionsRaw = dashboard.data?.pendingTransactions || dashboard.pendingTransactions || [];
-    const pendingLoansRaw = dashboard.data?.pendingLoans || dashboard.pendingLoans || [];
-
-    // Converter transações com descrição melhorada
-    const pendingTransactions = pendingTransactionsRaw.map((apiTransaction: any) => {
-      const amount = typeof apiTransaction.amount === 'string'
-        ? parseFloat(apiTransaction.amount)
-        : apiTransaction.amount;
-
-      // Descrição melhorada para transações pendentes
-      let description = apiTransaction.description;
-      if (!description) {
-        if (apiTransaction.type === 'BUY_QUOTA') {
-          description = `Compra de ${apiTransaction.quantity || 1} cota(s) - Aguardando Aprovação`;
-        } else if (apiTransaction.type === 'WITHDRAWAL') {
-          description = `Solicitacao de Saque - Aguardando Aprovação`;
-        } else {
-          description = `${apiTransaction.type} - Aguardando Aprovação`;
-        }
-      }
-
-      return {
-        id: apiTransaction.id,
-        userId: apiTransaction.user_id,
-        type: apiTransaction.type,
-        amount: amount || 0,
-        description: description,
-        status: apiTransaction.status,
-        date: apiTransaction.created_at || apiTransaction.createdAt || apiTransaction.date,
-        createdAt: apiTransaction.created_at || apiTransaction.createdAt,
-        updatedAt: apiTransaction.updated_at || apiTransaction.updatedAt,
-        metadata: apiTransaction.metadata, // Incluir metadata na conversão
-        user_name: apiTransaction.user_name,
-        user_email: apiTransaction.user_email
-      };
-    });
-
-    // Converter empréstimos com cálculo correto do totalRepayment
-    const pendingLoans = pendingLoansRaw.map((apiLoan: any) => {
-      const amount = typeof apiLoan.amount === 'string'
-        ? parseFloat(apiLoan.amount)
-        : apiLoan.amount;
-      const totalRepayment = typeof apiLoan.total_repayment === 'string'
-        ? parseFloat(apiLoan.total_repayment)
-        : (typeof apiLoan.totalRepayment === 'string' ? parseFloat(apiLoan.totalRepayment) : apiLoan.totalRepayment);
-
-      // Calcular totalRepayment se não estiver presente ou for inválido
-      const calculatedTotalRepayment = totalRepayment && totalRepayment > 0
-        ? totalRepayment
-        : (amount * (1 + 0.2 * (apiLoan.installments || 1)));
-
-      // DEBUG: Log para verificar dados do empréstimo
-      console.log('DEBUG - Dados do empréstimo pendente:', {
-        id: apiLoan.id,
-        user_id: apiLoan.user_id,
-        user_name: apiLoan.user_name,
-        user_email: apiLoan.user_email,
-        pix_key_to_receive: apiLoan.pix_key_to_receive,
-        created_at: apiLoan.created_at,
-        amount: apiLoan.amount,
-        totalRepayment: apiLoan.totalRepayment,
-        installments: apiLoan.installments,
-        calculatedTotalRepayment
-      });
-
-      return {
-        id: apiLoan.id,
-        userId: apiLoan.user_id || apiLoan.userId,
-        amount: amount || 0,
-        totalRepayment: calculatedTotalRepayment,
-        installments: apiLoan.installments || 1,
-        status: apiLoan.status,
-        pixKeyToReceive: apiLoan.pix_key_to_receive || apiLoan.pixKeyToReceive || apiLoan.pixKey || 'Não informado',
-        createdAt: apiLoan.created_at || apiLoan.createdAt,
-        updatedAt: apiLoan.updated_at || apiLoan.updatedAt,
-        // Adicionar campos do usuário em ambos os formatos para compatibilidade
-        userName: apiLoan.user_name || apiLoan.userName,
-        userEmail: apiLoan.user_email || apiLoan.userEmail,
-        user_name: apiLoan.user_name || apiLoan.userName,
-        user_email: apiLoan.user_email || apiLoan.userEmail,
-        user_id: apiLoan.user_id || apiLoan.userId
-      };
-    });
-
-    // Atualizar cache
-    cachedPendingItems = { transactions: pendingTransactions, loans: pendingLoans };
-    lastCacheTime = now;
-
-    console.log('Transações pendentes convertidas:', pendingTransactions);
-    console.log('Empréstimos pendentes convertidos:', pendingLoans);
-
-    return cachedPendingItems;
-  } catch (error) {
-    console.error('Erro ao obter itens pendentes:', error);
-    return { transactions: [], loans: [] };
-  }
-};
-
-// Função para limpar o cache quando necessário (ex: após aprovar/rejeitar)
+// Função para limpar o cache quando necessário (ex: após atualização de dividendos)
 export const clearPendingItemsCache = (): void => {
-  cachedPendingItems = null;
-  lastCacheTime = 0;
   cachedDashboard = null;
   lastDashboardCacheTime = 0;
-  console.log('Cache de itens pendentes e dashboard limpo');
+  console.log('Cache do dashboard limpo');
 };
 
 // Função para limpar apenas o cache do dashboard
@@ -356,27 +235,12 @@ export const clearDashboardCache = (): void => {
 
 // Função para limpar cache globalmente
 export const clearAllCache = (): void => {
-  cachedPendingItems = null;
-  lastCacheTime = 0;
   cachedDashboard = null;
   lastDashboardCacheTime = 0;
   console.log('Todo o cache foi limpo');
 };
 
-export const processAdminAction = async (
-  itemId: string,
-  itemType: 'TRANSACTION' | 'LOAN',
-  action: 'APPROVE' | 'REJECT'
-): Promise<void> => {
-  try {
-    await apiService.processAdminAction(itemId, itemType, action);
-    // Limpar cache após ação administrativa
-    clearPendingItemsCache();
-  } catch (error) {
-    console.error('Erro ao processar ação administrativa:', error);
-    throw error;
-  }
-};
+
 
 export const distributeMonthlyDividends = async () => {
   const result = await apiService.distributeDividends();

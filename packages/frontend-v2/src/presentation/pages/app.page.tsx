@@ -63,7 +63,6 @@ export default function App() {
     profitPool: 0,
     systemBalance: 0,
     lastDividendDistribution: null,
-    pendingItems: [],
     serverTime: Date.now()
   });
 
@@ -224,9 +223,9 @@ export default function App() {
     } catch (error: any) { setShowError({ isOpen: true, title: 'Erro', message: error.message }); }
   };
 
-  const handleRequestLoan = async (amount: number, installments: number, pixKey: string) => {
+  const handleRequestLoan = async (amount: number, installments: number) => {
     try {
-      await requestLoan(amount, installments, pixKey);
+      await requestLoan(amount, installments);
       await refreshState();
       setShowSuccess({ isOpen: true, title: 'Sucesso!', message: 'Apoio solicitado com sucesso!' });
     } catch (e: any) { setShowError({ isOpen: true, title: 'Erro', message: e.message }); }
@@ -409,7 +408,7 @@ export default function App() {
                   <Suspense fallback={null}>
                     <SettingsView
                       user={state.currentUser!}
-                      onSimulateTime={() => { }}
+
                       onLogout={handleLogout}
                       onDeleteAccount={() => { }}
                       onChangePassword={changePassword}

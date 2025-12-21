@@ -37,6 +37,7 @@ export const MARKETPLACE_ESCROW_FEE_RATE = 0.05; // 5% de taxa de garantia (Escr
 export const MARKET_CREDIT_INTEREST_RATE = 0.03; // 3% de taxa ao mês no apoio direto
 export const MARKET_CREDIT_MAX_INSTALLMENTS = 18; // Até 18x
 export const MARKET_CREDIT_MIN_SCORE = 450; // Score mínimo para comprar parcelado
+export const MARKET_CREDIT_MIN_QUOTAS = 1; // Mínimo de 1 cota ativa (Skin in the Game) para parcelar
 
 // Taxas do Mercado Pago (Gateway)
 export const MERCADO_PAGO_PIX_FEE_PERCENT = 0.0099; // 0.99% para PIX

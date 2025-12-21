@@ -33,7 +33,7 @@ export interface Loan {
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'PAID' | 'PAYMENT_PENDING';
   createdAt: string;
   dueDate?: string;
-  pixKeyToReceive?: string;
+
   totalPaid?: number;
   remainingAmount?: number;
   paidInstallmentsCount?: number;
@@ -70,7 +70,7 @@ export interface AppState {
   systemBalance: number;
   profitPool: number;
   isLoading?: boolean;
-  pendingItems?: any[];
+
   serverTime?: number;
   lastDividendDistribution?: any;
   stats?: {

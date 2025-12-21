@@ -28,10 +28,10 @@ monetizationRoutes.post('/reward-video', authMiddleware, async (c) => {
         const user = c.get('user') as UserContext;
         const pool = getDbPool(c);
 
-        // Configurações de recompensa
-        const REWARD_AMOUNT = 0.05; // R$ 0,05 por vídeo
-        const REWARD_SCORE = 2; // +2 pontos de Score
-        const COOLDOWN_MINUTES = 30; // 1 vídeo a cada 30 min
+        // Configurações de recompensa (Sustentabilidade: Adsterra/CPM real)
+        const REWARD_AMOUNT = 0.002; // R$ 0,002 por vídeo (Sustentável para CPM de R$ 2,00)
+        const REWARD_SCORE = 5; // Aumentado para +5 pontos de Score (Incentiva o limite de crédito)
+        const COOLDOWN_MINUTES = 10; // Reduzido para 10 min para permitir mais engajamento
 
         const result = await executeInTransaction(pool, async (client: PoolClient) => {
             // 1. Verificar cooldown
@@ -131,24 +131,24 @@ monetizationRoutes.post('/upgrade-pro', authMiddleware, async (c) => {
         let paymentData: any;
 
         if (payMethod === 'pix') {
-            paymentData = await createPixPayment(
-                finalAmount,
-                `Upgrade PRO - ${userCheck.rows[0].name.split(' ')[0]}`,
-                userCheck.rows[0].email,
-                user.id
-            );
+            paymentData = await createPixPayment({
+                amount: finalAmount,
+                description: `Upgrade PRO - ${userCheck.rows[0].name.split(' ')[0]}`,
+                email: userCheck.rows[0].email,
+                external_reference: user.id.toString()
+            });
         } else {
             if (!token) return c.json({ success: false, message: 'Token do cartão é obrigatório' }, 400);
-            paymentData = await createCardPayment(
-                finalAmount,
+            paymentData = await createCardPayment({
+                amount: finalAmount,
                 token,
-                `Upgrade PRO`,
-                userCheck.rows[0].email,
-                user.id,
-                installments || 1,
+                description: `Upgrade PRO`,
+                email: userCheck.rows[0].email,
+                external_reference: user.id.toString(),
+                installments: installments || 1,
                 payment_method_id,
-                issuer_id
-            );
+                issuer_id: issuer_id ? Number(issuer_id) : undefined
+            });
         }
 
         // 4. Criar transação pendente
@@ -174,10 +174,10 @@ monetizationRoutes.post('/upgrade-pro', authMiddleware, async (c) => {
             message: payMethod === 'pix' ? 'QR Code gerado com sucesso!' : 'Pagamento processado!',
             data: {
                 paymentId: paymentData.id,
-                transactionId: transResult.transactionId,
+                transactionId: transResult.data?.transactionId,
                 pixData: payMethod === 'pix' ? {
-                    qr_code: paymentData.point_of_interaction.transaction_data.qr_code,
-                    qr_code_base64: paymentData.point_of_interaction.transaction_data.qr_code_base64
+                    qr_code: paymentData.qr_code,
+                    qr_code_base64: paymentData.qr_code_base64
                 } : null
             }
         });

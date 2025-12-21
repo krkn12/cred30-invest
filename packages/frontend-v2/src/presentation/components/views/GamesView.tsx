@@ -31,7 +31,7 @@ export const GamesView: React.FC<GamesViewProps> = ({ onBack }) => {
             // Tenta creditar recompensa real
             const res = await apiService.post<any>('/monetization/reward-video', {});
             if (res.success) {
-                rewardMsg = 'Recompensa de R$ 0,05 Recebida!';
+                rewardMsg = 'Recompensa Recebida! (+5 Score)';
             }
         } catch (error: any) {
             console.error(error);
@@ -74,7 +74,7 @@ export const GamesView: React.FC<GamesViewProps> = ({ onBack }) => {
             description: 'Corra, pule e desvie dos trens para bater recordes.',
             image: 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?q=80&w=1000&auto=format&fit=crop',
             url: 'https://poki.com.br/g/subway-surfers',
-            reward: 'R$ 0,05',
+            reward: 'R$ 0,002',
             category: 'Ação'
         },
         {
@@ -83,7 +83,7 @@ export const GamesView: React.FC<GamesViewProps> = ({ onBack }) => {
             description: 'Teste seus conhecimentos e ganhe pontos de score reais.',
             image: 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?q=80&w=1000&auto=format&fit=crop',
             url: 'https://www.google.com/search?q=quiz+financeiro', // Fallback melhor
-            reward: '+10 Score',
+            reward: '+5 Score',
             category: 'Educação'
         },
         {
@@ -92,7 +92,7 @@ export const GamesView: React.FC<GamesViewProps> = ({ onBack }) => {
             description: 'Desafie a gravidade em pistas de motocross insanas.',
             image: 'https://images.unsplash.com/photo-1558981403-c5f97dbbe480?q=80&w=1000&auto=format&fit=crop',
             url: 'https://poki.com.br/g/moto-x3m',
-            reward: 'R$ 0,05',
+            reward: 'R$ 0,002',
             category: 'Esporte'
         }
     ];
