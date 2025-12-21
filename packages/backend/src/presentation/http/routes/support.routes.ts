@@ -201,4 +201,20 @@ supportRoutes.post('/feedback', authMiddleware, async (c) => {
     }
 });
 
+// Listar feedbacks (Admin)
+supportRoutes.get('/admin/feedback', authMiddleware, adminMiddleware, async (c) => {
+    try {
+        const pool = getDbPool(c);
+        const feedbacks = await supportService.getClosedChatsWithFeedback(pool);
+
+        return c.json({
+            success: true,
+            data: { feedbacks }
+        });
+    } catch (error: any) {
+        console.error('Erro ao buscar feedbacks:', error);
+        return c.json({ success: false, message: 'Erro interno do servidor' }, 500);
+    }
+});
+
 export { supportRoutes };

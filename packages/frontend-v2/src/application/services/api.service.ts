@@ -559,6 +559,11 @@ class ApiService {
     });
     return response.data;
   }
+
+  async getSupportFeedbacks(): Promise<any> {
+    const response = await this.request<any>('/support/admin/feedback');
+    return response.data;
+  }
 }
 
 // Exportar instância única do serviço

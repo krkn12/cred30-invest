@@ -199,6 +199,17 @@ export class SupportService {
         // Mensagem final do sistema
         await this.addMessage(pool, chatId, 'assistant', 'Atendimento encerrado pelo agente. Por favor, avalie nosso atendimento.', null);
     }
+
+    async getClosedChatsWithFeedback(pool: Pool | PoolClient): Promise<any[]> {
+        const result = await pool.query(
+            `SELECT c.*, u.name as user_name, u.email as user_email 
+             FROM support_chats c
+             JOIN users u ON c.user_id = u.id
+             WHERE c.status = 'CLOSED' AND c.rating IS NOT NULL
+             ORDER BY c.last_message_at DESC`
+        );
+        return result.rows;
+    }
 }
 
 export const supportService = new SupportService();
