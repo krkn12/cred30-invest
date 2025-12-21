@@ -363,11 +363,15 @@ marketplaceRoutes.get('/my-orders', authMiddleware, async (c) => {
 
         const result = await pool.query(
             `SELECT o.*, l.title, l.image_url, 
-              ub.name as buyer_name, us.name as seller_name
+              ub.name as buyer_name, us.name as seller_name,
+              ln.installments, ln.interest_rate, ln.total_repayment
        FROM marketplace_orders o
        JOIN marketplace_listings l ON o.listing_id = l.id
        JOIN users ub ON o.buyer_id = ub.id
        JOIN users us ON o.seller_id = us.id
+       LEFT JOIN loans ln ON o.payment_method = 'CRED30_CREDIT' 
+            AND (ln.metadata->>'orderId')::numeric = o.id 
+            AND ln.user_id = o.buyer_id
        WHERE o.buyer_id = $1 OR o.seller_id = $1
        ORDER BY o.created_at DESC`,
             [user.id]
