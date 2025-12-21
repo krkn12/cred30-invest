@@ -4,7 +4,7 @@ import {
     Users, Gamepad2, TrendingUp, DollarSign, ArrowUpFromLine, BookOpen,
     Repeat, Crown, Clock, ArrowDownLeft, ArrowUpRight,
     PieChart, AlertTriangle, LogOut, Star, Zap,
-    ShoppingBag, Tag, PlusCircle, ShieldCheck, ChevronRight, Wallet, Coins
+    ShoppingBag, Tag, PlusCircle, ShieldCheck, ChevronRight, Wallet, Coins, Settings
 } from 'lucide-react';
 import { AppState, User } from '../../../domain/types/common.types';
 import { QUOTA_PRICE } from '../../../shared/constants/app.constants';
@@ -104,7 +104,10 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                 </div>
                 <div className="flex flex-col items-end gap-2">
                     <div className="flex gap-2">
-                        <button title="Sair" onClick={onLogout} className="text-zinc-400 hover:text-white p-2 bg-surfaceHighlight rounded-lg">
+                        <button title="Configurações" onClick={() => setShowSettings(true)} className="text-zinc-400 hover:text-white p-2 bg-surfaceHighlight rounded-lg transition-colors">
+                            <Settings size={20} />
+                        </button>
+                        <button title="Sair" onClick={onLogout} className="text-zinc-400 hover:text-white p-2 bg-surfaceHighlight rounded-lg transition-colors">
                             <LogOut size={20} />
                         </button>
                     </div>
