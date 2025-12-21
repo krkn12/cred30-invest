@@ -100,14 +100,14 @@ const WelcomePage = () => {
       <section className="relative z-10 px-6 pt-12 pb-16">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 rounded-full text-emerald-400 text-xs font-bold mb-8">
-            <Shield size={14} /> Sistema Cooperativo 100% Transparente
+            <Shield size={14} /> Clube de Benefícios 100% Transparente
           </div>
           <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight leading-[1] text-white">
-            A cooperativa que <br />
+            A comunidade que <br />
             <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent italic">valoriza</span> seu tempo.
           </h1>
           <p className="text-lg text-zinc-400 mb-10 max-w-xl mx-auto leading-relaxed">
-            Torne-se membro em minutos e comece a participar dos excedentes operacionais hoje com total segurança.
+            Torne-se membro em minutos e tenha acesso a recompensas exclusivas hoje com total segurança.
           </p>
 
           <div className="flex flex-col gap-4 max-w-md mx-auto">
@@ -115,7 +115,7 @@ const WelcomePage = () => {
               onClick={() => navigate('/auth')}
               className="bg-cyan-500 hover:bg-cyan-400 text-black font-black py-5 px-10 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 text-lg shadow-xl shadow-cyan-500/20"
             >
-              Filiar-se agora
+              Entrar no Clube
               <ArrowRight className="w-5 h-5" />
             </button>
 
@@ -165,7 +165,7 @@ const WelcomePage = () => {
       {/* Footer Minimal */}
       <footer className="relative z-10 px-6 py-12">
         <div className="max-w-6xl mx-auto text-center border-t border-white/5 pt-8">
-          <p className="text-zinc-600 text-[10px] uppercase tracking-widest mb-4">© 2024 Cred30 Tecnologia Cooperativa</p>
+          <p className="text-zinc-600 text-[10px] uppercase tracking-widest mb-4">© 2024 Cred30 Plataforma Digital</p>
           <div className="flex justify-center gap-6 text-zinc-500 text-xs font-bold uppercase transition-colors">
             <button onClick={() => navigate('/terms')} className="hover:text-white">Termos</button>
             <button onClick={() => navigate('/privacy')} className="hover:text-white">Privacidade</button>

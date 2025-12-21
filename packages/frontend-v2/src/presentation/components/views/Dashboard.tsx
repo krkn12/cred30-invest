@@ -121,7 +121,7 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                         <h2 className="text-4xl font-bold tracking-tight mb-4">{formatCurrency(user.balance)}</h2>
                         <div className="flex gap-3">
                             <button onClick={onWithdraw} className="bg-black/20 hover:bg-black/40 text-white text-xs font-bold py-2 px-4 rounded-lg backdrop-blur-sm transition flex items-center gap-2 border border-white/10">
-                                <ArrowUpFromLine size={14} /> Sacar
+                                <ArrowUpFromLine size={14} /> Resgatar
                             </button>
                             <button onClick={onBuyQuota} className="bg-white text-primary-900 hover:bg-zinc-100 text-xs font-bold py-2 px-4 rounded-lg shadow-lg transition flex items-center gap-2">
                                 <TrendingUp size={14} /> Participar
@@ -136,10 +136,10 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                     <div className="relative z-10">
                         <div className="flex items-center gap-2 mb-2">
                             <PieChart size={20} className="text-primary-400" />
-                            <span className="text-sm font-medium text-zinc-400">Suas Cotas</span>
+                            <span className="text-sm font-medium text-zinc-400">Minhas Licenças</span>
                         </div>
                         <h3 className="text-2xl font-bold text-white">{formatCurrency(totalInvested)}</h3>
-                        <p className="text-xs text-zinc-500 mt-1">{userQuotas.length} unidades</p>
+                        <p className="text-xs text-zinc-500 mt-1">{userQuotas.length} licenças ativas</p>
                     </div>
                 </div>
 
@@ -149,10 +149,10 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                     <div className="relative z-10">
                         <div className="flex items-center gap-2 mb-2">
                             <ArrowUpFromLine size={20} className="text-emerald-400" />
-                            <span className="text-sm font-medium text-zinc-400">Resultados</span>
+                            <span className="text-sm font-medium text-zinc-400">Meus Benefícios</span>
                         </div>
                         <h3 className="text-2xl font-bold text-emerald-400">{formatCurrency(totalEarnings)}</h3>
-                        <p className="text-xs text-zinc-500 mt-1">Excedentes Proporcionais</p>
+                        <p className="text-xs text-zinc-500 mt-1">Recompensas do Clube</p>
                     </div>
                 </div>
 
@@ -163,10 +163,10 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                     <div className="relative z-10">
                         <div className="flex items-center gap-2 mb-2">
                             <DollarSign size={20} className="text-red-400" />
-                            <span className="text-sm font-medium text-zinc-400">Compromisso Mútuo</span>
+                            <span className="text-sm font-medium text-zinc-400">Auxílios Ativos</span>
                         </div>
                         <h3 className="text-2xl font-bold text-red-400">{formatCurrency(totalDebt)}</h3>
-                        <p className="text-xs text-zinc-500 mt-1">{userLoans.length} ajudas mútuas</p>
+                        <p className="text-xs text-zinc-500 mt-1">{userLoans.length} contratos ativos</p>
                     </div>
                 </div>
             </div>
@@ -245,7 +245,7 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                                 <Users size={20} />
                             </div>
                             <div>
-                                <p className="text-xs font-bold text-white">Indicar</p>
+                                <p className="text-xs font-bold text-white">Convidar</p>
                                 <p className="text-[10px] text-zinc-500">Convide amigos</p>
                             </div>
                         </div>
@@ -281,7 +281,7 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                     <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-zinc-800 flex items-center justify-center text-primary-400 group-hover:bg-primary-900/40 transition-all border border-zinc-700 shadow-lg group-active:scale-95">
                         <TrendingUp size={24} />
                     </div>
-                    <span className="text-xs font-medium text-zinc-300">Aportar</span>
+                    <span className="text-xs font-medium text-zinc-300">Ativar</span>
                 </button>
 
                 <button onClick={onGames} className="flex flex-col items-center gap-2 min-w-[72px] group shrink-0">
@@ -316,21 +316,21 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                     <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 group-hover:bg-zinc-700 transition-all border border-zinc-700 shadow-lg group-active:scale-95">
                         <ArrowUpFromLine size={24} />
                     </div>
-                    <span className="text-xs font-medium text-zinc-300">Sacar</span>
+                    <span className="text-xs font-medium text-zinc-300">Resgatar</span>
                 </button>
 
                 <button onClick={onReinvest} className="flex flex-col items-center gap-2 min-w-[72px] group shrink-0">
                     <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-zinc-800 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-900/40 transition-all border border-zinc-700 shadow-lg group-active:scale-95">
                         <Repeat size={24} />
                     </div>
-                    <span className="text-xs font-medium text-zinc-300">Aportar</span>
+                    <span className="text-xs font-medium text-zinc-300">Ativar</span>
                 </button>
 
                 <button onClick={onRefer} className="flex flex-col items-center gap-2 min-w-[72px] group shrink-0">
                     <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-zinc-800 flex items-center justify-center text-orange-400 group-hover:bg-orange-900/40 transition-all border border-zinc-700 shadow-lg group-active:scale-95">
                         <Users size={24} />
                     </div>
-                    <span className="text-xs font-medium text-zinc-300">Indicar</span>
+                    <span className="text-xs font-medium text-zinc-300">Convidar</span>
                 </button>
 
                 <button onClick={onVip} className="flex flex-col items-center gap-2 min-w-[72px] group shrink-0">

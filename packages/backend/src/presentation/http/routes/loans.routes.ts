@@ -256,7 +256,7 @@ loanRoutes.post('/request', authMiddleware, async (c) => {
       success: true,
       message: isAutoApproved
         ? `Apoio Mútuo aprovado e creditado com sucesso! O valor de R$ ${amountToDisburse.toFixed(2)} já está disponível no seu saldo interno.`
-        : `Solicitação enviada para a fila automática! Como o caixa está com muita demanda, seu pedido será processado assim que houver novos recursos, priorizando membros com mais cotas e maior score.`,
+        : `Solicitação enviada para a fila automática! Como o caixa está com muita demanda, seu pedido será processado assim que houver novos recursos, priorizando membros com mais participações e maior score.`,
       data: {
         loanId: result.data?.loanId,
         totalRepayment: totalWithInterest,
@@ -270,12 +270,12 @@ loanRoutes.post('/request', authMiddleware, async (c) => {
       return c.json({ success: false, message: 'Dados inválidos', errors: error.errors }, 400);
     }
 
-    console.error('Erro ao solicitar empréstimo:', error);
+    console.error('Erro ao solicitar apoio:', error);
     return c.json({ success: false, message: 'Erro interno do servidor' }, 500);
   }
 });
 
-// Pagar empréstimo
+// Pagar apoio
 loanRoutes.post('/repay', authMiddleware, async (c) => {
   try {
     const body = await c.req.json();
@@ -284,7 +284,7 @@ loanRoutes.post('/repay', authMiddleware, async (c) => {
     const user = c.get('user');
     const pool = getDbPool(c);
 
-    // Buscar empréstimo
+    // Buscar apoio
     const loanResult = await pool.query(
       'SELECT * FROM loans WHERE id = $1 AND user_id = $2',
       [loanId, user.id]
@@ -309,7 +309,7 @@ loanRoutes.post('/repay', authMiddleware, async (c) => {
     const method: PaymentMethod = useBalance ? 'balance' : (paymentMethod as PaymentMethod);
     const { total: finalCost, fee: userFee } = calculateTotalToPay(totalRepayment, method);
 
-    console.log('DEBUG - Pagamento completo do empréstimo:', {
+    console.log('DEBUG - Pagamento completo do apoio:', {
       loanId,
       totalRepayment,
       finalCost,
@@ -330,7 +330,7 @@ loanRoutes.post('/repay', authMiddleware, async (c) => {
       );
     }
 
-    // Atualizar status do empréstimo para pagamento pendente
+    // Atualizar status do apoio para pagamento pendente
     await pool.query(
       'UPDATE loans SET status = $1 WHERE id = $2',
       ['PAYMENT_PENDING', loanId]
@@ -366,8 +366,8 @@ loanRoutes.post('/repay', authMiddleware, async (c) => {
     // Criar transação de pagamento
     const transaction = await pool.query(
       `INSERT INTO transactions (user_id, type, amount, description, status, metadata)
-         VALUES ($1, 'LOAN_PAYMENT', $2, $3, 'PENDING', $4)
-         RETURNING id`,
+           VALUES ($1, 'LOAN_PAYMENT', $2, $3, 'PENDING', $4)
+           RETURNING id`,
       [
         user.id,
         finalCost,
@@ -407,12 +407,12 @@ loanRoutes.post('/repay', authMiddleware, async (c) => {
       return c.json({ success: false, message: 'Dados inválidos', errors: error.errors }, 400);
     }
 
-    console.error('Erro ao pagar empréstimo:', error);
+    console.error('Erro ao pagar apoio:', error);
     return c.json({ success: false, message: 'Erro interno do servidor' }, 500);
   }
 });
 
-// Pagar parcela específica de empréstimo
+// Pagar parcela específica de apoio
 loanRoutes.post('/repay-installment', authMiddleware, async (c) => {
   try {
     const body = await c.req.json();
@@ -421,23 +421,23 @@ loanRoutes.post('/repay-installment', authMiddleware, async (c) => {
     const user = c.get('user');
     const pool = getDbPool(c);
 
-    // Buscar empréstimo
+    // Buscar apoio
     const loanResult = await pool.query(
       'SELECT * FROM loans WHERE id = $1 AND user_id = $2',
       [loanId, user.id]
     );
 
     if (loanResult.rows.length === 0) {
-      return c.json({ success: false, message: 'Empréstimo não encontrado' }, 404);
+      return c.json({ success: false, message: 'Apoio não encontrado' }, 404);
     }
 
     const loan = loanResult.rows[0];
 
     if (loan.status !== 'APPROVED') {
-      return c.json({ success: false, message: 'Empréstimo não está ativo para pagamento' }, 400);
+      return c.json({ success: false, message: 'Apoio não está ativo para pagamento' }, 400);
     }
 
-    // Verificar se o empréstimo já tem parcelas pagas
+    // Verificar se o apoio já tem parcelas pagas
     const paidInstallmentsResult = await pool.query(
       'SELECT COALESCE(SUM(CAST(amount AS NUMERIC)), 0) as paid_amount FROM loan_installments WHERE loan_id = $1',
       [loanId]
@@ -465,7 +465,7 @@ loanRoutes.post('/repay-installment', authMiddleware, async (c) => {
         if (paymentMethod === 'card' && token) {
           mpData = await createCardPayment({
             amount: finalInstallmentCost,
-            description: `Pagamento de parcela de emprestimo no Cred30`,
+            description: `Pagamento de parcela de apoio no Cred30`,
             email: user.email,
             external_reference: `INSTALLMENT_${loanId}_${Date.now()}`,
             token,
@@ -475,7 +475,7 @@ loanRoutes.post('/repay-installment', authMiddleware, async (c) => {
         } else {
           mpData = await createPixPayment({
             amount: finalInstallmentCost,
-            description: `Pagamento de parcela de emprestimo no Cred30`,
+            description: `Pagamento de parcela de apoio no Cred30`,
             email: user.email,
             external_reference: `INSTALLMENT_${loanId}_${Date.now()}`
           });
@@ -486,8 +486,8 @@ loanRoutes.post('/repay-installment', authMiddleware, async (c) => {
 
       const transaction = await pool.query(
         `INSERT INTO transactions (user_id, type, amount, description, status, metadata)
-         VALUES ($1, 'LOAN_PAYMENT', $2, $3, 'PENDING', $4)
-         RETURNING id`,
+           VALUES ($1, 'LOAN_PAYMENT', $2, $3, 'PENDING', $4)
+           RETURNING id`,
         [
           user.id,
           finalInstallmentCost,
@@ -511,7 +511,7 @@ loanRoutes.post('/repay-installment', authMiddleware, async (c) => {
 
       return c.json({
         success: true,
-        message: 'Código de reposição gerado! Aguarde a confirmação da cooperativa.',
+        message: 'Código de reposição gerado! Aguarde a confirmação do Clube.',
         data: {
           transactionId: transaction.rows[0].id,
           remainingAmount: remainingAmountPre,
@@ -560,32 +560,33 @@ loanRoutes.post('/repay-installment', authMiddleware, async (c) => {
 
     // Verificar se todas as parcelas foram pagas
     if (newPaidAmount >= parseFloat(loan.total_repayment)) {
-      // Marcar empréstimo como PAGO
+      // Marcar apoio como PAGO
       await pool.query(
         'UPDATE loans SET status = $1 WHERE id = $2',
         ['PAID', loanId]
       );
 
-      // Atualizar Score por pagamento de empréstimo (Recompensa)
+      // Atualizar Score por pagamento de apoio (Recompensa)
       const isLate = new Date() > new Date(loan.due_date);
       if (isLate) {
         // Se estiver atrasado, poderia haver uma lógica de penalidade aqui, 
         // mas a recompensa de "pagamento em dia" certamente não se aplica.
         // Por enquanto, apenas não damos a recompensa se estiver muito atrasado.
       } else {
-        await updateScore(pool, user.id, SCORE_REWARDS.LOAN_PAYMENT_ON_TIME, 'Pagamento integral de empréstimo em dia');
+        await updateScore(pool, user.id, SCORE_REWARDS.LOAN_PAYMENT_ON_TIME, 'Reposição integral de apoio em dia');
       }
     }
 
     // Criar transação de pagamento APROVADA
     const transaction = await pool.query(
       `INSERT INTO transactions (user_id, type, amount, description, status, metadata)
-       VALUES ($1, 'LOAN_PAYMENT', $2, $3, 'APPROVED', $4)
-       RETURNING id`,
+         VALUES ($1, 'LOAN_PAYMENT', $2, $3, 'APPROVED', $4)
+         RETURNING id`,
       [
         user.id,
         installmentAmount,
         `Reposição de parcela (Saldo) - ${newPaidAmount >= parseFloat(loan.total_repayment) ? 'Compromisso Finalizado' : 'Restante: R$ ' + (parseFloat(loan.total_repayment) - newPaidAmount).toFixed(2)}`,
+
         JSON.stringify({
           loanId,
           installmentAmount,

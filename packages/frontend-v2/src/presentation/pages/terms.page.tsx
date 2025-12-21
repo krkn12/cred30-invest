@@ -197,24 +197,24 @@ const TermsPage = () => {
                     {/* Seção 8 */}
                     <section className="bg-zinc-900/30 border border-white/5 p-5 sm:p-8 rounded-2xl sm:rounded-3xl">
                         <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-3 text-emerald-400">
-                            <ClockIcon size={22} /> 8. Modificações e Foro
+                            <ClockIcon size={22} /> 8. Natureza Jurídica e Blindagem
                         </h2>
-                        <p className="text-zinc-300 text-sm sm:text-base leading-relaxed mb-4">
-                            A Cred30 reserva-se o direito de modificar estes Termos a qualquer momento para garantir a sustentabilidade do grupo.
-                        </p>
-                        <div className="bg-zinc-800/30 p-4 rounded-xl border border-white/5 space-y-3 shadow-inner">
-                            <p className="text-zinc-400 text-[10px] sm:text-xs leading-relaxed">
-                                <strong>Natureza Jurídica (Blindagem):</strong> Este sistema opera estritamente sob as normas do Código Civil Brasileiro relativas à **Sociedade em Conta de Participação (SCP - Arts. 991 a 996)**, onde o gestor atua como sócio ostensivo e os membros como sócios participantes.
+                        <div className="bg-zinc-800/30 p-4 rounded-xl border border-white/5 space-y-4 shadow-inner text-justify">
+                            <p className="text-zinc-300 text-xs sm:text-sm leading-relaxed">
+                                <strong>8.1. Sociedade em Conta de Participação (SCP):</strong> Ao aderir ao Cred30, você ingressa na qualidade de <strong>SÓCIO PARTICIPANTE</strong> (ou Sócio Oculto), nos termos dos artigos 991 a 996 do Código Civil Brasileiro. A administração e responsabilidade perante terceiros cabem exclusivamente ao <strong>SÓCIO OSTENSIVO</strong> (Gestor da Plataforma).
                             </p>
-                            <p className="text-zinc-400 text-[10px] sm:text-xs leading-relaxed">
-                                **Mútuo Coletivo:** As operações de apoio mútuo baseiam-se nos **Arts. 586 a 592 (Mútuo Civil)** operados em caráter privado entre os sócios. NÃO se caracteriza como atividade financeira pública, conta de pagamento aberta ou oferta pública de investimentos (CVM).
+                            <p className="text-zinc-300 text-xs sm:text-sm leading-relaxed">
+                                <strong>8.2. Inexistência de Oferta Pública (Art. 19 Lei 6.385/76):</strong> A presente plataforma NÃO realiza oferta pública de valores mobiliários. O ingresso é restrito, privado e depende de convite/aceitação, configurando um contrato particular de sociedade e não um investimento de mercado de capitais fiscalizado pela CVM.
                             </p>
-                            <p className="text-red-400/80 text-[9px] uppercase font-black tracking-tighter">
-                                aviso: a plataforma não promete ganhos fáceis. o resultado depende da atividade comercial do grupo no mercado cred30 e publicidade.
+                            <p className="text-zinc-300 text-xs sm:text-sm leading-relaxed">
+                                <strong>8.3. Mútuo Privado (Não Bancário):</strong> As operações de crédito (apoio) realizadas internamente são contratos civis de mútuo entre parceiros privados (Peer-to-Peer lending em círculo fechado), não se confundindo com atividades privativas de instituições financeiras reguladas pelo Banco Central do Brasil.
+                            </p>
+                            <p className="text-zinc-300 text-xs sm:text-sm leading-relaxed">
+                                <strong>8.4. Riscos do Negócio:</strong> Como Sócio Participante, você declara ciência de que seus aportes (participações) integram o capital de giro da sociedade e participam dos riscos do negócio. <strong>Não há garantia de rentabilidade fixa</strong>, e os resultados dependem do sucesso comercial (vendas de publicidade, assinaturas e taxas de marketplace).
                             </p>
                         </div>
-                        <p className="text-zinc-400 text-[10px] sm:text-xs mt-4 italic">
-                            Fica eleito o foro da comarca sede do gestor para dirimir controvérsias de natureza societária.
+                        <p className="text-zinc-500 text-[10px] sm:text-xs mt-6 italic text-center">
+                            Fica eleito o foro da Cidade de Curitiba/PR (sede administrativa do Sócio Ostensivo) para dirimir controvérsias oriundas deste Contrato Social Privado, renunciando a qualquer outro por mais privilegiado que seja.
                         </p>
                     </section>
                 </div>

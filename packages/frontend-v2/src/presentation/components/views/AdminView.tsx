@@ -277,7 +277,7 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
             <div className="flex items-center gap-1.5 p-1.5 bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-[2rem] overflow-x-auto no-scrollbar shadow-xl sticky top-4 z-50">
                 {[
                     { id: 'overview', name: 'Resumo', icon: PieChart },
-                    { id: 'payouts', name: 'Fila de PIX', icon: Send, count: (payoutQueue.transactions?.length || 0) },
+                    { id: 'payouts', name: 'Fila de Resgates', icon: Send, count: (payoutQueue.transactions?.length || 0) },
                     { id: 'system', name: 'Gestão Financeira', icon: SettingsIcon },
                     { id: 'referrals', name: 'Indicações', icon: UserPlus },
                     { id: 'store', name: 'Loja', icon: ShoppingBagIcon },
@@ -311,11 +311,11 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                             <div className="flex items-center justify-between mb-8">
                                 <h3 className="text-xl font-bold text-white flex items-center gap-3">
                                     <div className="p-2 bg-emerald-500/10 rounded-lg"><ArrowUpRight className="text-emerald-400" size={20} /></div>
-                                    Saques em Espera (PIX)
+                                    Resgates em Espera (PIX)
                                 </h3>
                                 <div className="flex flex-col items-end">
                                     <span className="bg-zinc-800 text-zinc-400 px-3 py-1 rounded-full text-[10px] font-black uppercase">Fila: {payoutQueue.transactions?.length || 0}</span>
-                                    <p className="text-[10px] text-zinc-500 mt-1 uppercase font-bold tracking-tighter">Ordenado por Cotas e Score</p>
+                                    <p className="text-[10px] text-zinc-500 mt-1 uppercase font-bold tracking-tighter">Ordenado por Licenças e Score</p>
                                 </div>
                             </div>
 
@@ -333,8 +333,8 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                                             <div className="flex justify-between items-start gap-4">
                                                 <div className="space-y-3 flex-1">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider bg-emerald-500/10 text-emerald-400">SAQUE REQUISITADO</span>
-                                                        <span className="text-[10px] text-zinc-500 font-bold">VIP: {t.user_quotas} Cotas | Score: {t.user_score}</span>
+                                                        <span className="text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider bg-emerald-500/10 text-emerald-400">RESGATE REQUISITADO</span>
+                                                        <span className="text-[10px] text-zinc-500 font-bold">VIP: {t.user_quotas} Licenças | Score: {t.user_score}</span>
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-bold text-white mb-0.5">{t.user_name}</p>
@@ -369,9 +369,9 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <MetricCard title="Membros" value={state.users.length} subtitle="Usuários Totais" icon={Users} color="blue" />
-                        <MetricCard title="Participações" value={state.stats?.quotasCount ?? 0} subtitle="Cotas em Operação" icon={PieChart} color="cyan" />
+                        <MetricCard title="Participações" value={state.stats?.quotasCount ?? 0} subtitle="Licenças em Operação" icon={PieChart} color="cyan" />
                         <MetricCard title="Liquidez" value={formatCurrency(state.systemBalance)} subtitle="Caixa Disponível" icon={DollarSign} color="emerald" />
-                        <MetricCard title="Dividendos" value={formatCurrency(state.profitPool)} subtitle="Excedentes Acumulados" icon={PiggyBank} color="yellow" />
+                        <MetricCard title="Recompensas" value={formatCurrency(state.profitPool)} subtitle="Bônus Disponível" icon={PiggyBank} color="yellow" />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -411,7 +411,7 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                             </div>
                         </div>
 
-                        {/* Projeção de Lucros */}
+                        {/* Projeção de Resultados */}
                         <div className="bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-3xl p-8 shadow-2xl">
                             <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
                                 <div className="p-2 bg-orange-500/10 rounded-lg"><PieChart className="text-orange-400" size={20} /></div>
@@ -424,7 +424,7 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                                         <p className="text-2xl font-bold text-white tracking-tight">{formatCurrency(state.stats?.totalToReceive || 0)}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Lucro Previsto</p>
+                                        <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Resultado Previsto</p>
                                         <p className="text-2xl font-bold text-orange-400 tracking-tight">{formatCurrency((state.stats?.totalToReceive || 0) - (state.stats?.totalLoaned || 0))}</p>
                                     </div>
                                 </div>
@@ -448,47 +448,47 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                         <MetricCard
                             title="Reserva p/ Impostos"
                             value={formatCurrency(state.stats?.totalTaxReserve || 0)}
-                            subtitle="6% de todo lucro"
+                            subtitle="6% de todo resultado"
                             icon={ShieldCheck}
                             color="blue"
                         />
                         <MetricCard
                             title="Custos (Servidor/APIs)"
                             value={formatCurrency(state.stats?.totalOperationalReserve || 0)}
-                            subtitle="4% de todo lucro"
+                            subtitle="4% de todo resultado"
                             icon={SettingsIcon}
                             color="orange"
                         />
                         <MetricCard
                             title="Meu Salário (Pró-labore)"
                             value={formatCurrency(state.stats?.totalOwnerProfit || 0)}
-                            subtitle="5% de todo lucro"
+                            subtitle="5% de todo resultado"
                             icon={DollarSign}
                             color="emerald"
                         />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* Gestão de Lucros */}
+                        {/* Gestão de Resultados */}
                         <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
                             <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
                                 <div className="p-2 bg-emerald-500/10 rounded-lg"><Coins className="text-emerald-400" size={20} /></div>
-                                Injetar Excedentes no Sistema
+                                Distribuir Bônus no Clube
                             </h3>
                             <div className="space-y-6">
                                 <div className="bg-black/20 p-6 rounded-2xl border border-zinc-800 relative group overflow-hidden">
                                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity">
                                         <TrendingUp size={60} />
                                     </div>
-                                    <p className="text-[10px] text-zinc-500 font-black uppercase mb-1 underline decoration-primary-500/50 underline-offset-4">Pote de Dividendos</p>
+                                    <p className="text-[10px] text-zinc-500 font-black uppercase mb-1 underline decoration-primary-500/50 underline-offset-4">Fundo de Recompensas</p>
                                     <p className="text-4xl font-black text-white tracking-tighter">{formatCurrency(state.profitPool)}</p>
                                     <p className="text-[11px] text-zinc-400 mt-4 leading-relaxed font-medium">
-                                        Este valor será distribuído automaticamente entre as cotas ativas à meia-noite (00:00).
+                                        Este valor será distribuído automaticamente entre as licenças ativas à meia-noite (00:00).
                                     </p>
                                 </div>
                                 <div className="space-y-4 pt-4">
                                     <div className="relative">
-                                        <label className="text-[10px] text-zinc-500 font-black uppercase mb-2 block tracking-widest">Valor do Lucro a Adicionar (R$)</label>
+                                        <label className="text-[10px] text-zinc-500 font-black uppercase mb-2 block tracking-widest">Valor do Bônus a Adicionar (R$)</label>
                                         <input
                                             type="text"
                                             placeholder="Ex: 1.250,50"

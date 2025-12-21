@@ -177,12 +177,12 @@ export default function App() {
           qrCode: pixData.qr_code,
           qrCodeBase64: pixData.qr_code_base64,
           amount: total,
-          description: `Compra de ${qty} cota(s)`
+          description: `Aquisição de ${qty} licença(s)`
         });
         return;
       }
 
-      setShowSuccess({ isOpen: true, title: 'Sucesso!', message: 'Suas cotas foram adquiridas!' });
+      setShowSuccess({ isOpen: true, title: 'Sucesso!', message: 'Licenças ativadas com sucesso!' });
       navigate('/app/portfolio');
     } catch (error: any) {
       setShowError({ isOpen: true, title: 'Erro na Compra', message: error.message });
@@ -202,10 +202,10 @@ export default function App() {
     try {
       if (confirmState.type === 'SELL' && confirmState.id) {
         await sellQuota(confirmState.id);
-        setShowSuccess({ isOpen: true, title: 'Venda Realizada', message: 'Valor creditado.' });
+        setShowSuccess({ isOpen: true, title: 'Resgate Realizado', message: 'Valor creditado.' });
       } else if (confirmState.type === 'SELL_ALL') {
         await sellAllQuotas();
-        setShowSuccess({ isOpen: true, title: 'Sucesso', message: 'Todas as cotas vendidas!' });
+        setShowSuccess({ isOpen: true, title: 'Sucesso', message: 'Todas as licenças resgatadas!' });
       }
       await refreshState();
     } catch (error: any) {
@@ -559,9 +559,9 @@ export default function App() {
                   isOpen={!!confirmState}
                   onClose={() => setConfirmState(null)}
                   onConfirm={executeConfirmedSell}
-                  title={confirmState.type === 'SELL_ALL' ? 'Vender Tudo?' : 'Confirmar Venda?'}
-                  message={confirmState.type === 'SELL_ALL' ? 'Deseja vender todas as cotas?' : 'Deseja vender esta participação?'}
-                  confirmText="Vender"
+                  title={confirmState.type === 'SELL_ALL' ? 'Resgatar Tudo?' : 'Confirmar Resgate?'}
+                  message={confirmState.type === 'SELL_ALL' ? 'Deseja resgatar todas as licenças?' : 'Deseja resgatar esta participação?'}
+                  confirmText="Resgatar"
                   type="danger"
                 />
               )}

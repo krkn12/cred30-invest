@@ -14,11 +14,11 @@ export const distributeProfits = async (pool: Pool | PoolClient): Promise<any> =
         const config = configResult.rows[0];
 
         if (!config || parseFloat(config.profit_pool) <= 0) {
-            return { success: false, message: 'Não há lucros acumulados para distribuir' };
+            return { success: false, message: 'Não há resultados acumulados para distribuir' };
         }
 
-        // Contar cotas ativas ELEGÍVEIS (Usuário tem empréstimo OU jogou)
-        // Regra: "quem tiver cota e ter feito emprestimo ou jogou e pra ganha nas cotas"
+        // Contar licenças ativas ELEGÍVEIS (Usuário tem apoio OU jogou)
+        // Regra: "quem tiver licença e ter feito apoio ou jogou e pra ganha nas licenças"
 
         const eligibleUsersQuery = `
             SELECT q.user_id, COUNT(q.id) as quota_count
@@ -39,13 +39,13 @@ export const distributeProfits = async (pool: Pool | PoolClient): Promise<any> =
         const eligibleResult = await pool.query(eligibleUsersQuery);
         const usersWithQuotas = eligibleResult.rows;
 
-        // Calcular total de cotas elegíveis
+        // Calcular total de licenças elegíveis
         const eligibleTotalQuotas = usersWithQuotas.reduce((acc, row) => acc + parseInt(row.quota_count), 0);
 
-        console.log('DEBUG - Cotas elegíveis para dividendo:', eligibleTotalQuotas);
+        console.log('DEBUG - Licenças elegíveis para bônus:', eligibleTotalQuotas);
 
         if (eligibleTotalQuotas === 0) {
-            // Se não há cotas elegíveis, todo o lucro vai para o caixa operacional
+            // Se não há licenças elegíveis, todo o resultado vai para o caixa operacional
             const profitToTransfer = parseFloat(config.profit_pool);
 
             if (profitToTransfer > 0) {
@@ -56,12 +56,12 @@ export const distributeProfits = async (pool: Pool | PoolClient): Promise<any> =
 
                 return {
                     success: true,
-                    message: `Não há cotistas elegíveis (ativos em empréstimos/jogos). Lucro de R$ ${profitToTransfer.toFixed(2)} revertido para o Caixa Operacional.`,
+                    message: `Não há licenciados elegíveis (ativos em apoios/jogos). Resultado de R$ ${profitToTransfer.toFixed(2)} revertido para o Caixa Operacional.`,
                     data: { transferredToBalance: profitToTransfer }
                 };
             }
 
-            return { success: false, message: 'Não há cotas elegíveis e sem lucro para distribuir.' };
+            return { success: false, message: 'Não há licenças elegíveis e sem resultados para distribuir.' };
         }
 
         const profit = parseFloat(config.profit_pool);
@@ -74,7 +74,7 @@ export const distributeProfits = async (pool: Pool | PoolClient): Promise<any> =
 
         const totalForMaintenance = taxAmount + operationalAmount + ownerAmount;
 
-        // O valor por cota aumenta, pois o bolo é dividido por menos gente (apenas elegíveis)
+        // O valor por licença aumenta, pois o bolo é dividido por menos gente (apenas elegíveis)
         const dividendPerQuota = totalForUsers / eligibleTotalQuotas;
 
         // Distribuir para usuários - OTIMIZAÇÃO MASSIVA (Batch Processing)
@@ -87,7 +87,7 @@ export const distributeProfits = async (pool: Pool | PoolClient): Promise<any> =
         const userIds = usersWithQuotas.map(u => u.user_id);
         const userAmounts = usersWithQuotas.map(u => Number((parseInt(u.quota_count) * dividendPerQuota).toFixed(2)));
         const userDescriptions = usersWithQuotas.map(u =>
-            `Excedentes Operacionais (85% do Resultado): R$ ${dividendPerQuota.toFixed(4)}/cota (${u.quota_count} cotas) - Elegível`
+            `Bônus Disponível (85% do Resultado): R$ ${dividendPerQuota.toFixed(4)}/licença (${u.quota_count} licenças) - Elegível`
         );
 
         // Executar atualização em massa e inserção de transações em uma única chamada
@@ -135,7 +135,7 @@ export const distributeProfits = async (pool: Pool | PoolClient): Promise<any> =
 
         return {
             success: true,
-            message: 'Distribuição de lucros realizada com sucesso!',
+            message: 'Distribuição de bônus realizada com sucesso!',
             data: {
                 totalProfit: profit,
                 distributed: distributedTotal,
@@ -146,7 +146,8 @@ export const distributeProfits = async (pool: Pool | PoolClient): Promise<any> =
             },
         };
     } catch (error) {
-        console.error('Erro ao distribuir dividendos automaticamente:', error);
+        console.error('Erro ao distribuir bônus automaticamente:', error);
+
         throw error;
     }
 };

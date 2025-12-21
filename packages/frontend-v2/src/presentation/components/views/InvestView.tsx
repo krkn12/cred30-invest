@@ -25,8 +25,8 @@ export const InvestView = ({ onBuy }: { onBuy: (qty: number, method: 'PIX' | 'BA
             <div className="bg-surface border border-surfaceHighlight rounded-3xl p-8 text-center relative overflow-hidden mb-6">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-primary-600"></div>
                 <TrendingUp size={48} className="mx-auto text-primary-400 mb-4" />
-                <h2 className="text-2xl font-bold text-white mb-2">Aporte de Participação</h2>
-                <p className="text-zinc-400 mb-6">Apoie a conta comum da comunidade e receba excedentes operacionais proporcionais.</p>
+                <h2 className="text-2xl font-bold text-white mb-2">Aporte Social</h2>
+                <p className="text-zinc-400 mb-6">Apoie a conta comum da comunidade e tenha acesso a benefícios exclusivos.</p>
 
                 <div className="text-4xl font-bold text-white mb-8">
                     {QUOTA_PRICE.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
@@ -76,7 +76,7 @@ export const InvestView = ({ onBuy }: { onBuy: (qty: number, method: 'PIX' | 'BA
                 }}
                 className="relative z-[100] w-full bg-primary-500 hover:bg-primary-400 text-black font-bold py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)]"
             >
-                {method === 'CARD' ? 'Ir para Pagamento Seguro' : 'Confirmar Compra'}
+                {method === 'CARD' ? 'Ir para Pagamento Seguro' : 'Confirmar Aporte'}
             </button>
 
             <div className="mt-6">
@@ -92,11 +92,11 @@ export const InvestView = ({ onBuy }: { onBuy: (qty: number, method: 'PIX' | 'BA
                     <div className="bg-surface border border-surfaceHighlight rounded-3xl p-6 w-full max-w-sm relative animate-fade-in">
                         <button title="Fechar" onClick={() => setShowConfirm(false)} className="absolute top-4 right-4 text-zinc-400 hover:text-white bg-zinc-800 p-1.5 rounded-full z-10"><XIcon size={24} /></button>
 
-                        <h3 className="text-xl font-bold text-white mb-4">Finalizar Compra</h3>
+                        <h3 className="text-xl font-bold text-white mb-4">Confirmar Aporte</h3>
 
                         <div className="bg-background border border-zinc-700 rounded-xl p-4 mb-4 space-y-2">
                             <div className="flex justify-between text-sm text-zinc-400">
-                                <span>Valor das Cotas</span>
+                                <span>Valor do Aporte</span>
                                 <span className="text-zinc-200">{baseAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                             </div>
 
@@ -142,7 +142,7 @@ export const InvestView = ({ onBuy }: { onBuy: (qty: number, method: 'PIX' | 'BA
             )}
             {/* Legal Disclaimer */}
             <div className="mt-8 px-4 text-[10px] text-zinc-600 text-center leading-relaxed">
-                <p>O Cred30 é um sistema de cooperação mútua. A participação em cotas possui excedentes variáveis baseados na performance operacional da cooperativa. Não há garantia de sobra fixa. Ao participar, você declara estar ciente dos riscos e das regras de liquidez do sistema.</p>
+                <p>O aporte de capital social confere direitos de participação sobre os resultados do clube de benefícios, conforme modelo de SCP. Não se trata de investimento financeiro, poupança ou título de crédito. Os resultados dependem do desempenho do clube.</p>
             </div>
         </div>
     );

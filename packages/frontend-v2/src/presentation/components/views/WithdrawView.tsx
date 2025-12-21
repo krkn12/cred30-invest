@@ -254,7 +254,7 @@ export const WithdrawView = ({ balance, currentUser, totalQuotaValue, onSuccess,
                     Taxa mínima de R$ 5,00 ou 2% do valor do saque.
                 </p>
                 <p className="text-xs text-emerald-400/80 mt-2">
-                    💡 <strong>Benefício VIP:</strong> Se o valor das suas cotas for maior ou igual ao saque, a taxa é <strong>ZERO</strong>!
+                    💡 <strong>Benefício VIP:</strong> Se o valor das suas participações for maior ou igual ao saque, a taxa é <strong>ZERO</strong>!
                 </p>
                 <p className="text-xs text-zinc-400 mt-2">
                     <strong>Importante:</strong> Você está sacando do seu saldo disponível na conta.

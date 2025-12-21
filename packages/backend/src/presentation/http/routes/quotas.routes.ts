@@ -99,14 +99,14 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
     if (quantity > 100) {
       return c.json({
         success: false,
-        message: 'Quantidade máxima por compra é 100 cotas'
+        message: 'Quantidade máxima por ativação é 100 licenças'
       }, 400);
     }
 
     if (baseCost > 50000) {
       return c.json({
         success: false,
-        message: 'Valor máximo por compra é R$ 50.000,00'
+        message: 'Valor máximo por ativação é R$ 50.000,00'
       }, 400);
     }
 
@@ -184,7 +184,7 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
               referrerId,
               'REFERRAL_BONUS',
               bonusAmount,
-              `Bônus por indicação: ${user.name} comprou cota(s)`,
+              `Bônus por indicação: ${user.name} ativou licença(s)`,
               'APPROVED'
             );
           }
@@ -275,7 +275,7 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
 
     const message = result.data?.immediateApproval
       ? `Aquisição de ${result.data?.quantity} participação(ões) aprovada imediatamente!`
-      : 'Solicitação de participação enviada! Aguarde a confirmação da cooperativa.';
+      : 'Solicitação de participação enviada! Aguarde a confirmação do Clube.';
 
     return c.json({
       success: true,
@@ -562,7 +562,7 @@ quotaRoutes.post('/sell-all', authMiddleware, async (c) => {
         [
           user.id,
           totalReceived,
-          'Resgate total de cotas',
+          'Resgate total de licenças',
           JSON.stringify({
             totalPenalty,
             totalProfit: 0, // Sempre 0, multas não geram lucro

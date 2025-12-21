@@ -105,7 +105,7 @@ export const SettingsView = ({ user, onLogout, onDeleteAccount, onChangePassword
                         <p className="text-white border-b border-surfaceHighlight pb-2">{user.pixKey}</p>
                     </div>
                     <div>
-                        <label className="text-xs text-zinc-500">Score de Crédito</label>
+                        <label className="text-xs text-zinc-500">Score de Confiança</label>
                         <div className="flex items-center gap-2 border-b border-surfaceHighlight pb-2">
                             <Star size={16} className="text-primary-400" fill="currentColor" />
                             <p className="text-white font-bold">{user.score || 0}</p>

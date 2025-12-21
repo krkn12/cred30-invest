@@ -22,7 +22,7 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
     const [viewDetailsId, setViewDetailsId] = useState<string | null>(null);
     const [installmentModalData, setInstallmentModalData] = useState<{ loanId: string, installmentAmount: number } | null>(null);
 
-    // Limite de Crédito (Nubank Style)
+    // Limite de Apoio Mútuo (Nubank Style)
     const [creditLimit, setCreditLimit] = useState<{ totalLimit: number; activeDebt: number; remainingLimit: number } | null>(null);
 
     useEffect(() => {
@@ -31,7 +31,7 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
                 const data = await apiService.getAvailableLimit();
                 setCreditLimit(data);
             } catch (e) {
-                console.error('Erro ao buscar limite de crédito:', e);
+                console.error('Erro ao buscar limite de apoio mútuo:', e);
             }
         };
         fetchLimit();
@@ -91,7 +91,7 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
 
                             {creditLimit.totalLimit === 0 ? (
                                 <p className="text-sm text-zinc-300">
-                                    Para liberar o apoio mútuo, você precisa ter no mínimo <strong className="text-white">1 participação ativa</strong> no sistema.
+                                    Para liberar o apoio mútuo, você precisa ter no mínimo <strong className="text-white">1 participação ativa</strong> no clube.
                                 </p>
                             ) : (
                                 <>
@@ -170,7 +170,7 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
                                         <span className="text-white font-medium">{amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                                     </div>
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-zinc-500">Sustentabilidade (20%)</span>
+                                        <span className="text-zinc-500">Taxa de Manutenção (20%)</span>
                                         <span className="text-red-400 font-medium">{(totalRepay - amount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                                     </div>
                                     <div className="flex justify-between text-sm">
@@ -368,7 +368,7 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
                                 disabled={userBalance < selectedLoan.totalRepayment}
                                 className="w-full bg-primary-500 hover:bg-primary-600 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-black py-4 rounded-xl mb-2 transition shadow-lg shadow-primary-500/20"
                             >
-                                {userBalance < selectedLoan.totalRepayment ? 'Saldo Insuficiente' : 'Pagar com Saldo'}
+                                {userBalance < selectedLoan.totalRepayment ? 'Saldo Insuficiente' : 'Abater com Saldo'}
                             </button>
 
                             <button
@@ -426,7 +426,7 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
                                 disabled={userBalance < installmentModalData.installmentAmount}
                                 className="w-full bg-primary-500 hover:bg-primary-600 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-black py-4 rounded-xl mb-2 transition shadow-lg shadow-primary-500/20"
                             >
-                                {userBalance < installmentModalData.installmentAmount ? 'Saldo Insuficiente' : 'Pagar com Saldo'}
+                                {userBalance < installmentModalData.installmentAmount ? 'Saldo Insuficiente' : 'Abater com Saldo'}
                             </button>
 
                             <button
@@ -444,7 +444,7 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
             )}
             {/* Legal Disclaimer */}
             <div className="mt-8 px-4 text-[10px] text-zinc-600 text-center leading-relaxed">
-                <p>As ajudas mútuas estão sujeitas à análise de Score e disponibilidade de caixa da cooperativa. Os apoios são lastreados por alienação de cotas ativas no sistema. Em caso de atraso superior a 5 dias, o lastro será executado automaticamente conforme Termos de Uso (SCP/Mútuo Civil).</p>
+                <p>As ajudas mútuas estão sujeitas à análise de Score e disponibilidade de caixa do Clube. Os apoios são lastreados por execução de garantia sobre licenças ativas no sistema. Em caso de atraso superior a 5 dias, o lastro será executado automaticamente conforme Termos de Uso (SCP/Mútuo Civil).</p>
             </div>
         </div>
     );

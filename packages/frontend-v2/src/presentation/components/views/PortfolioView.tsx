@@ -96,18 +96,18 @@ export const PortfolioView = ({ quotas, hasLoans, onSell, onSellAll }: Portfolio
                         <p className="text-sm opacity-80">Gestão de Apoio à Comunidade</p>
                     </div>
                     <div className="text-right">
-                        <p className="text-sm opacity-80">Valor Patrimonial</p>
+                        <p className="text-sm opacity-80">Total em Licenças</p>
                         <p className="text-3xl font-bold">{totalCurrentValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                     <div className="bg-white/20 rounded-xl p-4">
-                        <p className="text-sm opacity-80 mb-1">Capital Aportado</p>
+                        <p className="text-sm opacity-80 mb-1">Valor das Licenças</p>
                         <p className="text-xl font-bold">{totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
                     </div>
                     <div className="bg-white/20 rounded-xl p-4">
-                        <p className="text-sm opacity-80 mb-1">Excedentes</p>
+                        <p className="text-sm opacity-80 mb-1">Bônus Acumulado</p>
                         <p className="text-xl font-bold flex items-center gap-1">
                             {totalEarnings >= 0 ? '+' : ''}{totalEarnings.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                             <span className="text-xs bg-black/20 px-1.5 py-0.5 rounded-full">
@@ -116,8 +116,8 @@ export const PortfolioView = ({ quotas, hasLoans, onSell, onSellAll }: Portfolio
                         </p>
                     </div>
                     <div className="bg-white/20 rounded-xl p-4">
-                        <p className="text-sm opacity-80 mb-1">Quantidade</p>
-                        <p className="text-xl font-bold">{safeQuotas.length} {safeQuotas.length === 1 ? 'cota' : 'cotas'}</p>
+                        <p className="text-sm opacity-80 mb-1">Licenças Ativas</p>
+                        <p className="text-xl font-bold">{safeQuotas.length} {safeQuotas.length === 1 ? 'licença' : 'licenças'}</p>
                     </div>
                 </div>
             </div>
@@ -149,7 +149,7 @@ export const PortfolioView = ({ quotas, hasLoans, onSell, onSellAll }: Portfolio
                 {safeQuotas.length === 0 ? (
                     <div className="text-center py-12 bg-surface/50 rounded-2xl border border-surfaceHighlight border-dashed">
                         <TrendingUp size={48} className="mx-auto text-zinc-600 mb-4" />
-                        <p className="text-zinc-500">Você ainda não possui cotas.</p>
+                        <p className="text-zinc-500">Você ainda não possui licenças ativadas.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -203,20 +203,20 @@ export const PortfolioView = ({ quotas, hasLoans, onSell, onSellAll }: Portfolio
                     <div className="bg-surface border border-surfaceHighlight rounded-3xl p-6 w-full max-w-sm relative shadow-2xl">
                         <button onClick={() => setShowConfirm(false)} className="absolute top-4 right-4 text-zinc-400 hover:text-white"><XIcon size={24} /></button>
 
-                        <h3 className="text-xl font-bold text-white mb-2">{modalTitle}</h3>
+                        <h3 className="text-xl font-bold text-white mb-2">{modalTitle.replace("Cota", "Licença")}</h3>
                         {isPenaltyApplied && (
                             <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3 rounded-lg mb-4">
-                                Resgate antecipado (menos de 1 ano). Incide multa de 40% sobre o valor de compra.
+                                Cancelamento antecipado (menos de 1 ano). Incide taxa de administração de 40% sobre o valor de compra.
                             </div>
                         )}
 
                         <div className="space-y-3 mb-6">
                             <div className="flex justify-between text-zinc-400 text-sm">
-                                <span>Valor do Aporte</span>
+                                <span>Valor Base</span>
                                 <span>{originalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                             </div>
                             <div className="flex justify-between text-yellow-500 text-sm">
-                                <span>Multa Rescisória {isPenaltyApplied && '(40%)'}</span>
+                                <span>Taxa de Saída Antecipada {isPenaltyApplied && '(40%)'}</span>
                                 <span>- {penaltyValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                             </div>
                             <div className="border-t border-surfaceHighlight my-2"></div>
