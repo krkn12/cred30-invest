@@ -481,7 +481,7 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
 
             {/* Content Rendering */}
             {view === 'browse' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in duration-300">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-in fade-in duration-300">
                     {listings.length > 0 ? (
                         <>
                             {/* Inserir Anúncio Adsterra no topo para visibilidade máxima */}
@@ -827,76 +827,86 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
 
             {view === 'details' && selectedItem && (
                 <div className="bg-surface border border-surfaceHighlight rounded-3xl overflow-hidden animate-in fade-in slide-in-from-right duration-300">
-                    <div className="aspect-video bg-zinc-900 flex items-center justify-center relative">
-                        {selectedItem.image_url ? (
-                            <img src={selectedItem.image_url} alt={selectedItem.title} className="w-full h-full object-cover" />
-                        ) : (
-                            <ImageIcon size={64} className="text-zinc-800" />
-                        )}
-                        <button onClick={() => setView('browse')} title="Fechar" className="absolute top-4 left-4 bg-black/60 p-2 rounded-full text-white">
-                            <ArrowLeft size={20} />
-                        </button>
-                    </div>
-                    <div className="p-6">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <span className="text-[10px] bg-primary-500/20 text-primary-400 px-2 py-1 rounded font-black uppercase mb-2 inline-block">
+                    <div className="md:grid md:grid-cols-2 lg:grid-cols-5 md:gap-0">
+                        {/* Coluna da Imagem */}
+                        <div className="lg:col-span-3 bg-black flex items-center justify-center relative min-h-[400px] md:min-h-[600px] md:border-r border-surfaceHighlight">
+                            {selectedItem.image_url ? (
+                                <img src={selectedItem.image_url} alt={selectedItem.title} className="w-full h-full object-contain max-h-[80vh]" />
+                            ) : (
+                                <ImageIcon size={64} className="text-zinc-800" />
+                            )}
+                            <button onClick={() => setView('browse')} title="Voltar" className="absolute top-4 left-4 bg-black/60 hover:bg-black/80 transition p-2 rounded-full text-white z-10 backdrop-blur-sm">
+                                <ArrowLeft size={24} />
+                            </button>
+                        </div>
+
+                        {/* Coluna de Detalhes e Ação */}
+                        <div className="lg:col-span-2 p-6 md:p-8 flex flex-col h-full overflow-y-auto max-h-[90vh]">
+                            <div className="mb-6">
+                                <span className="text-[10px] bg-primary-500/20 text-primary-400 px-2 py-1 rounded font-black uppercase mb-3 inline-block tracking-wider">
                                     {selectedItem.category}
                                 </span>
-                                <h1 className="text-2xl font-black text-white">{selectedItem.title}</h1>
-                                <p className="text-sm text-zinc-500 font-medium">Vendedor: {selectedItem.seller_name}</p>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-2xl font-black text-primary-400">{formatCurrency(parseFloat(selectedItem.price))}</p>
-                            </div>
-                        </div>
-
-                        <div className="bg-background/40 rounded-2xl p-4 mb-6">
-                            <h4 className="text-xs font-bold text-zinc-400 uppercase mb-2">Descrição</h4>
-                            <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-line">
-                                {selectedItem.description}
-                            </p>
-                        </div>
-
-                        <div className="bg-background/40 rounded-2xl p-6 mb-6">
-                            <h4 className="text-[10px] font-bold text-zinc-500 uppercase mb-4 tracking-widest">Forma de Pagamento</h4>
-
-                            <div className="flex gap-2 mb-6">
-                                <button
-                                    onClick={() => setBuyMethod('balance')}
-                                    className={`flex-1 py-3 rounded-xl border font-bold text-xs transition ${buyMethod === 'balance' ? 'bg-primary-500 text-black border-primary-500' : 'bg-zinc-900 text-zinc-400 border-zinc-800'}`}
-                                >
-                                    Saldo à Vista
-                                </button>
-                                <button
-                                    onClick={() => setBuyMethod('credit')}
-                                    className={`flex-1 py-3 rounded-xl border flex flex-col items-center gap-1 transition-all ${buyMethod === 'credit' ? 'bg-primary-500/20 border-primary-500 text-primary-400' : 'bg-background border-surfaceHighlight text-zinc-500'}`}
-                                >
-                                    <TrendingUp size={20} />
-                                    <span className="text-[10px] font-bold uppercase">Apoio Social</span>
-                                </button>
+                                <h1 className="text-2xl md:text-3xl font-black text-white leading-tight mb-2">{selectedItem.title}</h1>
+                                <p className="text-sm text-zinc-500 font-medium flex items-center gap-2">
+                                    <span className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-black text-zinc-400">
+                                        {selectedItem.seller_name.charAt(0)}
+                                    </span>
+                                    Vendido por <span className="text-zinc-300">{selectedItem.seller_name}</span>
+                                </p>
                             </div>
 
-                            {buyMethod === 'credit' ? (
-                                <div className="space-y-4 animate-in slide-in-from-top duration-300">
-                                    {state.currentUser!.score < MARKET_CREDIT_MIN_SCORE ? (
-                                        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl">
-                                            <div className="flex items-center gap-2 mb-2 text-red-400">
-                                                <AlertCircle size={16} />
-                                                <span className="text-xs font-bold uppercase">Apoio Social Indisponível</span>
-                                            </div>
-                                            <p className="text-[10px] text-zinc-400 leading-tight">
-                                                Seu score atual ({state.currentUser!.score}) está abaixo do mínimo exigido ({MARKET_CREDIT_MIN_SCORE}). Aumente seu score sendo um membro PRO ou pagando apoios em dia.
-                                            </p>
+                            <div className="mb-8">
+                                <p className="text-4xl font-black text-white tracking-tight">{formatCurrency(parseFloat(selectedItem.price))}</p>
+                                <p className="text-xs text-zinc-500 font-medium mt-1">À vista no Pix ou Saldo</p>
+                            </div>
+
+                            <div className="bg-background/40 rounded-2xl p-4 mb-6 border border-white/5">
+                                <h4 className="text-[10px] font-bold text-zinc-400 uppercase mb-2 tracking-widest">Sobre este item</h4>
+                                <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-line">
+                                    {selectedItem.description}
+                                </p>
+                            </div>
+
+                            <div className="mt-auto">
+                                <h4 className="text-[10px] font-bold text-zinc-500 uppercase mb-4 tracking-widest">Como você quer pagar?</h4>
+
+                                <div className="flex gap-2 mb-6">
+                                    <button
+                                        onClick={() => setBuyMethod('balance')}
+                                        className={`flex-1 py-4 rounded-xl border font-bold text-xs transition active:scale-95 ${buyMethod === 'balance' ? 'bg-primary-500 text-black border-primary-500 shadow-lg shadow-primary-500/20' : 'bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:bg-zinc-900'}`}
+                                    >
+                                        Saldo à Vista
+                                    </button>
+                                    <button
+                                        onClick={() => setBuyMethod('credit')}
+                                        className={`flex-1 py-4 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all active:scale-95 ${buyMethod === 'credit' ? 'bg-primary-500/10 border-primary-500 text-primary-400 shadow-lg shadow-primary-500/10' : 'bg-background border-surfaceHighlight text-zinc-500 hover:bg-zinc-900'}`}
+                                    >
+                                        <div className="flex items-center gap-1.5">
+                                            <TrendingUp size={14} />
+                                            <span>APOIO SOCIAL</span>
                                         </div>
-                                    ) : (
-                                        <>
+                                    </button>
+                                </div>
+
+                                {buyMethod === 'credit' && (
+                                    <div className="space-y-4 animate-in slide-in-from-top duration-300 mb-6 bg-zinc-900/50 p-4 rounded-2xl border border-white/5">
+                                        {state.currentUser!.score < MARKET_CREDIT_MIN_SCORE ? (
+                                            <div className="flex items-start gap-3">
+                                                <AlertCircle size={20} className="text-red-500 shrink-0 mt-0.5" />
+                                                <div>
+                                                    <h4 className="text-xs font-bold text-red-500 uppercase mb-1">Indisponível para seu perfil</h4>
+                                                    <p className="text-[11px] text-zinc-400 leading-tight">
+                                                        Seu score é <strong>{state.currentUser!.score}</strong>. O mínimo para crédito é <strong>{MARKET_CREDIT_MIN_SCORE}</strong>.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ) : (
                                             <div>
-                                                <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1">Parcelar em:</label>
+                                                <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 block mb-2">Opções de Parcelamento</label>
                                                 <select
                                                     value={selectedInstallments}
                                                     onChange={(e) => setSelectedInstallments(Number(e.target.value))}
-                                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 mt-1"
+                                                    className="w-full bg-black border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 text-sm"
                                                 >
                                                     {[...Array(MARKET_CREDIT_MAX_INSTALLMENTS)].map((_, i) => {
                                                         const month = i + 1;
@@ -908,71 +918,58 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
                                                         );
                                                     })}
                                                 </select>
-                                                <p className="text-[9px] text-zinc-500 mt-2 px-1 italic">
-                                                    * Taxa de sustentabilidade social de {MARKET_CREDIT_INTEREST_RATE * 100}% ao mês.
+                                                <p className="text-[10px] text-zinc-500 mt-2 text-right">
+                                                    * Juros de {MARKET_CREDIT_INTEREST_RATE * 100}% a.m.
                                                 </p>
                                             </div>
-                                        </>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="text-[11px] text-zinc-500 text-center py-2 italic font-medium">
-                                    O valor de {formatCurrency(parseFloat(selectedItem.price))} será descontado do seu saldo imediatamente.
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Dados de Entrega */}
-                        <div className="bg-background/40 rounded-2xl p-6 mb-6 space-y-4">
-                            <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                                <Truck size={14} /> Dados para Entrega
-                            </h4>
-
-                            <div>
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1">Endereço Completo</label>
-                                <textarea
-                                    value={deliveryAddress}
-                                    onChange={(e) => setDeliveryAddress(e.target.value)}
-                                    placeholder="Rua, Número, Bairro, Cidade - CEP (e ponto de referência)"
-                                    rows={3}
-                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 mt-1 resize-none text-xs"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1">WhatsApp para Contato</label>
-                                <input
-                                    type="tel"
-                                    value={contactPhone}
-                                    onChange={(e) => setContactPhone(e.target.value)}
-                                    placeholder="(00) 00000-0000"
-                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 mt-1 text-xs"
-                                />
-                            </div>
-
-                            <p className="text-[10px] text-zinc-500 italic leading-tight">
-                                * Esses dados serão enviados apenas ao vendedor após a confirmação do pagamento.
-                            </p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3 text-xs text-zinc-400">
-                                <ShieldCheck size={18} className="text-primary-400" />
-                                <span>Compra protegida pela Garantia Cred30</span>
-                            </div>
-
-                            <button
-                                onClick={() => buyMethod === 'balance' ? handleBuy(selectedItem.id) : handleBuyOnCredit(selectedItem.id)}
-                                disabled={loading || (buyMethod === 'credit' && state.currentUser!.score < MARKET_CREDIT_MIN_SCORE) || deliveryAddress.length < 10 || contactPhone.length < 8}
-                                className="w-full bg-primary-600 hover:bg-primary-500 text-white font-black py-4 rounded-2xl shadow-lg transition active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 text-lg disabled:cursor-not-allowed"
-                            >
-                                <ShoppingBag />
-                                {loading ? 'PROCESSANDO...' : (
-                                    deliveryAddress.length < 10 || contactPhone.length < 8
-                                        ? 'PREENCHA A ENTREGA'
-                                        : (buyMethod === 'credit' ? 'SOLICITAR APOIO SOCIAL' : 'COMPRAR AGORA')
+                                        )}
+                                    </div>
                                 )}
-                            </button>
+
+                                {/* Dados de Entrega (Compacto para Desktop) */}
+                                <div className="space-y-3 mb-6">
+                                    <div className="relative group">
+                                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                                            <Truck size={14} className="text-zinc-500 group-focus-within:text-primary-500 transition-colors" />
+                                        </div>
+                                        <input
+                                            value={deliveryAddress}
+                                            onChange={(e) => setDeliveryAddress(e.target.value)}
+                                            placeholder="Endereço de Entrega Completo"
+                                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-primary-500 text-xs transition-all focus:bg-black"
+                                        />
+                                    </div>
+                                    <div className="relative group">
+                                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                                            <Truck size={14} className="text-zinc-500 group-focus-within:text-primary-500 transition-colors" />
+                                        </div>
+                                        <input
+                                            type="tel"
+                                            value={contactPhone}
+                                            onChange={(e) => setContactPhone(e.target.value)}
+                                            placeholder="WhatsApp (XX) XXXXX-XXXX"
+                                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-primary-500 text-xs transition-all focus:bg-black"
+                                        />
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => buyMethod === 'balance' ? handleBuy(selectedItem.id) : handleBuyOnCredit(selectedItem.id)}
+                                    disabled={loading || (buyMethod === 'credit' && state.currentUser!.score < MARKET_CREDIT_MIN_SCORE) || deliveryAddress.length < 10 || contactPhone.length < 8}
+                                    className="w-full bg-white hover:bg-primary-400 hover:text-black text-black font-black py-4 rounded-xl shadow-xl shadow-white/5 hover:shadow-primary-500/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base uppercase tracking-wide"
+                                >
+                                    {loading ? 'Processando...' : (
+                                        deliveryAddress.length < 10 || contactPhone.length < 8
+                                            ? 'Preencha a Entrega'
+                                            : (buyMethod === 'credit' ? 'Solicitar Crédito' : 'Comprar Agora')
+                                    )}
+                                </button>
+
+                                <div className="mt-4 flex items-center justify-center gap-4 text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
+                                    <span className="flex items-center gap-1"><ShieldCheck size={12} className="text-primary-500" /> Compra Segura</span>
+                                    <span className="flex items-center gap-1"><Truck size={12} /> Entrega Combinada</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
