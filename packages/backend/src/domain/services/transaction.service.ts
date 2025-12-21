@@ -344,6 +344,28 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
     }
   }
 
+  // UPGRADE PRO
+  if (transaction.type === 'MEMBERSHIP_UPGRADE') {
+    // 1. Ativar Plano PRO para o usuário
+    await client.query('UPDATE users SET membership_type = $1 WHERE id = $2', ['PRO', transaction.user_id]);
+
+    // 2. Distribuir o valor (50% Caixa / 50% Compartilhado)
+    // O valor em 'amount' é negativo na transação (débito), então usamos o valor absoluto
+    const upgradeFee = Math.abs(parseFloat(transaction.amount));
+    const feeForProfit = upgradeFee * 0.5;
+    const feeForOperational = upgradeFee * 0.5;
+
+    await client.query(
+      'UPDATE system_config SET system_balance = system_balance + $1, profit_pool = profit_pool + $2',
+      [feeForOperational, feeForProfit]
+    );
+
+    // 3. Bônus de Score por se tornar PRO
+    await updateScore(client, transaction.user_id, 100, 'Upgrade para Plano Cred30 PRO');
+
+    console.log(`[UPGRADE_PRO] Usuário ${transaction.user_id} agora é PRO via transação ${id}`);
+  }
+
   // SAQUE (Dedução real do caixa operacional)
   if (transaction.type === 'WITHDRAWAL') {
     let metadata: any = transaction.metadata || {};
