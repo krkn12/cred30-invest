@@ -53,7 +53,6 @@ const convertApiLoanToLoan = (apiLoan: any): Loan => {
     interestRate: interestRate || 0,
     requestDate: apiLoan.requestDate,
     status: apiLoan.status,
-    pixKeyToReceive: apiLoan.pixKeyToReceive,
     dueDate: apiLoan.dueDate,
     createdAt: apiLoan.createdAt || apiLoan.created_at || new Date().toISOString(), // Map createdAt
   };
@@ -401,10 +400,9 @@ export const sellAllQuotas = async (): Promise<number> => {
 
 export const requestLoan = async (
   amount: number,
-  installments: number,
-  receivePixKey: string
+  installments: number
 ): Promise<any> => {
-  return await apiService.requestLoan(amount, installments, receivePixKey);
+  return await apiService.requestLoan(amount, installments);
 };
 
 export const repayLoan = async (loanId: string, useBalance: boolean, paymentMethod?: 'pix' | 'card', cardData?: any): Promise<any> => {
@@ -496,9 +494,7 @@ export const getCurrentUser = async (): Promise<User | null> => {
   }
 };
 
-export const fixLoanPix = async (loanId: string, pixKey: string): Promise<any> => {
-  return await apiService.fixLoanPix(loanId, pixKey);
-};
+
 
 export const get2FASetup = () => apiService.get2FASetup();
 

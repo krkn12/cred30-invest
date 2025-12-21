@@ -299,22 +299,12 @@ class ApiService {
   }
 
   // Método para solicitar empréstimo
-  async requestLoan(amount: number, installments: number, receivePixKey: string): Promise<any> {
-    // DEBUG: Log para verificar o PIX sendo enviado na requisição
-    console.log('DEBUG - API Service - Enviando requisição de empréstimo:', {
-      amount,
-      installments,
-      receivePixKey,
-      pixVazio: !receivePixKey,
-      pixTipo: typeof receivePixKey
-    });
-
+  async requestLoan(amount: number, installments: number): Promise<any> {
     const response = await this.request<any>('/loans/request', {
       method: 'POST',
       body: JSON.stringify({
         amount,
         installments,
-        receivePixKey
       }),
     });
     return response.data;
@@ -413,22 +403,28 @@ class ApiService {
     return response.data;
   }
 
-  // Função temporária para corrigir PIX de empréstimos existentes
-  async fixLoanPix(loanId: string, pixKey: string): Promise<any> {
-    const response = await this.request<any>('/admin/fix-loan-pix', {
-      method: 'POST',
-      body: JSON.stringify({ loanId, pixKey }),
-    });
-    return response.data;
-  }
 
-  // Aprovar pagamento de empréstimo
+
+  // Aprovar pagamento de empréstimo (LEGACY - substituído por processAdminAction)
   async approvePayment(transactionId: string): Promise<any> {
     const response = await this.request<any>('/admin/approve-payment', {
       method: 'POST',
       body: JSON.stringify({ transactionId }),
     });
     return response.data;
+  }
+
+  // Fila de Pagamentos (Payout Queue)
+  async getPayoutQueue(): Promise<any> {
+    const response = await this.request<any>('/admin/payout-queue');
+    return response.data;
+  }
+
+  async confirmPayout(id: string, type: 'TRANSACTION' | 'LOAN'): Promise<void> {
+    await this.request<void>('/admin/confirm-payout', {
+      method: 'POST',
+      body: JSON.stringify({ id, type }),
+    });
   }
 
   // Rejeitar pagamento de empréstimo

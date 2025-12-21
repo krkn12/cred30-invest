@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import packageJson from '../../../../package.json';
 import {
-    ShieldCheck, RefreshCw, LogOut, Users, PieChart, DollarSign, PiggyBank, Coins, ArrowUpFromLine, ArrowDownLeft, TrendingUp, Clock, ArrowUpRight, Check, X as XIcon, AlertTriangle, Settings as SettingsIcon, ShoppingBag as ShoppingBagIcon, UserPlus, Trash2, MessageSquare
+    ShieldCheck, RefreshCw, LogOut, Users, PieChart, DollarSign, PiggyBank, Coins, ArrowUpFromLine, ArrowDownLeft, TrendingUp, Clock, ArrowUpRight, Check, X as XIcon, AlertTriangle, Settings as SettingsIcon, ShoppingBag as ShoppingBagIcon, UserPlus, Trash2, MessageSquare, ExternalLink, Send, Clipboard
 } from 'lucide-react';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { PromptModal } from '../ui/PromptModal';
 import { AppState } from '../../../domain/types/common.types';
 import {
-    getPendingItems, updateProfitPool, clearAllCache, processAdminAction, distributeMonthlyDividends, fixLoanPix
+    updateProfitPool, clearAllCache, distributeMonthlyDividends
 } from '../../../application/services/storage.service';
 import { apiService } from '../../../application/services/api.service';
 import { AdminStoreManager } from '../features/store/admin-store.component';
@@ -46,30 +46,25 @@ const MetricCard = ({ title, value, subtitle, icon: Icon, color }: any) => {
 };
 
 export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: AdminViewProps) => {
-    const [pending, setPending] = useState<{ transactions: any[], loans: any[] }>({ transactions: [], loans: [] });
+
     const [isLoading, setIsLoading] = useState(true);
     const [confirmMP, setConfirmMP] = useState<{ id: string, tid: string } | null>(null);
-    const [showFixPix, setShowFixPix] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'overview' | 'approvals' | 'system' | 'store' | 'referrals' | 'support'>('overview');
+
+    const [activeTab, setActiveTab] = useState<'overview' | 'payouts' | 'system' | 'store' | 'referrals' | 'support'>('overview');
+    const [payoutQueue, setPayoutQueue] = useState<{ transactions: any[], loans: any[] }>({ transactions: [], loans: [] });
     const [pendingChatsCount, setPendingChatsCount] = useState(0);
     const [referralCodes, setReferralCodes] = useState<any[]>([]);
     const [newReferralCode, setNewReferralCode] = useState('');
     const [referralMaxUses, setReferralMaxUses] = useState('');
 
     useEffect(() => {
-        const fetchPending = async () => {
-            try {
-                const result = await getPendingItems();
-                setPending(result);
-            } catch (error) {
-                console.error('Erro ao carregar itens pendentes:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchPending();
+
         fetchPendingChatsCount();
         const interval = setInterval(fetchPendingChatsCount, 15000); // Poll a cada 15s
+
+        if (activeTab === 'payouts') {
+            fetchPayoutQueue();
+        }
 
         if (activeTab === 'referrals') {
             fetchReferralCodes();
@@ -77,6 +72,25 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
 
         return () => clearInterval(interval);
     }, [state, activeTab]);
+
+    const fetchPayoutQueue = async () => {
+        try {
+            const data = await apiService.getPayoutQueue();
+            setPayoutQueue(data || { transactions: [], loans: [] });
+        } catch (e) {
+            console.error('Erro ao buscar fila de pagamentos:', e);
+        }
+    };
+
+    const handleConfirmPayout = async (id: any, type: 'TRANSACTION' | 'LOAN') => {
+        try {
+            await apiService.confirmPayout(id.toString(), type);
+            onSuccess('Sucesso', 'Pagamento registrado com sucesso!');
+            fetchPayoutQueue();
+        } catch (e) {
+            onError('Erro', 'Falha ao confirmar pagamento.');
+        }
+    };
 
     const fetchPendingChatsCount = async () => {
         try {
@@ -189,19 +203,7 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
         }
     };
 
-    const handleAction = async (id: string, type: 'TRANSACTION' | 'LOAN', action: 'APPROVE' | 'REJECT') => {
-        try {
-            await processAdminAction(id, type, action);
-            clearAllCache();
-            await new Promise(resolve => setTimeout(resolve, 500));
-            await onRefresh();
-            if (action === 'APPROVE') {
-                onSuccess('Solicitação Aprovada', 'Ação concluída com sucesso!');
-            }
-        } catch (e: any) {
-            onError('Erro na Ação', e.message);
-        }
-    };
+
 
     const handleSimulateMpPayment = async (paymentId: string, transactionId: string) => {
         setConfirmMP({ id: paymentId, tid: transactionId });
@@ -223,57 +225,7 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
         }
     };
 
-    const handleRejectPayment = async (transactionId: string) => {
-        try {
-            const result = await apiService.rejectPayment(transactionId);
-            if (result && result.success) {
-                clearAllCache();
-                onRefresh();
-                onSuccess('Pagamento Rejeitado', 'Pagamento rejeitado com sucesso!');
-            }
-        } catch (e: any) {
-            onError('Erro', e.message);
-        }
-    };
 
-    const handleApprovePayment = async (transactionId: string) => {
-        try {
-            const result = await apiService.approvePayment(transactionId);
-            if (result && result.success) {
-                clearAllCache();
-                onRefresh();
-                onSuccess('Pagamento Aprovado', 'Pagamento aprovado com sucesso!');
-            }
-        } catch (e: any) {
-            onError('Erro', e.message);
-        }
-    };
-
-    const handleApproveWithdrawal = async (transactionId: string) => {
-        try {
-            const result = await apiService.approveWithdrawal(transactionId);
-            if (result && result.success) {
-                clearAllCache();
-                onRefresh();
-                onSuccess('Saque Aprovado', 'Saque aprovado com sucesso!');
-            }
-        } catch (e: any) {
-            onError('Erro', e.message);
-        }
-    };
-
-    const handleRejectWithdrawal = async (transactionId: string) => {
-        try {
-            const result = await apiService.rejectWithdrawal(transactionId);
-            if (result && result.success) {
-                clearAllCache();
-                onRefresh();
-                onSuccess('Saque Rejeitado', 'Saque rejeitado com sucesso!');
-            }
-        } catch (e: any) {
-            onError('Erro', e.message);
-        }
-    };
 
     const formatCurrency = (val: number) => {
         if (typeof val !== 'number' || isNaN(val)) return 'R$ 0,00';
@@ -325,7 +277,7 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
             <div className="flex items-center gap-1.5 p-1.5 bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-[2rem] overflow-x-auto no-scrollbar shadow-xl sticky top-4 z-50">
                 {[
                     { id: 'overview', name: 'Resumo', icon: PieChart },
-                    { id: 'approvals', name: 'Fila de Aprovação', icon: Clock, count: (pending.transactions?.length || 0) + (pending.loans?.length || 0) },
+                    { id: 'payouts', name: 'Fila de PIX', icon: Send, count: (payoutQueue.transactions?.length || 0) },
                     { id: 'system', name: 'Gestão Financeira', icon: SettingsIcon },
                     { id: 'referrals', name: 'Indicações', icon: UserPlus },
                     { id: 'store', name: 'Loja', icon: ShoppingBagIcon },
@@ -351,6 +303,67 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                     </button>
                 ))}
             </div>
+
+            {activeTab === 'payouts' && (
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <div className="max-w-4xl mx-auto">
+                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
+                            <div className="flex items-center justify-between mb-8">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                                    <div className="p-2 bg-emerald-500/10 rounded-lg"><ArrowUpRight className="text-emerald-400" size={20} /></div>
+                                    Saques em Espera (PIX)
+                                </h3>
+                                <div className="flex flex-col items-end">
+                                    <span className="bg-zinc-800 text-zinc-400 px-3 py-1 rounded-full text-[10px] font-black uppercase">Fila: {payoutQueue.transactions?.length || 0}</span>
+                                    <p className="text-[10px] text-zinc-500 mt-1 uppercase font-bold tracking-tighter">Ordenado por Cotas e Score</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4 max-h-[700px] overflow-y-auto pr-3 custom-scrollbar">
+                                {!payoutQueue.transactions || payoutQueue.transactions.length === 0 ? (
+                                    <div className="py-24 text-center">
+                                        <div className="bg-zinc-800/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <Check className="text-zinc-500" size={32} />
+                                        </div>
+                                        <p className="text-zinc-500 font-bold uppercase text-xs tracking-widest">Tudo em dia! Nenhum PIX pendente.</p>
+                                    </div>
+                                ) : (
+                                    payoutQueue.transactions.map((t) => (
+                                        <div key={t.id} className="bg-black/30 border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-zinc-700 hover:bg-black/40 group">
+                                            <div className="flex justify-between items-start gap-4">
+                                                <div className="space-y-3 flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider bg-emerald-500/10 text-emerald-400">SAQUE REQUISITADO</span>
+                                                        <span className="text-[10px] text-zinc-500 font-bold">VIP: {t.user_quotas} Cotas | Score: {t.user_score}</span>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-white mb-0.5">{t.user_name}</p>
+                                                        <div className="flex items-center gap-2 bg-zinc-800/50 p-2 rounded-lg cursor-pointer hover:bg-zinc-700 transition-colors" onClick={() => {
+                                                            navigator.clipboard.writeText(t.user_pix);
+                                                            onSuccess('Copiado', 'Chave PIX copiada!');
+                                                        }}>
+                                                            <p className="text-[11px] text-primary-400 font-mono break-all">{t.user_pix}</p>
+                                                            <Clipboard size={12} className="text-zinc-500 flex-shrink-0" />
+                                                        </div>
+                                                    </div>
+                                                    <p className="text-2xl font-black text-white">{formatCurrency(t.amount)}</p>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleConfirmPayout(t.id, 'TRANSACTION')}
+                                                    className="p-6 bg-primary-500/10 text-primary-400 rounded-2xl hover:bg-primary-500 hover:text-black transition-all flex flex-col items-center justify-center gap-2 shadow-lg min-w-[140px]"
+                                                >
+                                                    <Check size={28} />
+                                                    <span className="text-[10px] font-black uppercase tracking-tighter">Confirmo o PIX</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {activeTab === 'overview' && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -427,102 +440,7 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                 </div>
             )}
 
-            {activeTab === 'approvals' && (
-                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* Transações Pendentes */}
-                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
-                            <div className="flex items-center justify-between mb-8">
-                                <h3 className="text-xl font-bold text-white flex items-center gap-3">
-                                    <div className="p-2 bg-primary-500/10 rounded-lg"><ArrowUpRight className="text-primary-400" size={20} /></div>
-                                    Movimentações Financeiras
-                                </h3>
-                                <span className="bg-zinc-800 text-zinc-400 px-3 py-1 rounded-full text-[10px] font-black uppercase">Fila de Espera: {pending.transactions.length}</span>
-                            </div>
 
-                            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-3 custom-scrollbar">
-                                {pending.transactions.length === 0 ? (
-                                    <div className="py-12 text-center text-zinc-500 font-medium">Nenhuma transação pendente no momento.</div>
-                                ) : (
-                                    pending.transactions.map((t) => (
-                                        <div key={t.id} className="bg-black/30 border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-zinc-700 hover:bg-black/40 group">
-                                            <div className="flex justify-between items-start gap-4">
-                                                <div className="space-y-3 flex-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider ${t.type === 'BUY_QUOTA' ? 'bg-primary-500/10 text-primary-400' : t.type === 'WITHDRAWAL' ? 'bg-red-500/10 text-red-400' : 'bg-blue-500/10 text-blue-400'}`}>
-                                                            {t.type}
-                                                        </span>
-                                                        <span className="text-[10px] text-zinc-500 font-bold">{new Date(t.date).toLocaleString()}</span>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-bold text-white mb-0.5">{t.user_name}</p>
-                                                        <p className="text-[11px] text-zinc-500">{t.user_email}</p>
-                                                    </div>
-                                                    <p className="text-2xl font-black text-white">{formatCurrency(t.amount)}</p>
-                                                </div>
-                                                <div className="flex flex-col gap-2">
-                                                    <button onClick={() => handleAction(t.id, 'TRANSACTION', 'APPROVE')} className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl hover:bg-emerald-500 hover:text-black transition-all">
-                                                        <Check size={20} />
-                                                    </button>
-                                                    <button onClick={() => handleAction(t.id, 'TRANSACTION', 'REJECT')} className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-black transition-all">
-                                                        <XIcon size={20} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Empréstimos Pendentes */}
-                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
-                            <div className="flex items-center justify-between mb-8">
-                                <h3 className="text-xl font-bold text-white flex items-center gap-3">
-                                    <div className="p-2 bg-orange-500/10 rounded-lg"><Coins className="text-orange-400" size={20} /></div>
-                                    Solicitações de Apoio Mútuo
-                                </h3>
-                                <span className="bg-zinc-800 text-zinc-400 px-3 py-1 rounded-full text-[10px] font-black uppercase">Pendentes: {pending.loans.length}</span>
-                            </div>
-
-                            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-3 custom-scrollbar">
-                                {pending.loans.length === 0 ? (
-                                    <div className="py-12 text-center text-zinc-500 font-medium">Nenhuma solicitação de empréstimo.</div>
-                                ) : (
-                                    pending.loans.map((l) => (
-                                        <div key={l.id} className="bg-black/30 border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-zinc-700 hover:bg-black/40">
-                                            <div className="flex justify-between items-start gap-4">
-                                                <div className="space-y-3 flex-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider bg-orange-500/10 text-orange-400">APOIO MÚTUO</span>
-                                                        <span className="text-[10px] text-zinc-500 font-bold">{new Date(l.date).toLocaleString()}</span>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-bold text-white mb-0.5">{l.user_name}</p>
-                                                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Score: {l.user_score}</p>
-                                                    </div>
-                                                    <div className="flex items-end gap-3">
-                                                        <p className="text-2xl font-black text-white">{formatCurrency(l.amount)}</p>
-                                                        <span className="text-emerald-500 text-[10px] font-bold pb-1.5">Juros: {formatCurrency(l.total_repayment - l.amount)}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="flex flex-col gap-2">
-                                                    <button onClick={() => handleAction(l.id, 'LOAN', 'APPROVE')} className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl hover:bg-emerald-500 hover:text-black transition-all">
-                                                        <Check size={20} />
-                                                    </button>
-                                                    <button onClick={() => handleAction(l.id, 'LOAN', 'REJECT')} className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-black transition-all">
-                                                        <XIcon size={20} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {activeTab === 'system' && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">

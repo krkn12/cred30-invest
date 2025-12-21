@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { getDbPool } from '../../../infrastructure/database/postgresql/connection/pool';
-import { executeInTransaction, updateUserBalance, createTransaction } from '../../../domain/services/transaction.service';
+import { executeInTransaction, updateUserBalance, createTransaction, processTransactionApproval } from '../../../domain/services/transaction.service';
 import { WITHDRAWAL_FIXED_FEE } from '../../../shared/constants/business.constants';
 import { twoFactorService } from '../../../application/services/two-factor.service';
 import { notificationService } from '../../../application/services/notification.service';
@@ -201,21 +201,22 @@ withdrawalRoutes.post('/confirm', authMiddleware, async (c) => {
       return c.json({ success: false, message: 'Código do autenticador inválido' }, 400);
     }
 
-    // Atualizar status para PENDING (para admin ver)
-    await pool.query(
-      `UPDATE transactions 
-       SET status = 'PENDING'
-       WHERE id = $1`,
-      [transactionId]
-    );
+    // 3. PROCESSAR APROVAÇÃO AUTOMÁTICA (Removendo o fluxo manual)
+    const approvalResult = await executeInTransaction(pool, async (client) => {
+      return await processTransactionApproval(client, transactionId.toString(), 'APPROVE');
+    });
 
-    // Notificar Admin
+    if (!approvalResult.success) {
+      throw new Error(approvalResult.error || 'Erro ao processar aprovação automática do saque.');
+    }
+
+    // Notificar Admin (Apenas para ciência, não requer ação)
     const amountRequested = parseFloat(transaction.metadata.amount || 0);
     await notificationService.notifyNewWithdrawal(user.name, amountRequested);
 
     return c.json({
       success: true,
-      message: 'Saque confirmado e enviado para aprovação!'
+      message: 'Saque confirmado e processado automaticamente com sucesso!'
     });
 
   } catch (error) {

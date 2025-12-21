@@ -303,7 +303,11 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
 
     if (!metadata.useBalance) {
       const paymentMethod = metadata.paymentMethod || 'pix';
-      const baseCost = metadata.baseCost ? parseFloat(metadata.baseCost) : parseFloat(transaction.amount);
+      // Extrair o valor base (o que o sistema realmente quer receber)
+      const serviceFee = metadata.serviceFee ? parseFloat(metadata.serviceFee) : 0;
+      const baseCost = metadata.baseCost ? parseFloat(metadata.baseCost) : (parseFloat(transaction.amount) - (metadata.userFee ? parseFloat(metadata.userFee) : 0) - serviceFee);
+      const principalAmount = baseCost;
+
       const gatewayCost = calculateGatewayCost(baseCost, paymentMethod);
 
       await client.query(
@@ -311,11 +315,10 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
         [gatewayCost, transaction.id]
       );
 
-      const serviceFee = metadata.serviceFee ? parseFloat(metadata.serviceFee) : 0;
-      const principalAmount = parseFloat(transaction.amount) - serviceFee;
-
+      // Atualizar caixa do sistema com o valor PRINCIPAL (valor limpo)
+      // Não subtraímos gatewayCost aqui porque o cliente já pagou no Gross-up.
       await client.query(
-        'UPDATE system_config SET system_balance = system_balance + $1 - $2, total_gateway_costs = total_gateway_costs + $2',
+        'UPDATE system_config SET system_balance = system_balance + $1, total_gateway_costs = total_gateway_costs + $2',
         [principalAmount, gatewayCost]
       );
 
@@ -352,16 +355,19 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
           await client.query('UPDATE system_config SET total_gateway_costs = total_gateway_costs + $1', [gatewayCost]);
         }
 
-        const actualPaymentAmount = metadata.baseAmount ? parseFloat(metadata.baseAmount) : parseFloat(transaction.amount);
+        // Usamos o valor líquido do pagamento (sem a taxa de gateway que o cliente pagou)
+        const userFee = metadata.userFee ? parseFloat(metadata.userFee) : 0;
+        const actualPaymentAmount = metadata.baseAmount ? parseFloat(metadata.baseAmount) : (parseFloat(transaction.amount) - userFee);
         const loanPrincipal = parseFloat(loan.amount);
         const loanTotal = parseFloat(loan.total_repayment);
 
         const principalPortion = actualPaymentAmount * (loanPrincipal / loanTotal);
         const interestPortion = actualPaymentAmount - principalPortion;
 
+        // O saldo do sistema sobe pelo valor principal pago (Net).
         await client.query(
-          'UPDATE system_config SET system_balance = system_balance + $1 - $2',
-          [principalPortion, metadata.useBalance ? 0 : gatewayCost]
+          'UPDATE system_config SET system_balance = system_balance + $1',
+          [principalPortion]
         );
 
         await client.query('UPDATE system_config SET profit_pool = profit_pool + $1', [interestPortion]);
@@ -460,8 +466,8 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
   }
 
   await client.query(
-    'UPDATE transactions SET status = $1, processed_at = $2 WHERE id = $3',
-    ['APPROVED', new Date(), id]
+    'UPDATE transactions SET status = $1, processed_at = $2, payout_status = $3 WHERE id = $4',
+    ['APPROVED', new Date(), transaction.type === 'WITHDRAWAL' ? 'PENDING_PAYMENT' : 'NONE', id]
   );
 
   // Audit Log
@@ -528,7 +534,7 @@ export const processLoanApproval = async (client: PoolClient, id: string, action
     throw new Error(`Aprovação bloqueada: Limite insuficiente no momento (Disponível: R$ ${realAvailable.toFixed(2)}).`);
   }
 
-  await client.query('UPDATE loans SET status = $1, approved_at = $2 WHERE id = $3', ['APPROVED', new Date(), id]);
+  await client.query('UPDATE loans SET status = $1, approved_at = $2, payout_status = $3 WHERE id = $4', ['APPROVED', new Date(), 'NONE', id]);
 
   // Audit Log
   await logAudit(client, {

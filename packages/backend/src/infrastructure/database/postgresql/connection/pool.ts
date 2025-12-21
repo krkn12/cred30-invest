@@ -317,8 +317,14 @@ export const initializeDatabase = async () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         approved_at TIMESTAMP,
         due_date TIMESTAMP,
+        payout_status VARCHAR(20) DEFAULT 'NONE',
         pix_key_to_receive VARCHAR(255)
       );
+    `);
+
+    // Garantir que as colunas novas existam em bancos já criados
+    await client.query(`
+      ALTER TABLE loans ADD COLUMN IF NOT EXISTS payout_status VARCHAR(20) DEFAULT 'NONE';
     `);
 
     // Verificar se a tabela loan_installments existe
@@ -398,9 +404,15 @@ export const initializeDatabase = async () => {
         description TEXT,
         status VARCHAR(20) DEFAULT 'PENDING',
         metadata JSONB,
+        payout_status VARCHAR(20) DEFAULT 'NONE',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         processed_at TIMESTAMP
       );
+    `);
+
+    // Garantir que as colunas novas existam em bancos já criados
+    await client.query(`
+      ALTER TABLE transactions ADD COLUMN IF NOT EXISTS payout_status VARCHAR(20) DEFAULT 'NONE';
     `);
 
     // Verificar se a coluna gateway_cost existe na tabela transactions

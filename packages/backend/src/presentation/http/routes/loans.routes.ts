@@ -16,7 +16,6 @@ const loanRoutes = new Hono();
 const createLoanSchema = z.object({
   amount: z.number().positive(),
   installments: z.number().int().min(1).max(12),
-  receivePixKey: z.string().min(5),
 });
 
 // Esquema de validação para pagamento de empréstimo
@@ -152,7 +151,7 @@ loanRoutes.get('/available-limit', authMiddleware, async (c) => {
 loanRoutes.post('/request', authMiddleware, async (c) => {
   try {
     const body = await c.req.json();
-    const { amount, installments, receivePixKey } = createLoanSchema.parse(body);
+    const { amount, installments } = createLoanSchema.parse(body);
 
     const user = c.get('user');
     const pool = getDbPool(c);
@@ -194,27 +193,17 @@ loanRoutes.post('/request', authMiddleware, async (c) => {
       }, 400);
     }
 
-    // DEBUG: Log para verificar o valor do PIX recebido
-    console.log('DEBUG - PIX recebido na solicitação:', {
-      receivePixKey,
-      tipo: typeof receivePixKey,
-      vazio: !receivePixKey,
-      userId: user.id
-    });
 
-    // Garantir que o PIX seja uma string válida
-    const pixKeyToSave = receivePixKey && receivePixKey.trim() ? receivePixKey.trim() : null;
 
     // Calcular taxas e juros
     const originationFee = amount * LOAN_ORIGINATION_FEE_RATE; // Ganho imediato pro caixa
     const amountToDisburse = amount - originationFee; // O que o usuário recebe de fato
     const totalWithInterest = amount * (1 + LOAN_INTEREST_RATE);
 
-    // Criar empréstimo e APROVAR AUTOMATICAMENTE
-    const loanId = await executeInTransaction(pool, async (client: PoolClient) => {
-      const result = await client.query(
-        `INSERT INTO loans (user_id, amount, total_repayment, installments, interest_rate, penalty_rate, status, due_date, pix_key_to_receive, term_days, metadata)
-         VALUES ($1, $2, $3, $4, $5, $6, 'PENDING', $7, $8, $9, $10)
+    const result = await executeInTransaction(pool, async (client: PoolClient) => {
+      const loanResult = await client.query(
+        `INSERT INTO loans (user_id, amount, total_repayment, installments, interest_rate, penalty_rate, status, due_date, term_days, metadata)
+         VALUES ($1, $2, $3, $4, $5, $6, 'PENDING', $7, $8, $9)
          RETURNING id`,
         [
           user.id,
@@ -224,13 +213,12 @@ loanRoutes.post('/request', authMiddleware, async (c) => {
           LOAN_INTEREST_RATE,
           PENALTY_RATE,
           new Date(Date.now() + (installments * ONE_MONTH_MS)),
-          pixKeyToSave,
           installments * 30,
           JSON.stringify({ originationFee, disbursedAmount: amountToDisburse })
         ]
       );
 
-      const newLoanId = result.rows[0].id;
+      const newLoanId = loanResult.rows[0].id;
 
       // Destinar a taxa de originação (Regra 85/15)
       const feeForOperational = originationFee * 0.85;
@@ -241,20 +229,40 @@ loanRoutes.post('/request', authMiddleware, async (c) => {
         [feeForOperational, feeForProfit]
       );
 
-      // O sistema não aprova mais na hora. 
-      // Ele coloca em PENDING e o Scheduler (fila de 10 min) aprova por prioridade.
+      // Tentar aprovação imediata se houver liquidez
+      // Se não houver, o disbursement-queue.service.ts aprovará sozinho depois
+      try {
+        const systemQuotasRes = await client.query("SELECT COUNT(*) as count FROM quotas WHERE status = 'ACTIVE'");
+        const systemActiveLoansRes = await client.query("SELECT COALESCE(SUM(amount), 0) as total FROM loans WHERE status IN ('APPROVED', 'PAYMENT_PENDING')");
+        const systemQuotasCount = parseInt(systemQuotasRes.rows[0].count);
+        const systemTotalLoaned = parseFloat(systemActiveLoansRes.rows[0].total);
+        const systemGrossCash = systemQuotasCount * 50;
+        const realLiquidity = systemGrossCash - systemTotalLoaned;
 
-      return newLoanId;
+        if (amount <= realLiquidity) {
+          await processLoanApproval(client, newLoanId.toString(), 'APPROVE');
+          return { loanId: newLoanId, autoApproved: true };
+        }
+      } catch (e) {
+        console.error('Erro na tentativa de auto-aprovação imediata:', e);
+      }
+
+      return { loanId: newLoanId, autoApproved: false };
     });
+
+    const isAutoApproved = result.data?.autoApproved;
 
     return c.json({
       success: true,
-      message: `Solicitação enviada para a fila diária! O sistema processa os pagamentos à meia-noite, priorizando membros com mais cotas e maior score conforme a liquidez do caixa. Valor a receber: R$ ${amountToDisburse.toFixed(2)}.`,
+      message: isAutoApproved
+        ? `Apoio Mútuo aprovado e creditado com sucesso! O valor de R$ ${amountToDisburse.toFixed(2)} já está disponível no seu saldo interno.`
+        : `Solicitação enviada para a fila automática! Como o caixa está com muita demanda, seu pedido será processado assim que houver novos recursos, priorizando membros com mais cotas e maior score.`,
       data: {
-        loanId: loanId.data,
+        loanId: result.data?.loanId,
         totalRepayment: totalWithInterest,
         originationFee,
-        disbursedAmount: amountToDisburse
+        disbursedAmount: amountToDisburse,
+        autoApproved: isAutoApproved
       },
     });
   } catch (error) {

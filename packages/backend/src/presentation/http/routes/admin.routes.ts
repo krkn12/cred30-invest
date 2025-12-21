@@ -58,6 +58,11 @@ const simulateMpSchema = z.object({
   transactionId: z.string()
 });
 
+const payoutActionSchema = z.object({
+  id: z.union([z.string(), z.number()]).transform(val => val.toString()),
+  type: z.enum(['TRANSACTION', 'LOAN']),
+});
+
 const createReferralCodeSchema = z.object({
   code: z.string().min(3).max(20).toUpperCase(),
   maxUses: z.number().int().min(1).optional().nullable(),
@@ -142,30 +147,7 @@ adminRoutes.get('/dashboard', adminMiddleware, async (c) => {
       config.system_balance = operationalCash;
     }
 
-    // Buscar transações pendentes com informações do usuário e contagem de cotas para prioridade
-    const pendingTransactionsResult = await pool.query(
-      `SELECT t.*, u.name as user_name, u.email as user_email, u.score as user_score,
-              (SELECT COUNT(*) FROM quotas q WHERE q.user_id = t.user_id AND q.status = 'ACTIVE') as user_quotas
-       FROM transactions t
-       LEFT JOIN users u ON t.user_id = u.id
-       WHERE t.status = 'PENDING'
-       ORDER BY user_quotas DESC, user_score DESC, t.created_at ASC`
-    );
-    const pendingTransactions = pendingTransactionsResult.rows;
 
-    // Buscar empréstimos pendentes com informações do usuário e contagem de cotas para prioridade (Cotas > Score > Data)
-    const pendingLoansResult = await pool.query(
-      `SELECT l.*, u.name as user_name, u.email as user_email, u.score as user_score,
-              (SELECT COUNT(*) FROM quotas q WHERE q.user_id = l.user_id AND q.status = 'ACTIVE') as user_quotas
-       FROM loans l
-       LEFT JOIN users u ON l.user_id = u.id
-       WHERE l.status = 'PENDING'
-       ORDER BY user_quotas DESC, user_score DESC, l.created_at ASC`
-    );
-    const pendingLoans = pendingLoansResult.rows;
-
-    // DEBUG: Log para verificar dados dos empréstimos pendentes
-    console.log('DEBUG - Empréstimos pendentes com dados do usuário:', JSON.stringify(pendingLoans, null, 2));
 
     // Buscar totais e métricas financeiras
     const usersCountResult = await pool.query('SELECT COUNT(*) FROM users');
@@ -188,8 +170,6 @@ adminRoutes.get('/dashboard', adminMiddleware, async (c) => {
       success: true,
       data: {
         systemConfig: config,
-        pendingTransactions,
-        pendingLoans,
         stats: {
           usersCount,
           quotasCount,
@@ -288,8 +268,6 @@ adminRoutes.post('/process-action', adminMiddleware, auditMiddleware('PROCESS_AC
     const result = await executeInTransaction(pool, async (client) => {
       if (type === 'TRANSACTION') {
         return await processTransactionApproval(client, id, action);
-      } else if (type === 'LOAN') {
-        return await processLoanApproval(client, id, action);
       }
       throw new Error('Tipo de ação não reconhecido');
     });
@@ -314,6 +292,74 @@ adminRoutes.post('/process-action', adminMiddleware, auditMiddleware('PROCESS_AC
       success: false,
       message: error instanceof Error ? error.message : 'Erro interno do servidor'
     }, 500);
+  }
+});
+
+// Listar Fila de Pagamentos (Payout Queue)
+adminRoutes.get('/payout-queue', adminMiddleware, async (c) => {
+  try {
+    const pool = getDbPool(c);
+
+    // Buscar transações (saques) aguardando pagamento
+    const transactionsResult = await pool.query(
+      `SELECT t.*, u.name as user_name, u.email as user_email, u.pix_key as user_pix, u.score as user_score,
+              (SELECT COUNT(*) FROM quotas q WHERE q.user_id = t.user_id AND q.status = 'ACTIVE') as user_quotas
+       FROM transactions t
+       LEFT JOIN users u ON t.user_id = u.id
+       WHERE t.payout_status = 'PENDING_PAYMENT'
+       ORDER BY user_quotas DESC, user_score DESC, t.created_at ASC`
+    );
+
+    // Buscar empréstimos (apoio mútuo) aguardando pagamento
+    const loansResult = await pool.query(
+      `SELECT l.*, u.name as user_name, u.email as user_email, l.pix_key_to_receive as user_pix, u.score as user_score,
+              (SELECT COUNT(*) FROM quotas q WHERE q.user_id = l.user_id AND q.status = 'ACTIVE') as user_quotas
+       FROM loans l
+       LEFT JOIN users u ON l.user_id = u.id
+       WHERE l.payout_status = 'PENDING_PAYMENT'
+       ORDER BY user_quotas DESC, user_score DESC, l.created_at ASC`
+    );
+
+    return c.json({
+      success: true,
+      data: {
+        transactions: transactionsResult.rows,
+        loans: loansResult.rows
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao buscar fila de pagamentos:', error);
+    return c.json({ success: false, message: 'Erro interno do servidor' }, 500);
+  }
+});
+
+// Confirmar Pagamento Efetuado (PIX enviado)
+adminRoutes.post('/confirm-payout', adminMiddleware, auditMiddleware('CONFIRM_PAYOUT', 'TRANSACTION_LOAN'), async (c) => {
+  try {
+    const body = await c.req.json();
+    const { id, type } = payoutActionSchema.parse(body);
+    const pool = getDbPool(c);
+
+    await executeInTransaction(pool, async (client) => {
+      if (type === 'TRANSACTION') {
+        await client.query(
+          "UPDATE transactions SET payout_status = 'PAID', processed_at = $1 WHERE id = $2",
+          [new Date(), id]
+        );
+      } else {
+        await client.query(
+          "UPDATE loans SET payout_status = 'PAID', approved_at = $1 WHERE id = $2",
+          [new Date(), id]
+        );
+      }
+    });
+
+    return c.json({ success: true, message: 'Pagamento confirmado c/ sucesso!' });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return c.json({ success: false, message: 'Dados inválidos', errors: error.errors }, 400);
+    }
+    return c.json({ success: false, message: error instanceof Error ? error.message : 'Erro interno' }, 500);
   }
 });
 
