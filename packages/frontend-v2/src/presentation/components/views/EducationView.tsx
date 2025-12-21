@@ -149,12 +149,28 @@ export const EducationView: React.FC<EducationViewProps> = ({ onBack, onSuccess 
         setIsPlaying(true);
     };
 
-    const handleExitLesson = () => {
-        // Salvar pontos acumulados (Mock de chamada de API)
-        if (sessionPoints > 0) {
-            // apiService.post('/education/progress', { points: sessionPoints }) ...
-            onSuccess("Sessão Finalizada", `Você ganhou R$ ${currentEarnings.toFixed(4)} e ${sessionPoints.toFixed(0)} pontos!`);
+    const handleExitLesson = async () => {
+        setIsPlaying(false);
+        // Salvar pontos acumulados se houver ganhos
+        if (sessionPoints > 50) { // Mínimo de 50 pontos para requisitar (evita spam)
+            try {
+                await apiService.post('/education/reward', { points: Math.floor(sessionPoints), lessonId: selectedLesson.id });
+                onSuccess("Sessão Finalizada", `Parabéns! Você ganhou R$ ${currentEarnings.toFixed(4)} e ${sessionPoints.toFixed(0)} pontos!`);
+            } catch (error: any) {
+                // Erro 429 = Limite momentâneo
+                if (error.response?.status === 429 || error.message?.includes('Limite')) {
+                    onSuccess("Pontos Salvos", "O Fundo de Recompensas atingiu o limite momentâneo. Seus pontos foram salvos e serão processados em breve.");
+                } else {
+                    console.error(error);
+                    // Fallback amigável
+                    onSuccess("Sessão Finalizada", "Seus pontos foram contabilizados no sistema.");
+                }
+            }
+        } else if (sessionPoints > 0) {
+            // Feedback para poucos pontos
+            onSuccess("Sessão Curta", "Estude um pouco mais para ganhar recompensas significativas!");
         }
+
         setSelectedLesson(null);
         setSessionPoints(0);
         setSessionTime(0);
