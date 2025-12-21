@@ -420,6 +420,10 @@ export const claimAdReward = async (): Promise<any> => {
   return await apiService.claimAdReward();
 };
 
+export const upgradePro = async (method: 'pix' | 'card' | 'balance', cardData?: any): Promise<any> => {
+  return await apiService.post<any>('/monetization/upgrade-pro', { method, ...cardData });
+};
+
 export const fastForwardTime = async (months: number): Promise<void> => {
   console.log('Simulação de tempo desativada.');
 };

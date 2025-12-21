@@ -1,6 +1,6 @@
 {
   "name": "cred30-backend",
-  "version": "1.0.34",
+  "version": "1.0.35",
   "description": "Backend para plataforma fintech Cred30",
   "main": "src/index.ts",
   "scripts": {

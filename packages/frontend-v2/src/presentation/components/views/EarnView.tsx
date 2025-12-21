@@ -13,9 +13,10 @@ interface EarnViewProps {
     onSuccess: (title: string, message: string) => void;
     onError: (title: string, message: string) => void;
     onRefresh: () => Promise<void>;
+    onUpgrade: (method: 'balance' | 'pix' | 'card') => Promise<void>;
 }
 
-export const EarnView = ({ state, onBack, onSuccess, onError, onRefresh }: EarnViewProps) => {
+export const EarnView = ({ state, onBack, onSuccess, onError, onRefresh, onUpgrade }: EarnViewProps) => {
     const [loading, setLoading] = useState(false);
     const user = state.currentUser!;
 
@@ -39,36 +40,17 @@ export const EarnView = ({ state, onBack, onSuccess, onError, onRefresh }: EarnV
         }
     };
 
-    const [proMethod, setProMethod] = useState<'balance' | 'pix'>('balance');
-    const [pixData, setPixData] = useState<any>(null);
+    const [proMethod, setProMethod] = useState<'balance' | 'pix' | 'card'>('balance');
+    const [loadingLocal, setLoadingLocal] = useState(false);
 
     const handleUpgradePro = async () => {
-        if (proMethod === 'balance' && parseFloat(user.balance.toString()) < 29.90) {
-            onError('Saldo Insuficiente', 'Você não tem saldo suficiente. Tente pagar via PIX!');
-            setProMethod('pix');
-            return;
-        }
-
-        setLoading(true);
+        setLoadingLocal(true);
         try {
-            const response = await apiService.post<any>('/monetization/upgrade-pro', {
-                method: proMethod
-            });
-
-            if (response.success) {
-                if (proMethod === 'pix' && response.data?.pixData) {
-                    setPixData(response.data.pixData);
-                } else {
-                    onSuccess('Parabéns!', response.message);
-                    onRefresh();
-                }
-            } else {
-                onError('Falha no Upgrade', response.message);
-            }
+            await onUpgrade(proMethod);
         } catch (e: any) {
-            onError('Erro', e.message || 'Erro ao processar assinatura.');
+            // Erros são tratados no app.page por prop
         } finally {
-            setLoading(false);
+            setLoadingLocal(false);
         }
     };
 
@@ -161,43 +143,32 @@ export const EarnView = ({ state, onBack, onSuccess, onError, onRefresh }: EarnV
 
                     <div className="bg-background/40 rounded-xl p-1 mb-6 flex gap-1 border border-primary-500/10">
                         <button
-                            onClick={() => { setProMethod('balance'); setPixData(null); }}
+                            onClick={() => setProMethod('balance')}
                             className={`flex-1 py-2 rounded-lg text-[10px] font-black tracking-widest transition ${proMethod === 'balance' ? 'bg-primary-500 text-black shadow-lg shadow-primary-500/20' : 'text-zinc-500 hover:text-white'}`}
                         >
-                            PAGAR COM SALDO
+                            SALDO
                         </button>
                         <button
-                            onClick={() => { setProMethod('pix'); setPixData(null); }}
+                            onClick={() => setProMethod('pix')}
                             className={`flex-1 py-2 rounded-lg text-[10px] font-black tracking-widest transition ${proMethod === 'pix' ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20' : 'text-zinc-500 hover:text-white'}`}
                         >
-                            PAGAR VIA PIX
+                            PIX
+                        </button>
+                        <button
+                            onClick={() => setProMethod('card')}
+                            className={`flex-1 py-2 rounded-lg text-[10px] font-black tracking-widest transition ${proMethod === 'card' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'text-zinc-500 hover:text-white'}`}
+                        >
+                            CARTÃO
                         </button>
                     </div>
 
-                    {pixData ? (
-                        <div className="bg-white p-4 rounded-2xl mb-6 flex flex-col items-center animate-in zoom-in duration-300">
-                            <img src={`data:image/png;base64,${pixData.qr_code_base64}`} alt="QR Code Pix" className="w-40 h-40 mb-4" />
-                            <button
-                                onClick={() => {
-                                    navigator.clipboard.writeText(pixData.qr_code);
-                                    onSuccess('Copiado!', 'Código PIX copiado para a área de transferência.');
-                                }}
-                                className="text-[10px] bg-emerald-100 text-emerald-800 px-4 py-2 rounded-full font-bold flex items-center gap-2"
-                            >
-                                <Zap size={12} /> COPIAR CÓDIGO PIX
-                            </button>
-                            <p className="text-[9px] text-zinc-500 mt-3 text-center">Após o pagamento, sua conta será PRO automaticamente em até 2 minutos.</p>
-                            <button onClick={() => setPixData(null)} className="mt-4 text-[10px] text-zinc-400 font-bold uppercase hover:text-red-400">Cancelar</button>
-                        </div>
-                    ) : (
-                        <button
-                            onClick={handleUpgradePro}
-                            disabled={loading || user.membership_type === 'PRO'}
-                            className={`w-full py-4 rounded-2xl font-black transition active:scale-95 flex items-center justify-center gap-2 ${user.membership_type === 'PRO' ? 'bg-zinc-800 text-zinc-500' : (proMethod === 'pix' ? 'bg-emerald-500 text-black' : 'bg-white text-black hover:bg-zinc-200')} shadow-xl`}
-                        >
-                            {loading ? <RefreshCw className="animate-spin" size={20} /> : (user.membership_type === 'PRO' ? 'MEMBRO PRO ATIVO' : `ASSINAR PRO POR R$ 29,90`)}
-                        </button>
-                    )}
+                    <button
+                        onClick={handleUpgradePro}
+                        disabled={loading || loadingLocal || user.membership_type === 'PRO'}
+                        className={`w-full py-4 rounded-2xl font-black transition active:scale-95 flex items-center justify-center gap-2 ${user.membership_type === 'PRO' ? 'bg-zinc-800 text-zinc-500' : (proMethod === 'pix' ? 'bg-emerald-500 text-black' : (proMethod === 'card' ? 'bg-blue-500 text-white' : 'bg-white text-black hover:bg-zinc-200'))} shadow-xl`}
+                    >
+                        {loading || loadingLocal ? <RefreshCw className="animate-spin" size={20} /> : (user.membership_type === 'PRO' ? 'MEMBRO PRO ATIVO' : `ASSINAR PRO POR R$ 29,90`)}
+                    </button>
                     <p className="text-[8px] text-zinc-600 text-center mt-3 uppercase font-bold tracking-widest leading-normal">
                         Assinando hoje você ajuda a aumentar o fundo de reserva dos cotistas da plataforma.
                     </p>

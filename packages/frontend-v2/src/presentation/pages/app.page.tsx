@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-
 import { Layout } from '../components/layout/main-layout.component';
 import { UpdateNotification } from '../components/ui/update-notification.component';
 import { AdminStoreManager } from '../components/features/store/admin-store.component';
-import { loadState, registerUser, loginUser, logoutUser, buyQuota, sellQuota, sellAllQuotas, requestLoan, fastForwardTime, repayLoan, repayInstallment, getCurrentUser, resetPassword, requestWithdrawal, getPendingItems, processAdminAction, updateSystemBalance, updateProfitPool, distributeMonthlyDividends, fixLoanPix, clearAllCache, deleteUserAccount, changePassword, verify2FA, confirmWithdrawal, claimAdReward } from '../../application/services/storage.service';
+import { loadState, registerUser, loginUser, logoutUser, buyQuota, sellQuota, sellAllQuotas, requestLoan, fastForwardTime, repayLoan, repayInstallment, getCurrentUser, resetPassword, requestWithdrawal, getPendingItems, processAdminAction, updateSystemBalance, updateProfitPool, distributeMonthlyDividends, fixLoanPix, clearAllCache, deleteUserAccount, changePassword, verify2FA, confirmWithdrawal, claimAdReward, upgradePro } from '../../application/services/storage.service';
 import { apiService } from '../../application/services/api.service';
 import { AppState, Quota, Loan, Transaction, User } from '../../domain/types/common.types';
 import { QUOTA_PRICE, VESTING_PERIOD_MS } from '../../shared/constants/app.constants';
@@ -85,7 +85,7 @@ export default function App() {
   const [cardModalData, setCardModalData] = useState<{
     isOpen: boolean,
     amount: number,
-    type: 'QUOTA' | 'LOAN' | 'INSTALLMENT',
+    type: 'QUOTA' | 'LOAN' | 'INSTALLMENT' | 'PRO',
     details: any
   }>({
     isOpen: false,
@@ -344,6 +344,41 @@ export default function App() {
     }
   };
 
+  const handleUpgradeProClick = async (method: 'pix' | 'card' | 'balance') => {
+    try {
+      if (method === 'card') {
+        setCardModalData({
+          isOpen: true,
+          amount: 29.90, // Valor fixo PRO
+          type: 'PRO',
+          details: {}
+        });
+        return;
+      }
+
+      const response = await upgradePro(method);
+      await refreshState();
+
+      if (response && response.data?.pixData) {
+        setPixModalData({
+          isOpen: true,
+          qrCode: response.data.pixData.qr_code,
+          qrCodeBase64: response.data.pixData.qr_code_base64,
+          amount: 29.90,
+          description: `Assinatura Cred30 PRO`
+        });
+      } else {
+        setShowSuccess({
+          isOpen: true,
+          title: 'Sucesso!',
+          message: 'Parabéns! Você agora é um membro Cred30 PRO.'
+        });
+      }
+    } catch (e: any) {
+      setShowError({ isOpen: true, title: 'Erro', message: e.message });
+    }
+  };
+
   if (state.isLoading) {
     return <div className="min-h-screen bg-black flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-emerald-500"></div></div>;
   }
@@ -477,7 +512,7 @@ export default function App() {
                 </Suspense>
               } />
               <Route path="marketplace" element={<Suspense fallback={null}><MarketplaceView state={state} onBack={() => navigate('/app/dashboard')} onSuccess={(title, message) => setShowSuccess({ isOpen: true, title, message })} onError={(title, message) => setShowError({ isOpen: true, title, message })} onRefresh={refreshState} /></Suspense>} />
-              <Route path="earn" element={<Suspense fallback={null}><EarnView state={state} onBack={() => navigate('/app/dashboard')} onSuccess={(title, message) => setShowSuccess({ isOpen: true, title, message })} onError={(title, message) => setShowError({ isOpen: true, title, message })} onRefresh={refreshState} /></Suspense>} />
+              <Route path="earn" element={<Suspense fallback={null}><EarnView state={state} onBack={() => navigate('/app/dashboard')} onSuccess={(title, message) => setShowSuccess({ isOpen: true, title, message })} onError={(title, message) => setShowError({ isOpen: true, title, message })} onRefresh={refreshState} onUpgrade={handleUpgradeProClick} /></Suspense>} />
               <Route path="history" element={
                 <Suspense fallback={null}>
                   <HistoryView transactions={state.transactions.filter(t => t.userId === state.currentUser!.id)} />
@@ -555,6 +590,8 @@ export default function App() {
                     await repayLoan(cardModalData.details.loanId, false, 'card', formData);
                   } else if (cardModalData.type === 'INSTALLMENT') {
                     await repayInstallment(cardModalData.details.loanId, cardModalData.details.amount, false, 'card', formData);
+                  } else if (cardModalData.type === 'PRO') {
+                    await upgradePro('card', formData);
                   }
 
                   await refreshState();
