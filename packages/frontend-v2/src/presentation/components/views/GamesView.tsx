@@ -72,7 +72,7 @@ export const GamesView: React.FC<GamesViewProps> = ({ onBack }) => {
             id: 1,
             title: 'Subway Surfers Online',
             description: 'Corra, pule e desvie dos trens para bater recordes.',
-            image: 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?q=80&w=1000&auto=format&fit=crop',
+            image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1000&auto=format&fit=crop',
             url: 'https://poki.com.br/g/subway-surfers',
             reward: 'R$ 0,002',
             category: 'Ação'
@@ -81,7 +81,7 @@ export const GamesView: React.FC<GamesViewProps> = ({ onBack }) => {
             id: 2,
             title: 'Quiz de Finanças Cred30',
             description: 'Teste seus conhecimentos e ganhe pontos de score reais.',
-            image: 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?q=80&w=1000&auto=format&fit=crop',
+            image: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=1000&auto=format&fit=crop',
             url: 'https://www.google.com/search?q=quiz+financeiro', // Fallback melhor
             reward: '+5 Score',
             category: 'Educação'
@@ -90,7 +90,7 @@ export const GamesView: React.FC<GamesViewProps> = ({ onBack }) => {
             id: 3,
             title: 'Moto X3M',
             description: 'Desafie a gravidade em pistas de motocross insanas.',
-            image: 'https://images.unsplash.com/photo-1558981403-c5f97dbbe480?q=80&w=1000&auto=format&fit=crop',
+            image: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=1000&auto=format&fit=crop',
             url: 'https://poki.com.br/g/moto-x3m',
             reward: 'R$ 0,002',
             category: 'Esporte'

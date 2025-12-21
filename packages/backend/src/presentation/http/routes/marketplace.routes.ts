@@ -480,7 +480,7 @@ marketplaceRoutes.get('/my-orders', authMiddleware, async (c) => {
 
         const result = await pool.query(
             `SELECT o.*, l.title, l.image_url, 
-              ub.name as buyer_name, ub.contact_phone as buyer_phone_order,
+              ub.name as buyer_name,
               us.name as seller_name,
               ln.installments, ln.interest_rate, ln.total_repayment
        FROM marketplace_orders o
