@@ -16,7 +16,7 @@ const rewardSchema = z.object({
 
 // Taxa de conversão: 1000 pontos = R$ 0.29
 const POINTS_TO_CURRENCY_RATE = 0.29 / 1000;
-const POINTS_TO_SCORE_RATE = 1 / 1000; // 1 Ponto de Score a cada 1000 pts de estudo
+const POINTS_TO_SCORE_RATE = 0.02; // 2 Pontos de Score a cada 100 pts de estudo (Aumentado para ser perceptível)
 
 educationRoutes.post('/reward', authMiddleware, async (c) => {
     try {
