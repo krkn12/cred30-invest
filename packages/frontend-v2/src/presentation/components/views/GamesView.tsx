@@ -188,10 +188,13 @@ export const GamesView: React.FC<GamesViewProps> = ({ onBack }) => {
                                 </p>
                                 <button
                                     onClick={handleManualClick}
-                                    className="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-xl shadow-lg shadow-purple-900/40 transition active:scale-95 flex items-center justify-center gap-2 text-lg"
+                                    className="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-xl shadow-lg shadow-purple-900/40 transition active:scale-95 flex items-center justify-center gap-2 text-lg mb-2"
                                 >
                                     {loadingAd ? <RefreshCw className="animate-spin" /> : <PlayCircle />} ACESSAR JOGO
                                 </button>
+                                <p className="text-[10px] text-zinc-500 italic">
+                                    O jogo abrirá nesta aba. O anúncio abrirá em uma nova aba.
+                                </p>
                             </div>
                         )}
                     </div>

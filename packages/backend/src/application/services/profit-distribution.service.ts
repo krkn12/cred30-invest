@@ -1,7 +1,11 @@
 import { Pool, PoolClient } from 'pg';
+import {
+    DIVIDEND_USER_SHARE,
+    MAINTENANCE_TAX_SHARE,
+    MAINTENANCE_OPERATIONAL_SHARE,
+    MAINTENANCE_OWNER_SHARE
+} from '../../shared/constants/business.constants';
 import { notificationService } from './notification.service';
-
-const DIVIDEND_USER_SHARE = 0.85; // 85% para usuários
 
 export const distributeProfits = async (pool: Pool | PoolClient): Promise<any> => {
     try {
@@ -62,7 +66,13 @@ export const distributeProfits = async (pool: Pool | PoolClient): Promise<any> =
 
         const profit = parseFloat(config.profit_pool);
         const totalForUsers = profit * DIVIDEND_USER_SHARE;
-        const totalForMaintenance = profit - totalForUsers;
+
+        // Rateio detalhado da manutenção
+        const taxAmount = profit * MAINTENANCE_TAX_SHARE;
+        const operationalAmount = profit * MAINTENANCE_OPERATIONAL_SHARE;
+        const ownerAmount = profit * MAINTENANCE_OWNER_SHARE;
+
+        const totalForMaintenance = taxAmount + operationalAmount + ownerAmount;
 
         // O valor por cota aumenta, pois o bolo é dividido por menos gente (apenas elegíveis)
         const dividendPerQuota = totalForUsers / eligibleTotalQuotas;
@@ -112,8 +122,13 @@ export const distributeProfits = async (pool: Pool | PoolClient): Promise<any> =
         const finalMaintenance = totalForMaintenance + roundingDifference;
 
         await pool.query(
-            'UPDATE system_config SET system_balance = system_balance + $1, profit_pool = 0',
-            [finalMaintenance]
+            `UPDATE system_config 
+             SET system_balance = system_balance + $1, 
+                 total_tax_reserve = total_tax_reserve + $2,
+                 total_operational_reserve = total_operational_reserve + $3,
+                 total_owner_profit = total_owner_profit + $4,
+                 profit_pool = 0`,
+            [finalMaintenance, taxAmount, operationalAmount, ownerAmount]
         );
 
         console.log('DEBUG - Distribuição automática finalizada:', {

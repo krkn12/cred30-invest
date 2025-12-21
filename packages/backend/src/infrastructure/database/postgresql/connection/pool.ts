@@ -424,6 +424,9 @@ export const initializeDatabase = async () => {
         system_balance DECIMAL(15,2) DEFAULT 0,
         profit_pool DECIMAL(15,2) DEFAULT 0,
         total_gateway_costs DECIMAL(15,2) DEFAULT 0,
+        total_tax_reserve DECIMAL(15,2) DEFAULT 0,
+        total_operational_reserve DECIMAL(15,2) DEFAULT 0,
+        total_owner_profit DECIMAL(15,2) DEFAULT 0,
         quota_price DECIMAL(10,2) DEFAULT 100,
         loan_interest_rate DECIMAL(5,2) DEFAULT 0.2,
         penalty_rate DECIMAL(5,2) DEFAULT 0.4,
@@ -431,6 +434,13 @@ export const initializeDatabase = async () => {
         total_manual_costs DECIMAL(15,2) DEFAULT 0,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+    `);
+
+    // Garantir que as colunas novas existam em bancos já criados
+    await client.query(`
+      ALTER TABLE system_config ADD COLUMN IF NOT EXISTS total_tax_reserve DECIMAL(15,2) DEFAULT 0;
+      ALTER TABLE system_config ADD COLUMN IF NOT EXISTS total_operational_reserve DECIMAL(15,2) DEFAULT 0;
+      ALTER TABLE system_config ADD COLUMN IF NOT EXISTS total_owner_profit DECIMAL(15,2) DEFAULT 0;
     `);
 
     // Verificar se a coluna total_gateway_costs existe na tabela system_config

@@ -19,7 +19,12 @@ export const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 // Chave PIX do administrador
 // Porcentagens para distribuição de excedentes operacionais
 export const DIVIDEND_USER_SHARE = 0.85; // 85% para os usuários
-export const DIVIDEND_MAINTENANCE_SHARE = 0.15; // 15% para manutenção
+export const DIVIDEND_MAINTENANCE_SHARE = 0.15; // 15% para manutenção total
+
+// Detalhamento do DIVIDEND_MAINTENANCE_SHARE (A soma deve ser 0.15)
+export const MAINTENANCE_TAX_SHARE = 0.06;      // 6% para Impostos (Simples Nacional/MEI)
+export const MAINTENANCE_OPERATIONAL_SHARE = 0.04; // 4% para Servidores/APIs
+export const MAINTENANCE_OWNER_SHARE = 0.05;    // 5% para Seu Pró-labore (Salário)
 
 // Bônus por indicação
 export const REFERRAL_BONUS = 5.00; // R$ 5,00

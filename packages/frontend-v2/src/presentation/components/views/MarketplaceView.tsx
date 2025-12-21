@@ -514,7 +514,11 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
                                         <div className="p-4 flex-1 flex flex-col">
                                             <div className="flex justify-between items-start mb-1">
                                                 <h3 className="font-bold text-white text-base line-clamp-1">{item.title}</h3>
-                                                {item.is_boosted && (
+                                                {item.type === 'AFFILIATE' ? (
+                                                    <div className="bg-amber-500/20 text-amber-400 text-[8px] px-1.5 py-0.5 rounded border border-amber-500/20 flex items-center gap-1 font-black">
+                                                        <Sparkles size={8} /> PARCEIRO
+                                                    </div>
+                                                ) : item.is_boosted && (
                                                     <div className="bg-primary-500/10 text-primary-400 text-[8px] px-1.5 py-0.5 rounded border border-primary-500/20 flex items-center gap-1 font-black">
                                                         <Zap size={8} /> DESTAQUE
                                                     </div>
@@ -524,7 +528,9 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
 
                                             <div className="mt-auto pt-4 border-t border-surfaceHighlight flex flex-col gap-3">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-lg font-black text-primary-400">{formatCurrency(parseFloat(item.price))}</span>
+                                                    <span className="text-lg font-black text-primary-400">
+                                                        {item.price > 0 ? formatCurrency(parseFloat(item.price)) : 'Ver Preço'}
+                                                    </span>
                                                     {item.seller_id === state.currentUser?.id ? (
                                                         <button
                                                             onClick={() => handleBoostListing(item.id)}
@@ -536,12 +542,17 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
                                                     ) : (
                                                         <button
                                                             onClick={() => {
-                                                                setSelectedItem(item);
-                                                                setView('details');
+                                                                if (item.type === 'AFFILIATE') {
+                                                                    setSelectedItem(item);
+                                                                    setView('details');
+                                                                } else {
+                                                                    setSelectedItem(item);
+                                                                    setView('details');
+                                                                }
                                                             }}
-                                                            className="bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg text-xs font-black transition active:scale-95 flex items-center gap-2"
+                                                            className={`${item.type === 'AFFILIATE' ? 'bg-amber-500 hover:bg-amber-400' : 'bg-primary-600 hover:bg-primary-500'} text-black px-4 py-2 rounded-lg text-xs font-black transition active:scale-95 flex items-center gap-2`}
                                                         >
-                                                            COMPRAR AGORA
+                                                            {item.type === 'AFFILIATE' ? 'VER OFERTA' : 'COMPRAR AGORA'}
                                                         </button>
                                                     )}
                                                 </div>
@@ -868,107 +879,134 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
                             </div>
 
                             <div className="mt-auto">
-                                <h4 className="text-[10px] font-bold text-zinc-500 uppercase mb-4 tracking-widest">Como você quer pagar?</h4>
-
-                                <div className="flex gap-2 mb-6">
-                                    <button
-                                        onClick={() => setBuyMethod('balance')}
-                                        className={`flex-1 py-4 rounded-xl border font-bold text-xs transition active:scale-95 ${buyMethod === 'balance' ? 'bg-primary-500 text-black border-primary-500 shadow-lg shadow-primary-500/20' : 'bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:bg-zinc-900'}`}
-                                    >
-                                        Saldo à Vista
-                                    </button>
-                                    <button
-                                        onClick={() => setBuyMethod('credit')}
-                                        className={`flex-1 py-4 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all active:scale-95 ${buyMethod === 'credit' ? 'bg-primary-500/10 border-primary-500 text-primary-400 shadow-lg shadow-primary-500/10' : 'bg-background border-surfaceHighlight text-zinc-500 hover:bg-zinc-900'}`}
-                                    >
-                                        <div className="flex items-center gap-1.5">
-                                            <TrendingUp size={14} />
-                                            <span>APOIO SOCIAL</span>
-                                        </div>
-                                    </button>
-                                </div>
-
-                                {buyMethod === 'credit' && (
-                                    <div className="space-y-4 animate-in slide-in-from-top duration-300 mb-6 bg-zinc-900/50 p-4 rounded-2xl border border-white/5">
-                                        {state.currentUser!.score < MARKET_CREDIT_MIN_SCORE ? (
-                                            <div className="flex items-start gap-3">
-                                                <AlertCircle size={20} className="text-red-500 shrink-0 mt-0.5" />
-                                                <div>
-                                                    <h4 className="text-xs font-bold text-red-500 uppercase mb-1">Indisponível para seu perfil</h4>
-                                                    <p className="text-[11px] text-zinc-400 leading-tight">
-                                                        Seu score é <strong>{state.currentUser!.score}</strong>. O mínimo para crédito é <strong>{MARKET_CREDIT_MIN_SCORE}</strong>.
-                                                    </p>
-                                                </div>
+                                {selectedItem.type === 'AFFILIATE' ? (
+                                    <div className="space-y-6">
+                                        <div className="bg-amber-900/20 border border-amber-500/20 rounded-2xl p-4">
+                                            <div className="flex items-center gap-2 mb-2 text-amber-400">
+                                                <Star size={16} />
+                                                <span className="text-xs font-black uppercase">Oferta de Parceiro Cred30</span>
                                             </div>
-                                        ) : (
-                                            <div>
-                                                <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 block mb-2">Opções de Parcelamento</label>
-                                                <select
-                                                    value={selectedInstallments}
-                                                    onChange={(e) => setSelectedInstallments(Number(e.target.value))}
-                                                    className="w-full bg-black border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 text-sm"
-                                                >
-                                                    {[...Array(MARKET_CREDIT_MAX_INSTALLMENTS)].map((_, i) => {
-                                                        const month = i + 1;
-                                                        const total = parseFloat(selectedItem.price) * (1 + (MARKET_CREDIT_INTEREST_RATE * month));
-                                                        return (
-                                                            <option key={month} value={month}>
-                                                                {month}x de {formatCurrency(total / month)} (Total: {formatCurrency(total)})
-                                                            </option>
-                                                        );
-                                                    })}
-                                                </select>
-                                                <p className="text-[10px] text-zinc-500 mt-2 text-right">
-                                                    * Juros de {MARKET_CREDIT_INTEREST_RATE * 100}% a.m.
-                                                </p>
+                                            <p className="text-[11px] text-zinc-400 leading-relaxed">
+                                                Este produto é vendido por uma loja parceira externa. Ao clicar no botão abaixo, você será redirecionado para concluir a compra com segurança no site do lojista.
+                                            </p>
+                                        </div>
+
+                                        <button
+                                            onClick={() => window.open(selectedItem.affiliate_url || selectedItem.affiliateUrl, '_blank')}
+                                            className="w-full bg-amber-500 hover:bg-amber-400 text-black font-black py-5 rounded-2xl shadow-xl shadow-amber-900/20 transition-all active:scale-95 flex items-center justify-center gap-3 text-lg uppercase tracking-wider"
+                                        >
+                                            IR PARA A LOJA <ExternalLink size={20} />
+                                        </button>
+
+                                        <p className="text-[9px] text-zinc-600 text-center uppercase font-bold tracking-tighter">
+                                            A Cred30 pode receber uma comissão por sua compra neste parceiro, ajudando a manter nossa cooperativa.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <h4 className="text-[10px] font-bold text-zinc-500 uppercase mb-4 tracking-widest">Como você quer pagar?</h4>
+
+                                        <div className="flex gap-2 mb-6">
+                                            <button
+                                                onClick={() => setBuyMethod('balance')}
+                                                className={`flex-1 py-4 rounded-xl border font-bold text-xs transition active:scale-95 ${buyMethod === 'balance' ? 'bg-primary-500 text-black border-primary-500 shadow-lg shadow-primary-500/20' : 'bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:bg-zinc-900'}`}
+                                            >
+                                                Saldo à Vista
+                                            </button>
+                                            <button
+                                                onClick={() => setBuyMethod('credit')}
+                                                className={`flex-1 py-4 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all active:scale-95 ${buyMethod === 'credit' ? 'bg-primary-500/10 border-primary-500 text-primary-400 shadow-lg shadow-primary-500/10' : 'bg-background border-surfaceHighlight text-zinc-500 hover:bg-zinc-900'}`}
+                                            >
+                                                <div className="flex items-center gap-1.5">
+                                                    <TrendingUp size={14} />
+                                                    <span>APOIO SOCIAL</span>
+                                                </div>
+                                            </button>
+                                        </div>
+
+                                        {buyMethod === 'credit' && (
+                                            <div className="space-y-4 animate-in slide-in-from-top duration-300 mb-6 bg-zinc-900/50 p-4 rounded-2xl border border-white/5">
+                                                {state.currentUser!.score < MARKET_CREDIT_MIN_SCORE ? (
+                                                    <div className="flex items-start gap-3">
+                                                        <AlertCircle size={20} className="text-red-500 shrink-0 mt-0.5" />
+                                                        <div>
+                                                            <h4 className="text-xs font-bold text-red-500 uppercase mb-1">Indisponível para seu perfil</h4>
+                                                            <p className="text-[11px] text-zinc-400 leading-tight">
+                                                                Seu score é <strong>{state.currentUser!.score}</strong>. O mínimo para crédito é <strong>{MARKET_CREDIT_MIN_SCORE}</strong>.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div>
+                                                        <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 block mb-2">Opções de Parcelamento</label>
+                                                        <select
+                                                            value={selectedInstallments}
+                                                            onChange={(e) => setSelectedInstallments(Number(e.target.value))}
+                                                            className="w-full bg-black border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 text-sm"
+                                                        >
+                                                            {[...Array(MARKET_CREDIT_MAX_INSTALLMENTS)].map((_, i) => {
+                                                                const month = i + 1;
+                                                                const total = parseFloat(selectedItem.price) * (1 + (MARKET_CREDIT_INTEREST_RATE * month));
+                                                                return (
+                                                                    <option key={month} value={month}>
+                                                                        {month}x de {formatCurrency(total / month)} (Total: {formatCurrency(total)})
+                                                                    </option>
+                                                                );
+                                                            })}
+                                                        </select>
+                                                        <p className="text-[10px] text-zinc-500 mt-2 text-right">
+                                                            * Juros de {MARKET_CREDIT_INTEREST_RATE * 100}% a.m.
+                                                        </p>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
-                                    </div>
+
+                                        {/* Dados de Entrega (Compacto para Desktop) */}
+                                        <div className="space-y-3 mb-6">
+                                            <div className="relative group">
+                                                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                                                    <Truck size={14} className="text-zinc-500 group-focus-within:text-primary-500 transition-colors" />
+                                                </div>
+                                                <input
+                                                    value={deliveryAddress}
+                                                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                                                    placeholder="Endereço de Entrega Completo"
+                                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-primary-500 text-xs transition-all focus:bg-black"
+                                                />
+                                            </div>
+                                            <div className="relative group">
+                                                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                                                    <Truck size={14} className="text-zinc-500 group-focus-within:text-primary-500 transition-colors" />
+                                                </div>
+                                                <input
+                                                    type="tel"
+                                                    value={contactPhone}
+                                                    onChange={(e) => setContactPhone(e.target.value)}
+                                                    placeholder="WhatsApp (XX) XXXXX-XXXX"
+                                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-primary-500 text-xs transition-all focus:bg-black"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() => buyMethod === 'balance' ? handleBuy(selectedItem.id) : handleBuyOnCredit(selectedItem.id)}
+                                            disabled={loading || (buyMethod === 'credit' && state.currentUser!.score < MARKET_CREDIT_MIN_SCORE) || deliveryAddress.length < 10 || contactPhone.length < 8}
+                                            className="w-full bg-white hover:bg-primary-400 hover:text-black text-black font-black py-4 rounded-xl shadow-xl shadow-white/5 hover:shadow-primary-500/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base uppercase tracking-wide"
+                                        >
+                                            {loading ? 'Processando...' : (
+                                                deliveryAddress.length < 10 || contactPhone.length < 8
+                                                    ? 'Preencha a Entrega'
+                                                    : (buyMethod === 'credit' ? 'Solicitar Crédito' : 'Comprar Agora')
+                                            )}
+                                        </button>
+
+                                        <div className="mt-4 flex items-center justify-center gap-4 text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
+                                            <span className="flex items-center gap-1"><ShieldCheck size={12} className="text-primary-500" /> Compra Segura</span>
+                                            <span className="flex items-center gap-1"><Truck size={12} /> Entrega Combinada</span>
+                                        </div>
+                                    </>
                                 )}
-
-                                {/* Dados de Entrega (Compacto para Desktop) */}
-                                <div className="space-y-3 mb-6">
-                                    <div className="relative group">
-                                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                                            <Truck size={14} className="text-zinc-500 group-focus-within:text-primary-500 transition-colors" />
-                                        </div>
-                                        <input
-                                            value={deliveryAddress}
-                                            onChange={(e) => setDeliveryAddress(e.target.value)}
-                                            placeholder="Endereço de Entrega Completo"
-                                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-primary-500 text-xs transition-all focus:bg-black"
-                                        />
-                                    </div>
-                                    <div className="relative group">
-                                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                                            <Truck size={14} className="text-zinc-500 group-focus-within:text-primary-500 transition-colors" />
-                                        </div>
-                                        <input
-                                            type="tel"
-                                            value={contactPhone}
-                                            onChange={(e) => setContactPhone(e.target.value)}
-                                            placeholder="WhatsApp (XX) XXXXX-XXXX"
-                                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-primary-500 text-xs transition-all focus:bg-black"
-                                        />
-                                    </div>
-                                </div>
-
-                                <button
-                                    onClick={() => buyMethod === 'balance' ? handleBuy(selectedItem.id) : handleBuyOnCredit(selectedItem.id)}
-                                    disabled={loading || (buyMethod === 'credit' && state.currentUser!.score < MARKET_CREDIT_MIN_SCORE) || deliveryAddress.length < 10 || contactPhone.length < 8}
-                                    className="w-full bg-white hover:bg-primary-400 hover:text-black text-black font-black py-4 rounded-xl shadow-xl shadow-white/5 hover:shadow-primary-500/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base uppercase tracking-wide"
-                                >
-                                    {loading ? 'Processando...' : (
-                                        deliveryAddress.length < 10 || contactPhone.length < 8
-                                            ? 'Preencha a Entrega'
-                                            : (buyMethod === 'credit' ? 'Solicitar Crédito' : 'Comprar Agora')
-                                    )}
-                                </button>
-
-                                <div className="mt-4 flex items-center justify-center gap-4 text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
-                                    <span className="flex items-center gap-1"><ShieldCheck size={12} className="text-primary-500" /> Compra Segura</span>
-                                    <span className="flex items-center gap-1"><Truck size={12} /> Entrega Combinada</span>
-                                </div>
                             </div>
                         </div>
                     </div>
