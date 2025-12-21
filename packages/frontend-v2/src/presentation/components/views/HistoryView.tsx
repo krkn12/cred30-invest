@@ -17,8 +17,8 @@ export const HistoryView = ({ transactions }: HistoryViewProps) => {
     const [showFilters, setShowFilters] = useState(false);
 
     // Classificar tipos de transação
-    const isIncoming = (type: string) => ['DEPOSIT', 'DIVIDEND', 'REFERRAL_BONUS', 'LOAN_RECEIVED', 'QUOTA_SELL'].includes(type);
-    const isOutgoing = (type: string) => ['WITHDRAWAL', 'LOAN_PAYMENT', 'QUOTA_PURCHASE', 'LOAN_INSTALLMENT'].includes(type);
+    const isIncoming = (type: string) => ['DEPOSIT', 'DIVIDEND', 'REFERRAL_BONUS', 'LOAN_RECEIVED', 'QUOTA_SELL', 'EDUCATION_REWARD', 'GAME_WIN'].includes(type);
+    const isOutgoing = (type: string) => ['WITHDRAWAL', 'LOAN_PAYMENT', 'QUOTA_PURCHASE', 'LOAN_INSTALLMENT', 'GAME_BET'].includes(type);
 
     // Traduzir tipos
     const translateType = (type: string) => {
@@ -32,6 +32,7 @@ export const HistoryView = ({ transactions }: HistoryViewProps) => {
             'LOAN_PAYMENT': 'Reposição de Apoio',
             'LOAN_INSTALLMENT': 'Reposição de Parcela',
             'REFERRAL_BONUS': 'Bônus de Indicação',
+            'EDUCATION_REWARD': 'Recompensa Educacional',
             'GAME_WIN': 'Prêmio de Jogo',
             'GAME_BET': 'Aposta em Jogo',
         };
