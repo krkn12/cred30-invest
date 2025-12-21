@@ -79,6 +79,9 @@ export interface AppState {
     totalToReceive?: number;
     totalGatewayCosts?: number;
     totalManualCosts?: number;
+    totalTaxReserve?: number;
+    totalOperationalReserve?: number;
+    totalOwnerProfit?: number;
   };
 }
 

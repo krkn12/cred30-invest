@@ -526,6 +526,30 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
 
             {activeTab === 'system' && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <MetricCard
+                            title="Reserva p/ Impostos"
+                            value={formatCurrency(state.stats?.totalTaxReserve || 0)}
+                            subtitle="6% de todo lucro"
+                            icon={ShieldCheck}
+                            color="blue"
+                        />
+                        <MetricCard
+                            title="Custos (Servidor/APIs)"
+                            value={formatCurrency(state.stats?.totalOperationalReserve || 0)}
+                            subtitle="4% de todo lucro"
+                            icon={SettingsIcon}
+                            color="orange"
+                        />
+                        <MetricCard
+                            title="Meu Salário (Pró-labore)"
+                            value={formatCurrency(state.stats?.totalOwnerProfit || 0)}
+                            subtitle="5% de todo lucro"
+                            icon={DollarSign}
+                            color="emerald"
+                        />
+                    </div>
+
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Gestão de Lucros */}
                         <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">

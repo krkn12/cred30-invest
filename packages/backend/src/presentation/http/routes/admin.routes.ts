@@ -118,6 +118,9 @@ adminRoutes.get('/dashboard', adminMiddleware, async (c) => {
     config.quota_price = parseFloat(String(config.quota_price || 0));
     config.total_gateway_costs = parseFloat(String(config.total_gateway_costs || 0));
     config.total_manual_costs = parseFloat(String(config.total_manual_costs || 0));
+    config.total_tax_reserve = parseFloat(String(config.total_tax_reserve || 0));
+    config.total_operational_reserve = parseFloat(String(config.total_operational_reserve || 0));
+    config.total_owner_profit = parseFloat(String(config.total_owner_profit || 0));
 
     // DEBUG: Verificar se há algum valor salvo no banco que possa estar sobrescrevendo
     const dbBalanceResult = await pool.query('SELECT system_balance FROM system_config LIMIT 1');
