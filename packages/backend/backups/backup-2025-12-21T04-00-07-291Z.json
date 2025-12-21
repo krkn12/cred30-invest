@@ -1,0 +1,337 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Super Administrador",
+      "email": "josiassm701@gmail.com",
+      "password_hash": "$2b$10$3u80w2hTpr.BFh2c1xbQsuUdKn63u1yoGYcxNvreE8ZDctiRyJ1M.",
+      "secret_phrase": "passeiola",
+      "pix_key": "91980177874",
+      "balance": "5.00",
+      "referral_code": "ADMIN",
+      "referred_by": null,
+      "is_admin": true,
+      "score": 990,
+      "is_email_verified": false,
+      "verification_code": null,
+      "reset_password_token": null,
+      "two_factor_secret": null,
+      "two_factor_enabled": false,
+      "created_at": "2025-12-20T19:44:42.940Z",
+      "accepted_terms_at": null,
+      "membership_type": "FREE",
+      "last_reward_at": null,
+      "total_dividends_earned": "0.00"
+    },
+    {
+      "id": 2,
+      "name": "milene monteiro",
+      "email": "milene@gmail.com",
+      "password_hash": "$2b$10$7KmTPlQ1OYRhkZwXWFVpZux1d5imMw9vpbhvJ/aZHnZgHP5qtBmzW",
+      "secret_phrase": "passeiola",
+      "pix_key": "32588589",
+      "balance": "5.02",
+      "referral_code": "NBY5QV",
+      "referred_by": null,
+      "is_admin": false,
+      "score": 324,
+      "is_email_verified": true,
+      "verification_code": null,
+      "reset_password_token": null,
+      "two_factor_secret": "GA4WMCKPDYQU2RLZ",
+      "two_factor_enabled": true,
+      "created_at": "2025-12-20T22:08:07.122Z",
+      "accepted_terms_at": "2025-12-20T22:08:07.122Z",
+      "membership_type": "FREE",
+      "last_reward_at": "2025-12-21T03:08:53.433Z",
+      "total_dividends_earned": "0.00"
+    },
+    {
+      "id": 3,
+      "name": "jeovane monteiro",
+      "email": "jeovane@gmail.com",
+      "password_hash": "$2b$10$7orcYFS38SJoAMjt/6mu4u8yfk9TJAfXd5pCX0Ui26OdgEdo1AIiO",
+      "secret_phrase": "passeiola",
+      "pix_key": "01558516247",
+      "balance": "0.00",
+      "referral_code": "OJA36A",
+      "referred_by": null,
+      "is_admin": false,
+      "score": 294,
+      "is_email_verified": true,
+      "verification_code": null,
+      "reset_password_token": null,
+      "two_factor_secret": "NJSVCMSJHBBDWZIL",
+      "two_factor_enabled": true,
+      "created_at": "2025-12-21T03:33:07.964Z",
+      "accepted_terms_at": "2025-12-21T03:33:07.964Z",
+      "membership_type": "FREE",
+      "last_reward_at": "2025-12-21T03:38:18.313Z",
+      "total_dividends_earned": "0.00"
+    }
+  ],
+  "quotas": [],
+  "loans": [],
+  "transactions": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "type": "REFERRAL_BONUS",
+      "amount": "5.00",
+      "gateway_cost": "0.00",
+      "description": "Bônus indicação: milene monteiro (VIP2025)",
+      "status": "APPROVED",
+      "metadata": null,
+      "created_at": "2025-12-20T22:08:06.708Z",
+      "processed_at": null
+    },
+    {
+      "id": 2,
+      "user_id": 2,
+      "type": "AD_REWARD",
+      "amount": "0.00",
+      "gateway_cost": "0.00",
+      "description": "Prêmio por assistir anúncio (+5 pts Score)",
+      "status": "APPROVED",
+      "metadata": {
+        "adType": "rewarded_video",
+        "scoreRewarded": 5
+      },
+      "created_at": "2025-12-20T22:09:12.174Z",
+      "processed_at": null
+    },
+    {
+      "id": 3,
+      "user_id": 2,
+      "type": "AD_REWARD",
+      "amount": "0.00",
+      "gateway_cost": "0.00",
+      "description": "Prêmio por assistir anúncio (+5 pts Score)",
+      "status": "APPROVED",
+      "metadata": {
+        "adType": "rewarded_video",
+        "scoreRewarded": 5
+      },
+      "created_at": "2025-12-20T22:10:04.047Z",
+      "processed_at": null
+    },
+    {
+      "id": 4,
+      "user_id": 2,
+      "type": "AD_REWARD",
+      "amount": "0.00",
+      "gateway_cost": "0.00",
+      "description": "Prêmio por assistir anúncio (+5 pts Score)",
+      "status": "APPROVED",
+      "metadata": {
+        "adType": "rewarded_video",
+        "scoreRewarded": 5
+      },
+      "created_at": "2025-12-20T22:10:27.935Z",
+      "processed_at": null
+    },
+    {
+      "id": 5,
+      "user_id": 2,
+      "type": "AD_REWARD",
+      "amount": "0.00",
+      "gateway_cost": "0.00",
+      "description": "Prêmio por assistir anúncio (+5 pts Score)",
+      "status": "APPROVED",
+      "metadata": {
+        "adType": "rewarded_video",
+        "scoreRewarded": 5
+      },
+      "created_at": "2025-12-20T22:10:46.919Z",
+      "processed_at": null
+    },
+    {
+      "id": 6,
+      "user_id": 2,
+      "type": "AD_REWARD",
+      "amount": "0.00",
+      "gateway_cost": "0.00",
+      "description": "Prêmio por assistir anúncio (+5 pts Score)",
+      "status": "APPROVED",
+      "metadata": {
+        "adType": "rewarded_video",
+        "scoreRewarded": 5
+      },
+      "created_at": "2025-12-20T22:11:10.376Z",
+      "processed_at": null
+    },
+    {
+      "id": 7,
+      "user_id": 2,
+      "type": "AD_REWARD",
+      "amount": "0.00",
+      "gateway_cost": "0.00",
+      "description": "Prêmio por assistir anúncio (+5 pts Score)",
+      "status": "APPROVED",
+      "metadata": {
+        "adType": "rewarded_video",
+        "scoreRewarded": 5
+      },
+      "created_at": "2025-12-20T22:27:57.368Z",
+      "processed_at": null
+    },
+    {
+      "id": 8,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "50.00",
+      "gateway_cost": "0.00",
+      "description": "Compra de 1 cota(s) - Mercado Pago",
+      "status": "PENDING",
+      "metadata": {
+        "mp_id": 138149519801,
+        "qr_code": "00020126330014br.gov.bcb.pix011101558516247520400005303986540550.005802BR5913JOSIASSILVA126004Belm62250521mpqrinter138149519801630431FB",
+        "userFee": 0,
+        "baseCost": 50,
+        "quantity": 1,
+        "useBalance": false,
+        "paymentMethod": "pix",
+        "qr_code_base64": "iVBORw0KGgoAAAANSUhEUgAABRQAAAUUAQMAAACUKAyrAAAABlBMVEX///8AAABVwtN+AAAIyklEQVR42uzdQZLiOhIGYBMsWHIEjuKjUUfjKByhliwINNHQtjMluaD6vZqeGL5/1eE29ufaZaSUGkRERERERERERERERERERERERERERERERERERERE/keyL23OwzCW8vH7jl0pn8NwKOU0DMdym649cr9pU8p1una6/3/5dd/2/sNHjqWENz5e0OSDkZGRkZGRkZGRkZGRkbFvPKcLu+nC8dfPbpMxZFvK5f6Pw/3J+Xnjcm1bv36b/wjNDxkZGRkZGRkZGRkZGRn/lvH4+8fXyZhLy7l2nerUuej96BTCH79q1/mHQ/0XCMZNuI+RkZGRkZGRkZGRkZGR8U+M96dccul8zyV5blPp/Fn3WGOmp39OD2NkZGRkZGRkZGRkZGRk/CfG6VWbur7+crHx5/Ih85rhw/Lf19wKZmRkZGRkZGRkZGRkZGT8hrFZ1xzq65L2u5bc9g219C5gw+vPnQXRw7+y9pqRkZGRkZGRkZGRkZHxfYzrs5rCntwwq2k79YbPSxE+t33H1C+OH5d/+K/Nk2JkZGRkZGRkZGRkZGT8R8aVjMt43nl9cN7vOvRr16k5+7ivVxmX+tqfhpGRkZGRkZGRkZGRkfF9jId622pO3u/a1tf93PIHT7OHd/VN2xfWDDMyMjIyMjIyMjIyMjIyLst8q9I594uH+uzUx7XSOU81GA/LearX/N7wwa/U14yMjIyMjIyMjIyMjIzvauwtT87rmuOm2OMy0OlzKszzw05rHxdnNa3Mb2JkZGRkZGRkZGRkZGRkXM+0PPlR7R7qFm9YnryZ+sX7ur7uPaykocXbemjxJnzLiZGRkZGRkZGRkZGRkfFvGMOr2nIz3FTSYy+pYTvk+z46r8/nqTbGF8+fYWRkZGRkZGRkZGRkZHxXY1leVa3gzWfNhKfkNcNzLzZ7ttmYc+o0bAdGRkZGRkZGRkZGRkZGxq97w73jTps5w0No8TabYsO1ar9r7g2HwU/VRllGRkZGRkZGRkZGRkZGxvU0u08ndzQe6/FKeUH0fpnVND/ssLx+m5vKec7wK2FkZGRkZGRkZGRkZGR8V+Mh7b+Nx7Tmtc5j57G5MM/Lk7fT/tvJPQ95etTX/QXRjIyMjIyMjIyMjIyMjP9tYy+9405z7bpPZ81U9WxAH9I64l1dp1YPY2RkZGRkZGRkZGRkZGRssk+LfqvzZ8JN4Vp8bFnq67xR9pbr67KsGZ6L9enmp2uGGRkZGRkZGRkZGRkZGRmTcUjt3Hb28HTTPu2L7fWLr/VG2WrIU/PDgZGRkZGRkZGRkZGRkZFxNb3RwFOZvOsbm+S276b5uL7xm/OkGBkZGRkZGRkZGRkZGd/Q2BzJeknjleZZTbk3nHPLxlxfnzuLpM+ddc1Pz/FhZGRkZGRkZGRkZGRk/Anjo836kcrN0um7hv2uvYZt7/yZ6lue/5CRkZGRkZGRkZGRkZGR8blxbqmOHfcpXZi3sn7Vd43v7iw2bv8qjIyMjIyMjIyMjIyMjIzrxt6spjyDaUybYvOspvn4mzE9LPeGm1lN7Q8ZGRkZGRkZGRkZGRkZGXvrms/LsTZVfR2Mh6W+vtZrmGN9Paa1zvu0UbYa/NSv6BkZGRkZGRkZGRkZGRkZ14z9Tu0mG6dXXeqPm/vFY72G+Vx/S2+y8dN9w4yMjIyMjIyMjIyMjIxvbAy94Vu4ENq+l3DUTd6Te06zo/JwqnZocSjCDzVp/+q6ZkZGRkZGRkZGRkZGRsafMq7uPp17rPfO6KZTu85zhsPBNe05NbnvOi7FLCMjIyMjIyMjIyMjIyPjl8Z8Rs41rQ8ecn1dak9z1M1Q912HcK2Drg7XGRgZGRkZGRkZGRkZGRkZV9cM51/kMvmS+8V5XPCxM7+pVyYf6x/mj3taXzMyMjIyMjIyMjIyMjK+sXGlWZz3u4Zxwbfw2HPd852bynlW01g3mvPgpz8KIyMjIyMjIyMjIyMj41sZD8v+2/VXha212/5Nu2XjbhzedFiK9ZX6urx2jg8jIyMjIyMjIyMjIyPjDxmHpQRtzp+5fbWk95AWG++SOxrLso54F/a7ljT4qTAyMjIyMjIyMjIyMjIyrq4Z7o0GLml+02c6f+b61WLj0jl/Zvrga3/O8O5Zfc3IyMjIyMjIyMjIyMj43sawlfUWRi6tHHfaLP0t9TricLhOVayHPvDwe87wJrhfWTPMyMjIyMjIyMjIyMjI+N7GsK45lMQlPHaoi/BcXw/J2PwFSm4gn/obZRkZGRkZGRkZGRkZGRkZV3rDvceGWnr2HMv6ua1xXHAzqykYP5O7vLAnl5GRkZGRkZGRkZGRkfHnjGHbam8MU6ln+MZMI5c2ucY9Lr3YuNi4WUec69nTs74rIyMjIyMjIyMjIyMj43sbS5qcdEhl8i65W0+z9Pe41sRd2e+aFxYzMjIyMjIyMjIyMjIyMj7rDe/6x50OSy0dZzUdOy3eXhF+d1ebYksa/PRFfc3IyMjIyMjIyMjIyMj43saVjMm976xr7n1caPE+viWe5ZobzaGpfGFkZGRkZGRkZGRkZGRkfKm+ziVxMMbxSnnx87nuDZflIJ1bePppMcYXBOOLvWFGRkZGRkZGRkZGRkbGnzCe04Vdvbf1Uv9k5ZCaXei75qeP/cFPeaMsIyMjIyMjIyMjIyMjI+OXxmOanBSW+W6mR4TZw9uylt45Nb0hT99f18zIyMjIyMjIyMjIyMjIWBvHZX7TvN91/D2raX2/a6nXEQ+h7ZsHOk2Hrm5fWzPMyMjIyMjIyMjIyMjIyNipr6fu7SW8alqvvAvrmnNO6Yyc7N7m+0IR/qe9YUZGRkZGRkZGRkZGRsb3Ma6ua77lu4/JOL273Vqbz3ctqb6e1zV/szfMyMjIyMjIyMjIyMjI+EPG3qym0Bl9ZHrVptNj3TRzfbPxtAz/zX3XeO3786QYGRkZGRkZGRkZGRkZ38QoIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIv9f+U8AAAD//0Kz3JRYWqIUAAAAAElFTkSuQmCC",
+        "external_reference": "BUY_QUOTA_2_1766260785352"
+      },
+      "created_at": "2025-12-20T22:59:45.318Z",
+      "processed_at": null
+    },
+    {
+      "id": 9,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "50.00",
+      "gateway_cost": "0.00",
+      "description": "Compra de 1 cota(s) - Mercado Pago",
+      "status": "PENDING",
+      "metadata": {
+        "mp_id": 138793036184,
+        "qr_code": "00020126330014br.gov.bcb.pix011101558516247520400005303986540550.005802BR5913JOSIASSILVA126004Belm62250521mpqrinter138793036184630471A8",
+        "userFee": 0,
+        "baseCost": 50,
+        "quantity": 1,
+        "useBalance": false,
+        "paymentMethod": "pix",
+        "qr_code_base64": "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",
+        "external_reference": "BUY_QUOTA_2_1766261294082"
+      },
+      "created_at": "2025-12-20T23:08:14.048Z",
+      "processed_at": null
+    },
+    {
+      "id": 10,
+      "user_id": 2,
+      "type": "AD_REWARD",
+      "amount": "0.05",
+      "gateway_cost": "0.00",
+      "description": "Recompensa: Vídeo Premiado Assistido",
+      "status": "APPROVED",
+      "metadata": null,
+      "created_at": "2025-12-21T03:08:53.433Z",
+      "processed_at": null
+    },
+    {
+      "id": 11,
+      "user_id": 2,
+      "type": "GAME_WIN",
+      "amount": "0.02",
+      "gateway_cost": "0.00",
+      "description": "Prêmio Caça-Níquel (20 rodadas): 1 acertos",
+      "status": "APPROVED",
+      "metadata": null,
+      "created_at": "2025-12-21T03:15:44.442Z",
+      "processed_at": null
+    },
+    {
+      "id": 12,
+      "user_id": 2,
+      "type": "GAME_BET",
+      "amount": "0.05",
+      "gateway_cost": "0.00",
+      "description": "Pacote 20 Rodadas",
+      "status": "APPROVED",
+      "metadata": null,
+      "created_at": "2025-12-21T03:15:44.442Z",
+      "processed_at": null
+    },
+    {
+      "id": 13,
+      "user_id": 2,
+      "type": "REFERRAL_BONUS",
+      "amount": "5.00",
+      "gateway_cost": "0.00",
+      "description": "Bônus indicação: jeovane monteiro (NBY5QV)",
+      "status": "APPROVED",
+      "metadata": null,
+      "created_at": "2025-12-21T03:33:07.436Z",
+      "processed_at": null
+    },
+    {
+      "id": 14,
+      "user_id": 3,
+      "type": "AD_REWARD",
+      "amount": "0.05",
+      "gateway_cost": "0.00",
+      "description": "Recompensa: Vídeo Premiado Assistido",
+      "status": "APPROVED",
+      "metadata": null,
+      "created_at": "2025-12-21T03:38:18.313Z",
+      "processed_at": null
+    },
+    {
+      "id": 15,
+      "user_id": 3,
+      "type": "GAME_BET",
+      "amount": "0.05",
+      "gateway_cost": "0.00",
+      "description": "Pacote 20 Rodadas",
+      "status": "APPROVED",
+      "metadata": null,
+      "created_at": "2025-12-21T03:40:01.072Z",
+      "processed_at": null
+    }
+  ],
+  "system_config": [
+    {
+      "id": 1,
+      "system_balance": "0.08",
+      "profit_pool": "0.00",
+      "total_gateway_costs": "0.00",
+      "quota_price": "50.00",
+      "loan_interest_rate": "0.20",
+      "penalty_rate": "0.40",
+      "vesting_period_ms": "31536000000",
+      "total_manual_costs": "0.00",
+      "updated_at": "2025-12-20T19:44:46.550Z"
+    }
+  ],
+  "admin_logs": [
+    {
+      "id": 1,
+      "admin_id": 1,
+      "action": "CREATE_REFERRAL_CODE",
+      "entity_type": "REFERRAL_CODE",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "code": "VIP2025",
+        "maxUses": 5
+      },
+      "ip_address": "179.63.92.45, 172.71.146.127, 10.17.116.168",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-20T22:00:42.758Z"
+    }
+  ],
+  "referral_codes": [
+    {
+      "id": 1,
+      "code": "VIP2025",
+      "created_by": 1,
+      "max_uses": 5,
+      "current_uses": 1,
+      "is_active": true,
+      "created_at": "2025-12-20T22:00:42.687Z"
+    }
+  ]
+}

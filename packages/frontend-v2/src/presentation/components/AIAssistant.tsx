@@ -82,17 +82,17 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ appState }) => {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-[150] print:hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`bg-primary-500 hover:bg-primary-400 text-black p-3 rounded-full shadow-lg transition-all ${isOpen ? 'rotate-90' : ''}`}
+        className={`bg-primary-500 hover:bg-primary-400 text-black p-3.5 rounded-full shadow-lg transition-all ${isOpen ? 'rotate-90' : ''}`}
         title="Assistente IA"
       >
         {isOpen ? '✕' : '🤖'}
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-16 right-0 w-96 bg-surface border border-surfaceHighlight rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[500px]">
+        <div className="absolute bottom-16 right-0 w-[calc(100vw-2rem)] md:w-96 bg-surface border border-surfaceHighlight rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[60vh] md:max-h-[500px]">
           <div className="flex justify-between items-center p-4 border-b border-surfaceHighlight bg-surfaceAccent">
             <div>
               <h3 className="text-white font-bold">Suporte Cred30</h3>

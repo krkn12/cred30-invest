@@ -149,11 +149,12 @@ export default function App() {
       const response = await buyQuota(qty, method === 'BALANCE', pm !== 'balance' ? pm : undefined);
       await refreshState();
 
-      if (response && response.pixData) {
+      if (response && (response.pixData || response.data?.pixData)) {
+        const pixData = response.pixData || response.data?.pixData;
         setPixModalData({
           isOpen: true,
-          qrCode: response.pixData.qr_code,
-          qrCodeBase64: response.pixData.qr_code_base64,
+          qrCode: pixData.qr_code,
+          qrCodeBase64: pixData.qr_code_base64,
           amount: total,
           description: `Compra de ${qty} cota(s)`
         });
@@ -228,11 +229,12 @@ export default function App() {
       const response = await repayLoan(loanId, useBalance, method);
       await refreshState();
 
-      if (response && response.pixData) {
+      if (response && (response.pixData || response.data?.pixData)) {
+        const pixData = response.pixData || response.data?.pixData;
         setPixModalData({
           isOpen: true,
-          qrCode: response.pixData.qr_code,
-          qrCodeBase64: response.pixData.qr_code_base64,
+          qrCode: pixData.qr_code,
+          qrCodeBase64: pixData.qr_code_base64,
           amount: total,
           description: `Reposição de Apoio Mútuo`
         });
@@ -259,11 +261,12 @@ export default function App() {
       const response = await repayInstallment(id, amount, useBalance, method);
       await refreshState();
 
-      if (response && response.pixData) {
+      if (response && (response.pixData || response.data?.pixData)) {
+        const pixData = response.pixData || response.data?.pixData;
         setPixModalData({
           isOpen: true,
-          qrCode: response.pixData.qr_code,
-          qrCodeBase64: response.pixData.qr_code_base64,
+          qrCode: pixData.qr_code,
+          qrCodeBase64: pixData.qr_code_base64,
           amount: total,
           description: `Pagamento de Parcela`
         });
@@ -298,11 +301,12 @@ export default function App() {
       const response = await upgradePro(method);
       await refreshState();
 
-      if (response && response.data?.pixData) {
+      if (response && (response.pixData || response.data?.pixData)) {
+        const pixData = response.pixData || response.data?.pixData;
         setPixModalData({
           isOpen: true,
-          qrCode: response.data.pixData.qr_code,
-          qrCodeBase64: response.data.pixData.qr_code_base64,
+          qrCode: pixData.qr_code,
+          qrCodeBase64: pixData.qr_code_base64,
           amount: total,
           description: `Assinatura Cred30 PRO`
         });
