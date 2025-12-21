@@ -7,6 +7,7 @@ import {
     Sparkles, Wand2, Lightbulb, Zap, TrendingUp
 } from 'lucide-react';
 import { AdBanner } from '../ui/AdBanner';
+import { ConfirmModal } from '../ui/ConfirmModal';
 import { AppState, User } from '../../../domain/types/common.types';
 import { MARKETPLACE_ESCROW_FEE_RATE, MARKET_CREDIT_INTEREST_RATE, MARKET_CREDIT_MAX_INSTALLMENTS, MARKET_CREDIT_MIN_SCORE } from '../../../shared/constants/app.constants';
 import { apiService } from '../../../application/services/api.service';
@@ -31,6 +32,16 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
     // Novos estados de entrega e contato
     const [deliveryAddress, setDeliveryAddress] = useState('');
     const [contactPhone, setContactPhone] = useState('');
+
+    // Estado para Modal de Confirmação
+    const [confirmData, setConfirmData] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+        type?: 'danger' | 'warning' | 'info';
+        confirmText?: string;
+    } | null>(null);
 
     // Form states
     const [newListing, setNewListing] = useState({
@@ -242,9 +253,7 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
         }
     };
 
-    const handleBuy = async (listingId: number) => {
-        if (!confirm('Deseja realmente comprar este item? O valor será retido pela Cred30 até que você confirme o recebimento.')) return;
-
+    const executeBuy = async (listingId: number) => {
         setLoading(true);
         try {
             const response = await apiService.post<any>('/marketplace/buy', {
@@ -269,9 +278,17 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
         }
     };
 
-    const handleConfirmDelivery = async (orderId: number) => {
-        if (!confirm('Você confirma que recebeu o produto/serviço? Isso liberará o dinheiro imediatamente para o vendedor.')) return;
+    const handleBuy = (listingId: number) => {
+        setConfirmData({
+            isOpen: true,
+            title: 'Confirmar Compra?',
+            message: 'O valor será retido pela Cred30 de forma segura. O vendedor só receberá quando você confirmar que o produto chegou e está conforme anunciado.',
+            confirmText: 'Pagar com Saldo',
+            onConfirm: () => executeBuy(listingId)
+        });
+    };
 
+    const executeConfirmDelivery = async (orderId: number) => {
         setLoading(true);
         try {
             const response = await apiService.post<any>(`/marketplace/order/${orderId}/receive`, {});
@@ -288,9 +305,18 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
         }
     };
 
-    const handleBoostListing = async (listingId: number) => {
-        if (!confirm('Deseja impulsionar este anúncio por R$ 5,00? Ele aparecerá no topo do mercado por uma semana.')) return;
+    const handleConfirmDelivery = (orderId: number) => {
+        setConfirmData({
+            isOpen: true,
+            title: 'Confirmar Recebimento?',
+            message: 'Atenção: Ao confirmar, o dinheiro será liberado imediatamente para o vendedor. Só faça isso se já estiver com o produto em mãos e satisfeito.',
+            confirmText: 'Liberar Pagamento',
+            type: 'warning',
+            onConfirm: () => executeConfirmDelivery(orderId)
+        });
+    };
 
+    const executeBoost = async (listingId: number) => {
         setLoading(true);
         try {
             const response = await apiService.post<any>('/marketplace/boost', { listingId });
@@ -308,9 +334,17 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
         }
     };
 
-    const handleBuyOnCredit = async (listingId: number) => {
-        if (!confirm(`Deseja realmente solicitar apoio para este item em ${selectedInstallments}x? Seu Score será usado como garantia.`)) return;
+    const handleBoostListing = (listingId: number) => {
+        setConfirmData({
+            isOpen: true,
+            title: 'Impulsionar Anúncio',
+            message: 'Deseja impulsionar este anúncio por R$ 5,00? Ele aparecerá no topo do mercado com destaque especial.',
+            confirmText: 'Impulsionar (R$ 5,00)',
+            onConfirm: () => executeBoost(listingId)
+        });
+    };
 
+    const executeBuyCredit = async (listingId: number) => {
         setLoading(true);
         try {
             const response = await apiService.post<any>('/marketplace/buy-on-credit', {
@@ -334,6 +368,16 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleBuyOnCredit = (listingId: number) => {
+        setConfirmData({
+            isOpen: true,
+            title: 'Solicitar Apoio Social',
+            message: `Deseja solicitar crédito para este item em ${selectedInstallments}x? Seu Score será usado como garantia e analisado instantaneamente.`,
+            confirmText: 'Solicitar Crédito',
+            onConfirm: () => executeBuyCredit(listingId)
+        });
     };
 
     const formatCurrency = (val: number) => val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -932,6 +976,17 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
                         </div>
                     </div>
                 </div>
+            )}
+            {confirmData && (
+                <ConfirmModal
+                    isOpen={confirmData.isOpen}
+                    onClose={() => setConfirmData(null)}
+                    onConfirm={confirmData.onConfirm}
+                    title={confirmData.title}
+                    message={confirmData.message}
+                    confirmText={confirmData.confirmText}
+                    type={confirmData.type}
+                />
             )}
         </div>
     );
