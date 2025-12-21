@@ -107,7 +107,7 @@ const WelcomePage = () => {
             <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent italic">valoriza</span> seu tempo.
           </h1>
           <p className="text-lg text-zinc-400 mb-10 max-w-xl mx-auto leading-relaxed">
-            Torne-se membro em minutos e comece a rentabilizar seu capital hoje com total segurança.
+            Torne-se membro em minutos e comece a participar dos excedentes operacionais hoje com total segurança.
           </p>
 
           <div className="flex flex-col gap-4 max-w-md mx-auto">

@@ -1,7 +1,7 @@
 {
   "name": "cred30-backend",
   "version": "1.0.40",
-  "description": "Backend para plataforma fintech Cred30",
+  "description": "Backend para Plataforma Associativa Cred30",
   "main": "src/index.ts",
   "scripts": {
     "dev": "tsx watch src/index.ts",
