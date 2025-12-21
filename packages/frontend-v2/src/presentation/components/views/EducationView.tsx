@@ -269,12 +269,12 @@ export const EducationView: React.FC<EducationViewProps> = ({ onBack, onSuccess 
                             <iframe
                                 width="100%"
                                 height="100%"
-                                src={`${selectedLesson.videoUrl}?autoplay=1&controls=0`}
+                                src={`${selectedLesson.videoUrl}?autoplay=0&controls=1&rel=0`}
                                 title={selectedLesson.title}
                                 frameBorder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowFullScreen
-                                className="pointer-events-none" // Impede interação direta com o player para forçar uso da interface e evitar bypass
+                                className="z-10 relative" // Permitir interação
                             ></iframe>
                         ) : (
                             <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-zinc-900">
