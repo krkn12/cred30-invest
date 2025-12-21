@@ -2,9 +2,9 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { getDbPool } from '../../../infrastructure/database/postgresql/connection/pool';
-import { MARKETPLACE_ESCROW_FEE_RATE } from '../../../shared/constants/business.constants';
+import { MARKETPLACE_ESCROW_FEE_RATE, MARKET_CREDIT_INTEREST_RATE, MARKET_CREDIT_MAX_INSTALLMENTS, MARKET_CREDIT_MIN_SCORE } from '../../../shared/constants/business.constants';
 import { UserContext } from '../../../shared/types/hono.types';
-import { executeInTransaction, lockUserBalance, updateUserBalance, createTransaction } from '../../../domain/services/transaction.service';
+import { executeInTransaction, lockUserBalance, updateUserBalance, createTransaction, lockSystemConfig } from '../../../domain/services/transaction.service';
 
 const marketplaceRoutes = new Hono();
 
@@ -19,6 +19,11 @@ const createListingSchema = z.object({
 
 const buyListingSchema = z.object({
     listingId: z.number().int(),
+});
+
+const buyOnCreditSchema = z.object({
+    listingId: z.number().int(),
+    installments: z.number().int().min(1).max(MARKET_CREDIT_MAX_INSTALLMENTS),
 });
 
 /**
@@ -95,6 +100,102 @@ marketplaceRoutes.post('/create', authMiddleware, async (c) => {
  * Comprar um item (Inicia o processo de Escrow/Garantia)
  * O valor é retirado do saldo do comprador e fica retido pelo sistema.
  */
+/**
+ * Comprar parcelado via Crediário Cred30 (Financiamento Social)
+ * A plataforma antecipa o valor para o vendedor e o comprador paga parcelado.
+ */
+marketplaceRoutes.post('/buy-on-credit', authMiddleware, async (c) => {
+    try {
+        const user = c.get('user') as UserContext;
+        const pool = getDbPool(c);
+        const body = await c.req.json();
+        const { listingId, installments } = buyOnCreditSchema.parse(body);
+
+        // 1. Verificar Score Mínimo
+        const userResult = await pool.query('SELECT score FROM users WHERE id = $1', [user.id]);
+        const userScore = userResult.rows[0]?.score || 0;
+
+        if (userScore < MARKET_CREDIT_MIN_SCORE) {
+            return c.json({
+                success: false,
+                message: `Seu Score (${userScore}) é insuficiente para o Crediário Cred30. O mínimo necessário é ${MARKET_CREDIT_MIN_SCORE}.`
+            }, 403);
+        }
+
+        // 2. Buscar anúncio
+        const listingResult = await pool.query(
+            'SELECT * FROM marketplace_listings WHERE id = $1 AND status = $2',
+            [listingId, 'ACTIVE']
+        );
+
+        if (listingResult.rows.length === 0) {
+            return c.json({ success: false, message: 'Este item não está mais disponível.' }, 404);
+        }
+
+        const listing = listingResult.rows[0];
+
+        if (listing.seller_id === user.id) {
+            return c.json({ success: false, message: 'Você não pode financiar seu próprio item.' }, 400);
+        }
+
+        const price = parseFloat(listing.price);
+        const totalInterestRate = MARKET_CREDIT_INTEREST_RATE * installments;
+        const totalAmountWithInterest = price * (1 + totalInterestRate);
+        const installmentValue = totalAmountWithInterest / installments;
+
+        const result = await executeInTransaction(pool, async (client) => {
+            // 3. Verificar se o caixa do sistema suporta honrar esse pagamento ao vendedor
+            const systemConfig = await lockSystemConfig(client);
+            if (parseFloat(systemConfig.system_balance) < price) {
+                throw new Error('O sistema atingiu o limite de financiamentos diários. Tente novamente amanhã.');
+            }
+
+            // 4. Marcar anúncio como VENDIDO
+            await client.query('UPDATE marketplace_listings SET status = $1 WHERE id = $2', ['SOLD', listingId]);
+
+            // 5. Criar o Pedido com status de Garantia (Escrow) e método CRED30_CREDIT
+            const orderResult = await client.query(
+                `INSERT INTO marketplace_orders (listing_id, buyer_id, seller_id, amount, fee_amount, seller_amount, status, payment_method)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+                [listingId, user.id, listing.seller_id, price, price * MARKETPLACE_ESCROW_FEE_RATE, price * (1 - MARKETPLACE_ESCROW_FEE_RATE), 'WAITING_SHIPPING', 'CRED30_CREDIT']
+            );
+
+            const orderId = orderResult.rows[0].id;
+
+            // 6. Criar o registro de "Empréstimo/Dívida" para o comprador
+            await client.query(
+                `INSERT INTO loans (user_id, amount, installments, interest_rate, total_repayment, status, description, metadata)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+                [user.id, price, installments, MARKET_CREDIT_INTEREST_RATE, totalAmountWithInterest, 'APPROVED', `Compra no Mercado: ${listing.title}`, JSON.stringify({ orderId, listingId, type: 'MARKET_FINANCING' })]
+            );
+
+            // 7. Registrar transação informativa no extrato
+            await createTransaction(
+                client,
+                user.id,
+                'MARKET_PURCHASE_CREDIT',
+                totalAmountWithInterest,
+                `Compra Parcelada: ${listing.title} (${installments}x de R$ ${installmentValue.toFixed(2)})`,
+                'APPROVED',
+                { orderId, listingId, installments }
+            );
+
+            return { orderId, totalAmountWithInterest };
+        });
+
+        if (!result.success) return c.json({ success: false, message: result.error }, 400);
+
+        return c.json({
+            success: true,
+            message: `Financiamento Social Aprovado! Você pagará ${installments}x de R$ ${installmentValue.toFixed(2)}.`,
+            data: { orderId: result.data?.orderId }
+        });
+    } catch (error) {
+        console.error('Erro ao comprar no crediário:', error);
+        return c.json({ success: false, message: 'Erro ao processar financiamento social' }, 500);
+    }
+});
+
 marketplaceRoutes.post('/buy', authMiddleware, async (c) => {
     try {
         const user = c.get('user') as UserContext;
@@ -206,6 +307,12 @@ marketplaceRoutes.post('/order/:id/receive', authMiddleware, async (c) => {
 
             // 2. Liberar saldo para o vendedor (valor líquido)
             const sellerAmount = parseFloat(order.seller_amount);
+
+            // Se foi no crediário, o dinheiro sai do caixa do sistema para o vendedor
+            if (order.payment_method === 'CRED30_CREDIT') {
+                await client.query('UPDATE system_config SET system_balance = system_balance - $1', [order.amount]);
+            }
+
             await updateUserBalance(client, order.seller_id, sellerAmount, 'credit');
 
             // 3. Contabilizar a taxa de serviço (Regra 85/15)

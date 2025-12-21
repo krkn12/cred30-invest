@@ -83,6 +83,14 @@ export async function lockUserBalance(
 }
 
 /**
+ * Bloqueia e retorna as configurações globais do sistema para atualização atômica
+ */
+export async function lockSystemConfig(client: PoolClient) {
+  const result = await client.query('SELECT * FROM system_config FOR UPDATE');
+  return result.rows[0];
+}
+
+/**
  * Atualiza saldo do usuário de forma segura
  */
 export async function updateUserBalance(

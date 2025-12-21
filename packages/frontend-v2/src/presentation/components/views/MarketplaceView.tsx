@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { AdBanner } from '../ui/AdBanner';
 import { AppState, User } from '../../../domain/types/common.types';
-import { MARKETPLACE_ESCROW_FEE_RATE } from '../../../shared/constants/app.constants';
+import { MARKETPLACE_ESCROW_FEE_RATE, MARKET_CREDIT_INTEREST_RATE, MARKET_CREDIT_MAX_INSTALLMENTS, MARKET_CREDIT_MIN_SCORE } from '../../../shared/constants/app.constants';
 import { apiService } from '../../../application/services/api.service';
 
 interface MarketplaceViewProps {
@@ -25,6 +25,8 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
     const [selectedItem, setSelectedItem] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [myOrders, setMyOrders] = useState<any[]>([]);
+    const [buyMethod, setBuyMethod] = useState<'balance' | 'credit'>('balance');
+    const [selectedInstallments, setSelectedInstallments] = useState(1);
 
     // Form states
     const [newListing, setNewListing] = useState({
@@ -291,6 +293,30 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
             }
         } catch (e: any) {
             onError('Erro', e.message || 'Erro ao impulsionar anúncio.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleBuyOnCredit = async (listingId: number) => {
+        if (!confirm(`Deseja realmente financiar este item em ${selectedInstallments}x? Seu Score será usado como garantia.`)) return;
+
+        setLoading(true);
+        try {
+            const response = await apiService.post<any>('/marketplace/buy-on-credit', {
+                listingId,
+                installments: selectedInstallments
+            });
+            if (response.success) {
+                onSuccess('Financiamento Aprovado!', response.message);
+                setView('my-orders');
+                fetchMyOrders();
+                onRefresh();
+            } else {
+                onError('Falha no Crédito', response.message);
+            }
+        } catch (e: any) {
+            onError('Erro', e.message || 'Erro ao processar seu financiamento social.');
         } finally {
             setLoading(false);
         }
@@ -747,6 +773,69 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
                             </p>
                         </div>
 
+                        <div className="bg-background/40 rounded-2xl p-6 mb-6">
+                            <h4 className="text-[10px] font-bold text-zinc-500 uppercase mb-4 tracking-widest">Forma de Pagamento</h4>
+
+                            <div className="flex gap-2 mb-6">
+                                <button
+                                    onClick={() => setBuyMethod('balance')}
+                                    className={`flex-1 py-3 rounded-xl border font-bold text-xs transition ${buyMethod === 'balance' ? 'bg-primary-500 text-black border-primary-500' : 'bg-zinc-900 text-zinc-400 border-zinc-800'}`}
+                                >
+                                    Saldo à Vista
+                                </button>
+                                <button
+                                    onClick={() => setBuyMethod('credit')}
+                                    className={`flex-1 py-3 rounded-xl border font-bold text-xs transition ${buyMethod === 'credit' ? 'bg-primary-500 text-black border-primary-500' : 'bg-zinc-900 text-zinc-400 border-zinc-800'}`}
+                                >
+                                    Crediário Social
+                                </button>
+                            </div>
+
+                            {buyMethod === 'credit' ? (
+                                <div className="space-y-4 animate-in slide-in-from-top duration-300">
+                                    {state.currentUser!.score < MARKET_CREDIT_MIN_SCORE ? (
+                                        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl">
+                                            <div className="flex items-center gap-2 mb-2 text-red-400">
+                                                <AlertCircle size={16} />
+                                                <span className="text-xs font-bold uppercase">Crediário Bloqueado</span>
+                                            </div>
+                                            <p className="text-[10px] text-zinc-400 leading-tight">
+                                                Seu score atual ({state.currentUser!.score}) está abaixo do mínimo exigido ({MARKET_CREDIT_MIN_SCORE}). Aumente seu score sendo um membro PRO ou pagando apoios em dia.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div>
+                                                <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1">Parcelar em:</label>
+                                                <select
+                                                    value={selectedInstallments}
+                                                    onChange={(e) => setSelectedInstallments(Number(e.target.value))}
+                                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 mt-1"
+                                                >
+                                                    {[...Array(MARKET_CREDIT_MAX_INSTALLMENTS)].map((_, i) => {
+                                                        const month = i + 1;
+                                                        const total = parseFloat(selectedItem.price) * (1 + (MARKET_CREDIT_INTEREST_RATE * month));
+                                                        return (
+                                                            <option key={month} value={month}>
+                                                                {month}x de {formatCurrency(total / month)} (Total: {formatCurrency(total)})
+                                                            </option>
+                                                        );
+                                                    })}
+                                                </select>
+                                                <p className="text-[9px] text-zinc-500 mt-2 px-1 italic">
+                                                    * Taxa de juros social de {MARKET_CREDIT_INTEREST_RATE * 100}% ao mês.
+                                                </p>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="text-[11px] text-zinc-500 text-center py-2 italic font-medium">
+                                    O valor de {formatCurrency(parseFloat(selectedItem.price))} será descontado do seu saldo imediatamente.
+                                </div>
+                            )}
+                        </div>
+
                         <div className="space-y-4">
                             <div className="flex items-center gap-3 text-xs text-zinc-400">
                                 <ShieldCheck size={18} className="text-primary-400" />
@@ -758,11 +847,11 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
                             </div>
 
                             <button
-                                onClick={() => handleBuy(selectedItem.id)}
-                                disabled={loading}
+                                onClick={() => buyMethod === 'balance' ? handleBuy(selectedItem.id) : handleBuyOnCredit(selectedItem.id)}
+                                disabled={loading || (buyMethod === 'credit' && state.currentUser!.score < MARKET_CREDIT_MIN_SCORE)}
                                 className="w-full bg-primary-600 hover:bg-primary-500 text-white font-black py-4 rounded-2xl shadow-lg transition active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
                             >
-                                <ShoppingBag /> {loading ? 'PROCESSANDO...' : 'COMPRAR AGORA'}
+                                <ShoppingBag /> {loading ? 'PROCESSANDO...' : (buyMethod === 'credit' ? 'SOLICITAR CREDIÁRIO' : 'COMPRAR AGORA')}
                             </button>
                         </div>
                     </div>
