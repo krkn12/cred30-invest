@@ -286,6 +286,10 @@ adminRoutes.post('/users/add-quota', adminMiddleware, auditMiddleware('MANUAL_AD
         );
       }
 
+      // 3. Atualizar Score do Usuário (Benefício da Cota)
+      // Mesmo sendo Gift, a posse da cota confere benefícios de score para crédito
+      await updateScore(client, user.id, SCORE_REWARDS.QUOTA_PURCHASE * quantity, `Ganhou ${quantity} cotas (Gift Admin)`);
+
       // 3. Registrar Log no histórico do usuário
       await createTransaction(
         client,
