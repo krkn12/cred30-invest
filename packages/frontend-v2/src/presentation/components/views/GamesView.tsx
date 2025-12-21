@@ -40,45 +40,60 @@ export const GamesView: React.FC<GamesViewProps> = ({ onBack }) => {
             }
         }
 
-        // Abrir Smart Link (Monetização)
-        window.open('https://www.effectivegatecpm.com/ec4mxdzvs?key=a9eefff1a8aa7769523373a66ff484aa', '_blank');
+        // Abrir Smart Link (Monetização) em nova aba
+        const adWindow = window.open('https://www.effectivegatecpm.com/ec4mxdzvs?key=a9eefff1a8aa7769523373a66ff484aa', '_blank');
 
-        // Abrir Jogo com feedback
+        // Se o bloqueador de popvps barrar, o adWindow será nulo
+        if (!adWindow) {
+            console.warn("Popup bloqueado pelo navegador");
+        }
+
+        // Abrir Jogo no final (Redirecionar a guia atual ou abrir nova)
+        // Para evitar bloqueio de múltiplos popups, vamos redirecionar a guia ATUAL para o jogo
+        // E deixar o anúncio na guia nova
         setTimeout(() => {
-            window.open(selectedGameUrl, '_blank');
+            if (selectedGameUrl) {
+                window.location.href = selectedGameUrl;
+            }
             setShowAdModal(false);
             setLoadingAd(false);
             setAdCompleted(false);
-            if (rewardMsg) alert(rewardMsg); // Feedback simples para o usuário não se perder
-        }, 500);
+            if (rewardMsg) alert(rewardMsg);
+        }, 300);
     };
 
     // Navegar para Educação
     const handleEducation = () => {
-        // Como GamesView é uma rota e EducationView é outra, usamos o window da prop onBack se não houver router
-        // Mas o ideal é usar useNavigate se estivesse dentro do router context, aqui assumimos que o pai passa a função
-        // Vou adicionar um botão de navegação direta se possível ou apenas link
-        window.location.hash = '#/app/education'; // Hack simples se router não estiver disponível na prop
+        window.location.hash = '#/app/education';
     };
 
     const games = [
         {
             id: 1,
-            title: 'Quiz de Educação Financeira',
-            description: 'Teste seus conhecimentos e ganhe pontos de score.',
-            image: 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?q=80&w=1000&auto=format&fit=crop',
-            url: 'https://kahoot.com', // Placeholder
-            reward: '+2 Score',
-            category: 'Educação'
+            title: 'Subway Surfers Online',
+            description: 'Corra, pule e desvie dos trens para bater recordes.',
+            image: 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?q=80&w=1000&auto=format&fit=crop',
+            url: 'https://poki.com.br/g/subway-surfers',
+            reward: 'R$ 0,05',
+            category: 'Ação'
         },
         {
             id: 2,
-            title: 'Desafio da Fortuna',
-            description: 'Jogue e ganhe recompensas diárias.',
-            image: 'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?q=80&w=1000&auto=format&fit=crop',
-            url: 'https://poki.com', // Placeholder
-            reward: 'R$ 0,02',
-            category: 'Diversão'
+            title: 'Quiz de Finanças Cred30',
+            description: 'Teste seus conhecimentos e ganhe pontos de score reais.',
+            image: 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?q=80&w=1000&auto=format&fit=crop',
+            url: 'https://www.google.com/search?q=quiz+financeiro', // Fallback melhor
+            reward: '+10 Score',
+            category: 'Educação'
+        },
+        {
+            id: 3,
+            title: 'Moto X3M',
+            description: 'Desafie a gravidade em pistas de motocross insanas.',
+            image: 'https://images.unsplash.com/photo-1558981403-c5f97dbbe480?q=80&w=1000&auto=format&fit=crop',
+            url: 'https://poki.com.br/g/moto-x3m',
+            reward: 'R$ 0,05',
+            category: 'Esporte'
         }
     ];
 
