@@ -98,7 +98,7 @@ export const distributeProfits = async (pool: Pool | PoolClient): Promise<any> =
                     [
                         user.user_id,
                         userShare,
-                        `Dividendos (85% do Lucro): R$ ${dividendPerQuota.toFixed(4)}/cota (${quotaCount} cotas) - Elegível`
+                        `Excedentes Operacionais (85% do Resultado): R$ ${dividendPerQuota.toFixed(4)}/cota (${quotaCount} cotas) - Elegível`
                     ]
                 );
 

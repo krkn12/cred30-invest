@@ -74,12 +74,12 @@ export const schemas = {
       .min(1, "ID da cota é obrigatório")
   }),
 
-  // Operações de empréstimos
+  // Operações de apoio mútuo
   requestLoan: z.object({
     amount: z.number()
       .positive("Valor deve ser maior que zero")
-      .min(50, "Valor mínimo de empréstimo é R$ 50,00")
-      .max(10000, "Valor máximo de empréstimo é R$ 10.000,00"),
+      .min(50, "Valor mínimo de apoio é R$ 50,00")
+      .max(10000, "Valor máximo de apoio é R$ 10.000,00"),
     installments: z.number()
       .int("Número de parcelas deve ser inteiro")
       .min(1, "Mínimo 1 parcela")
@@ -89,8 +89,8 @@ export const schemas = {
 
   repayLoan: z.object({
     loanId: z.string()
-      .uuid("ID do empréstimo inválido")
-      .min(1, "ID do empréstimo é obrigatório"),
+      .uuid("ID do apoio inválido")
+      .min(1, "ID do apoio é obrigatório"),
     useBalance: z.boolean()
   }),
 
@@ -166,7 +166,7 @@ export function createValidationMiddleware<T>(schema: z.ZodSchema<T>) {
     try {
       const body = await c.req.json();
       const validation = validateRequest(schema, body);
-      
+
       if (!validation.success) {
         return c.json({
           success: false,
@@ -174,7 +174,7 @@ export function createValidationMiddleware<T>(schema: z.ZodSchema<T>) {
           errors: validation.errors
         }, 400);
       }
-      
+
       // Adicionar dados validados ao contexto
       c.set('validatedData', validation.data);
       await next();

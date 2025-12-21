@@ -53,7 +53,7 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
 
     // Buscar empréstimos aprovados do cliente
     const loansResult = await pool.query(
-      `SELECT COALESCE(SUM(total_repayment), 0) as total_loan_amount
+      `SELECT COALESCE(SUM(amount), 0) as total_loan_amount
        FROM loans 
        WHERE user_id = $1 AND status IN ('APPROVED', 'PAYMENT_PENDING')`,
       [user.id]
@@ -106,7 +106,13 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
 
     // Executar dentro de transação para consistência
     const result = await executeInTransaction(pool, async (client) => {
-      // Criar transação de saque pendente de confirmação
+      // 1. DEBITAR SALDO IMEDIATAMENTE (Trava de Double Spending)
+      const balanceDebit = await updateUserBalance(client, user.id, amount, 'debit');
+      if (!balanceDebit.success) {
+        throw new Error(balanceDebit.error || 'Saldo insuficiente para este saque.');
+      }
+
+      // 2. Criar transação de saque pendente de confirmação
       const transactionResult = await createTransaction(
         client,
         user.id,
@@ -120,7 +126,8 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
           netAmount,
           totalLoanAmount,
           availableCredit,
-          type: 'CREDIT_WITHDRAWAL'
+          type: 'CREDIT_WITHDRAWAL',
+          balanceDeducted: true
         }
       );
 
@@ -265,7 +272,7 @@ withdrawalRoutes.get('/credit-limit', authMiddleware, async (c) => {
 
     // Buscar empréstimos aprovados do cliente
     const loansResult = await pool.query(
-      `SELECT COALESCE(SUM(total_repayment), 0) as total_loan_amount
+      `SELECT COALESCE(SUM(amount), 0) as total_loan_amount
        FROM loans 
        WHERE user_id = $1 AND status IN ('APPROVED', 'PAYMENT_PENDING')`,
       [user.id]

@@ -208,15 +208,11 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
   if (action === 'REJECT') {
     // Saques não debitam saldo na solicitação (usam limite de crédito), 
     // portanto não há saldo para devolver nem caixa operacional para ajustar na rejeição.
-    /* 
     if (transaction.type === 'WITHDRAWAL') {
-      await updateUserBalance(client, transaction.user_id, parseFloat(transaction.amount), 'credit');
-      await client.query(
-        'UPDATE system_config SET system_balance = system_balance + $1',
-        [parseFloat(transaction.amount)]
-      );
+      // Devolver saldo ao usuário caso o saque seja rejeitado
+      await updateUserBalance(client, transaction.user_id, Math.abs(parseFloat(transaction.amount)), 'credit');
+      console.log(`[REJECT_WITHDRAWAL] R$ ${transaction.amount} devolvidos ao usuário ${transaction.user_id}`);
     }
-    */
 
     if (transaction.type === 'BUY_QUOTA') {
       const metadata = transaction.metadata || {};
@@ -384,6 +380,19 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
 
     const netAmount = parseFloat(metadata.netAmount || transaction.amount);
     const feeAmount = parseFloat(metadata.feeAmount || '0');
+
+    // --- RE-VALIDAÇÃO DE LIQUIDEZ ---
+    const systemQuotasRes = await client.query("SELECT COUNT(*) as count FROM quotas WHERE status = 'ACTIVE'");
+    const systemActiveLoansRes = await client.query("SELECT COALESCE(SUM(amount), 0) as total FROM loans WHERE status IN ('APPROVED', 'PAYMENT_PENDING')");
+    const systemQuotasCount = parseInt(systemQuotasRes.rows[0].count);
+    const systemTotalLoaned = parseFloat(systemActiveLoansRes.rows[0].total);
+    const systemGrossCash = systemQuotasCount * 50; // Preço fixo da cota (QUOTA_PRICE)
+    const realLiquidity = systemGrossCash - systemTotalLoaned;
+
+    if (netAmount > realLiquidity) {
+      throw new Error(`Aprovação bloqueada: Liquidez insuficiente no caixa (Disponível: R$ ${realLiquidity.toFixed(2)}).`);
+    }
+
     let feeForOperational = 0;
     let feeForProfit = 0;
 
@@ -498,18 +507,26 @@ export const processLoanApproval = async (client: PoolClient, id: string, action
     newValues: { status: 'APPROVED', amount: loan.amount }
   });
 
-  await updateUserBalance(client, loan.user_id, parseFloat(loan.amount), 'credit');
+  // Calcular valor líquido a depositar (descontando taxa de originação de 3%)
+  const originationFeeRate = 0.03; // LOAN_ORIGINATION_FEE_RATE
+  const grossAmount = parseFloat(loan.amount);
+  const originationFee = grossAmount * originationFeeRate;
+  const netAmount = grossAmount - originationFee;
+
+  await updateUserBalance(client, loan.user_id, netAmount, 'credit');
 
   await createTransaction(
     client,
     loan.user_id,
     'LOAN_APPROVED',
-    parseFloat(loan.amount),
-    'Empréstimo Aprovado - Valor Creditado no Saldo',
+    netAmount,
+    `Apoio Mútuo Aprovado - Valor Líquido Creditado (Taxa de Sustentabilidade de 3% retida)`,
     'APPROVED',
     {
       loanId: id,
-      amount: parseFloat(loan.amount),
+      grossAmount,
+      originationFee,
+      netAmount,
       totalRepayment: parseFloat(loan.total_repayment),
       installments: loan.installments,
       creditedToBalance: true

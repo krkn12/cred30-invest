@@ -1,7 +1,7 @@
 // Preço da cota
 export const QUOTA_PRICE = Number(process.env.QUOTA_PRICE) || 50;
 
-// Taxa de juros de empréstimo (20%)
+// Taxa de sustentabilidade do apoio mútuo (20%)
 export const LOAN_INTEREST_RATE = Number(process.env.LOAN_INTEREST_RATE) || 0.2;
 
 // Taxa de multa por resgate antecipado (40%)
@@ -17,7 +17,7 @@ export const DAILY_LATE_FEE = 0.005;
 export const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
 // Chave PIX do administrador
-// Porcentagens para distribuição de dividendos
+// Porcentagens para distribuição de excedentes operacionais
 export const DIVIDEND_USER_SHARE = 0.85; // 85% para os usuários
 export const DIVIDEND_MAINTENANCE_SHARE = 0.15; // 15% para manutenção
 
@@ -29,7 +29,7 @@ export const QUOTA_PURCHASE_FEE_RATE = 0.02; // 2% de taxa na compra de cotas
 export const LOAN_ORIGINATION_FEE_RATE = 0.03; // 3% de taxa de originação (seguro)
 export const WITHDRAWAL_FIXED_FEE = 2.00; // Taxa fixa de R$ 2,00 por saque
 export const MARKETPLACE_ESCROW_FEE_RATE = 0.05; // 5% de taxa de garantia (Escrow) no Mercado Cred30
-export const MARKET_CREDIT_INTEREST_RATE = 0.03; // 3% de juros ao mês no crediário próprio
+export const MARKET_CREDIT_INTEREST_RATE = 0.03; // 3% de taxa ao mês no apoio direto
 export const MARKET_CREDIT_MAX_INSTALLMENTS = 18; // Até 18x
 export const MARKET_CREDIT_MIN_SCORE = 450; // Score mínimo para comprar parcelado
 
