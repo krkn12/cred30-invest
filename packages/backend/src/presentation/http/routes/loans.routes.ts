@@ -241,15 +241,15 @@ loanRoutes.post('/request', authMiddleware, async (c) => {
         [feeForOperational, feeForProfit]
       );
 
-      // Antigamente aqui aprovava automático. 
-      // Agora fica PENDING para o administrador aprovar manualmente com segurança.
+      // O sistema não aprova mais na hora. 
+      // Ele coloca em PENDING e o Scheduler (fila de 10 min) aprova por prioridade.
 
       return newLoanId;
     });
 
     return c.json({
       success: true,
-      message: `Solicitação de Apoio Mútuo enviada! Aguarde a análise do administrador. Valor a receber: R$ ${amountToDisburse.toFixed(2)}.`,
+      message: `Solicitação enviada para a fila diária! O sistema processa os pagamentos à meia-noite, priorizando membros com mais cotas e maior score conforme a liquidez do caixa. Valor a receber: R$ ${amountToDisburse.toFixed(2)}.`,
       data: {
         loanId: loanId.data,
         totalRepayment: totalWithInterest,

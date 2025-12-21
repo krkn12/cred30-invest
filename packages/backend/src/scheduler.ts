@@ -5,6 +5,7 @@ import { distributeProfits } from './application/services/profit-distribution.se
 import { backupDatabase } from './application/services/backup.service';
 import { runAutoLiquidation } from './application/services/auto-liquidation.service';
 import { decreaseDailyScore } from './application/services/score.service';
+import { processDisbursementQueue } from './application/services/disbursement-queue.service';
 
 /**
  * Inicializa os agendadores de tarefas (Cron Jobs)
@@ -67,7 +68,15 @@ export const initializeScheduler = (pool: Pool) => {
         }
     });
 
-    console.log('✅ Agendador inicializado: Distrib (00:00), Backup (01:00), Liq (02:00), Score (03:00).');
+    // 5. Processar Fila de Desembolso Diariamente às 00:05
+    // Garante que o sistema prioriza membros VIP acumulando a liquidez do dia
+    cron.schedule('5 0 * * *', async () => {
+        try {
+            await processDisbursementQueue(pool);
+        } catch (error) {
+            console.error('❌ [CRON] Erro na fila de desembolso:', error);
+        }
+    });
 
-    console.log('✅ Agendador inicializado: Distribuição (00:00), Backup (01:00) e Auto-Liquidação (02:00).');
+    console.log('✅ Agendador inicializado: Distrib (00:00), Fila (00:05), Backup (01:00), Liq (02:00), Score (03:00).');
 };
