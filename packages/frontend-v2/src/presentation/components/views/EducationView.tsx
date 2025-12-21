@@ -34,27 +34,27 @@ export const EducationView: React.FC<EducationViewProps> = ({ onBack, onSuccess 
     const lessons = [
         {
             id: 1,
-            title: "Como Gerenciar Suas Dívidas",
-            duration: "15:00",
+            title: "Live: Como Negociar Dívidas (Sebrae)",
+            duration: "55:00",
             category: "Finanças Básicas",
-            videoUrl: "https://www.youtube.com/embed/sS2K-T6jVXE", // Placeholder
-            thumbnail: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&q=80&w=800"
+            videoUrl: "https://www.youtube.com/embed/yYyP1tX4c2o",
+            thumbnail: "/images/education/managing-debts.png"
         },
         {
             id: 2,
-            title: "Investindo com Pouco Dinheiro",
-            duration: "22:30",
-            category: "Educação Financeira",
-            videoUrl: "https://www.youtube.com/embed/sS2K-T6jVXE",
-            thumbnail: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=800"
+            title: "B3 Explica: Como Começar a Investir",
+            duration: "04:30",
+            category: "Investimentos",
+            videoUrl: "https://www.youtube.com/embed/kYjY1tQ_j9o",
+            thumbnail: "/images/education/investing-small.png"
         },
         {
             id: 3,
-            title: "Entendendo Score de Crédito",
-            duration: "10:45",
-            category: "Score",
-            videoUrl: "https://www.youtube.com/embed/sS2K-T6jVXE",
-            thumbnail: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=800"
+            title: "Score 2.0: Aumente sua Pontuação",
+            duration: "05:15",
+            category: "Score & Crédito",
+            videoUrl: "https://www.youtube.com/embed/kYc24d1a-O0",
+            thumbnail: "/images/education/credit-score.png"
         }
     ];
 

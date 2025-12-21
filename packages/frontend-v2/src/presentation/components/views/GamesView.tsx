@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Gamepad2, PlayCircle, Trophy, ArrowLeft, RefreshCw, X as XIcon, BookOpen } from 'lucide-react';
 import { PromoVideoPlayer } from '../ui/PromoVideoPlayer';
 import { apiService } from '../../../application/services/api.service';
@@ -62,9 +63,11 @@ export const GamesView: React.FC<GamesViewProps> = ({ onBack }) => {
         }, 300);
     };
 
+    const navigate = useNavigate();
+
     // Navegar para Educação
     const handleEducation = () => {
-        window.location.hash = '#/app/education';
+        navigate('/app/education');
     };
 
     const games = [
@@ -82,7 +85,7 @@ export const GamesView: React.FC<GamesViewProps> = ({ onBack }) => {
             title: 'Quiz de Finanças Cred30',
             description: 'Teste seus conhecimentos e ganhe pontos de score reais.',
             image: '/images/games/finance-quiz.png',
-            url: 'https://www.google.com/search?q=quiz+financeiro', // Fallback melhor
+            onAction: () => handleEducation(),
             reward: '+5 Score',
             category: 'Educação'
         },
@@ -142,7 +145,7 @@ export const GamesView: React.FC<GamesViewProps> = ({ onBack }) => {
                             </div>
                             <p className="text-xs text-zinc-400 mb-4">{game.description}</p>
                             <button
-                                onClick={() => handlePlayGame(game.url)}
+                                onClick={() => (game as any).onAction ? (game as any).onAction() : handlePlayGame(game.url!)}
                                 className="w-full bg-zinc-800 hover:bg-purple-600 hover:text-white text-zinc-300 py-3 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2"
                             >
                                 <PlayCircle size={16} />
