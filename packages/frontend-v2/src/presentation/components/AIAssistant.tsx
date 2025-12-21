@@ -86,7 +86,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ appState }) => {
 
   // ... (dentro do componente)
 
-  const EDY_AVATAR = "https://images.unsplash.com/photo-1566492031773-4fbc7186b6fb?auto=format&fit=crop&w=100&h=100";
+  const EDY_AVATAR = "https://randomuser.me/api/portraits/men/62.jpg";
 
   return (
     <div className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-[150] print:hidden">
