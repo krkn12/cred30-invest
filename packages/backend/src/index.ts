@@ -61,6 +61,13 @@ async function startServer() {
     app.route('/api/education', educationRoutes);
     app.route('/api/voting', votingRoutes);
 
+    // Rota raiz para evitar 404 em monitoramentos e pings de wakeup
+    app.get('/', (c) => c.json({
+      message: 'Cred30 API Online',
+      version: packageJson.version,
+      docs: '/api/health'
+    }));
+
     // Rota de health check
     app.get('/api/health', (c) => {
       return c.json({
