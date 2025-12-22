@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrendingUp, X as XIcon } from 'lucide-react';
+import { TrendingUp, X as XIcon, Users } from 'lucide-react';
 import { QUOTA_PRICE, QUOTA_SHARE_VALUE, QUOTA_ADM_FEE } from '../../../shared/constants/app.constants';
 import { calculateTotalToPay } from '../../../shared/utils/financial.utils';
 import { AdBanner } from '../ui/AdBanner';
@@ -23,10 +23,10 @@ export const InvestView = ({ onBuy }: { onBuy: (qty: number, method: 'PIX' | 'BA
     return (
         <div className="max-w-md mx-auto pb-40 relative">
             <div className="bg-surface border border-surfaceHighlight rounded-3xl p-8 text-center relative overflow-hidden mb-6">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-primary-600"></div>
-                <TrendingUp size={48} className="mx-auto text-primary-400 mb-4" />
-                <h2 className="text-2xl font-bold text-white mb-2">Aporte Social</h2>
-                <p className="text-zinc-400 mb-6">Apoie a conta comum da comunidade e tenha acesso a benefícios exclusivos.</p>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-emerald-600"></div>
+                <Users size={48} className="mx-auto text-emerald-400 mb-4" />
+                <h2 className="text-2xl font-bold text-white mb-2">Adesão ao Clube</h2>
+                <p className="text-zinc-400 mb-6 font-medium">Torne-se sócio-participante do clube e ajude a fortalecer nossa economia comum.</p>
 
                 <div className="text-4xl font-bold text-white mb-8">
                     {QUOTA_PRICE.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}

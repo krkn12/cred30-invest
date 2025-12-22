@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ScrollText, ShieldCheck, Scale, Users, Gavel, AlertTriangle, CreditCard, ClockIcon, FileText, Zap, ShoppingBag, Tag } from 'lucide-react';
+import { ArrowLeft, ScrollText, ShieldCheck, Scale, Users, Gavel, AlertTriangle, CreditCard, ClockIcon, FileText, Zap, ShoppingBag, Tag, Lock } from 'lucide-react';
 
 const TermsPage = () => {
     const navigate = useNavigate();
@@ -32,203 +32,132 @@ const TermsPage = () => {
 
             <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-24 sm:pt-32 pb-20">
                 <div className="mb-8 sm:mb-12">
-                    <div className="inline-flex items-center gap-2 bg-cyan-500/10 border border-cyan-500/20 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-cyan-400 text-xs sm:text-sm font-bold mb-4 sm:mb-6">
-                        <ScrollText size={14} /> Documento Oficial
+                    <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-emerald-400 text-xs sm:text-sm font-bold mb-4 sm:mb-6">
+                        <ShieldCheck size={14} /> Estatuto Social e Blindagem Jurídica
                     </div>
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-3 sm:mb-4 tracking-tight">Termos de Uso</h1>
-                    <p className="text-zinc-400 text-sm sm:text-lg">Última atualização: 20 de Dezembro de 2024</p>
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-3 sm:mb-4 tracking-tight">Regulamento Interno</h1>
+                    <p className="text-zinc-400 text-sm sm:text-base leading-relaxed max-w-2xl">
+                        A Cred30 NÃO é um banco, NÃO é uma fintech e NÃO é uma instituição financeira. 
+                        Este software gere um <strong>Clube de Benefícios Privado</strong> baseado em ajuda mútua e troca comunitária.
+                    </p>
                 </div>
 
                 <div className="space-y-8 sm:space-y-12">
-                    {/* Seção 1 */}
-                    <section className="bg-zinc-900/30 border border-white/5 p-5 sm:p-8 rounded-2xl sm:rounded-3xl">
-                        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-3 text-cyan-400">
-                            <FileText size={22} /> 1. Aceite e Vigência
-                        </h2>
-                        <p className="text-zinc-300 text-sm sm:text-base leading-relaxed mb-4">
-                            Ao criar uma conta no Cred30, você declara ter lido, compreendido e aceito integralmente os presentes Termos de Uso. Este documento constitui um contrato vinculante entre você ("Usuário" ou "Membro") e a plataforma Cred30 ("Sistema" ou "Associação").
-                        </p>
-                        <div className="bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-xl">
-                            <div className="flex items-start gap-3">
-                                <AlertTriangle className="text-yellow-400 shrink-0 mt-0.5" size={20} />
-                                <p className="text-yellow-200 text-xs sm:text-sm">
-                                    <strong>AVISO IMPORTANTE:</strong> Se você não concorda com qualquer cláusula deste documento, não utilize a plataforma.
+                    {/* AVISO CRITICAL */}
+                    <section className="bg-red-500/5 border border-red-500/20 p-6 rounded-3xl">
+                        <div className="flex items-start gap-4">
+                            <div className="bg-red-500/20 p-2 rounded-xl text-red-400 animate-pulse">
+                                <AlertTriangle size={24} />
+                            </div>
+                            <div className="space-y-2">
+                                <h3 className="text-red-400 font-black uppercase text-sm tracking-widest">Aviso de Limitação de Responsabilidade</h3>
+                                <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">
+                                    Ao ingressar, o membro declara ciência de que a plataforma atua apenas como facilitadora tecnológica. Todas as operações de ajuda mútua ocorrem entre os membros (P2P), sob o risco integral dos participantes, sem garantia de rentabilidade ou fundo garantidor de crédito.
                                 </p>
                             </div>
                         </div>
                     </section>
 
-                    {/* Seção 2 */}
-                    <section className="bg-zinc-900/30 border border-white/5 p-5 sm:p-8 rounded-2xl sm:rounded-3xl">
-                        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-3 text-emerald-400 font-mono">
-                            <Users size={22} /> 2. Natureza da Comunidade (Grupo Fechado)
+                    {/* Natureza Jurídica Detalhada */}
+                    <section className="bg-zinc-900/30 border border-white/5 p-8 rounded-3xl">
+                        <h2 className="text-xl sm:text-2xl font-bold mb-6 flex items-center gap-3 text-emerald-400">
+                            <Scale size={24} /> 1. Estrutura de Blindagem (SCP)
                         </h2>
-                        <p className="text-zinc-300 text-sm sm:text-base leading-relaxed mb-4">
-                            O Cred30 é uma plataforma de gestão para uma **Economia Social Fechada**. Ao se cadastrar, você declara ser parte de um grupo restrito de ajuda mútua, sujeito às seguintes condições:
+                        <div className="space-y-6">
+                            <div className="flex gap-4">
+                                <div className="text-zinc-600 font-black text-2xl italic select-none">01</div>
+                                <div>
+                                    <h4 className="text-white font-bold mb-1 uppercase text-xs tracking-widest">Sociedade em Conta de Participação</h4>
+                                    <p className="text-zinc-400 text-sm leading-relaxed">
+                                        O modelo jurídico adotado é o de <strong>SCP (Art. 991 CC)</strong>. O ingresso do membro ocorre como "Sócio Participante". Não há prestação de serviços financeiros ao público em geral, mas sim uma união de capital privado para objetivo comum.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="text-zinc-600 font-black text-2xl italic select-none">02</div>
+                                <div>
+                                    <h4 className="text-white font-bold mb-1 uppercase text-xs tracking-widest">Inexistência de Oferta Pública</h4>
+                                    <p className="text-zinc-400 text-sm leading-relaxed">
+                                        A Cred30 NÃO realiza oferta pública de investimentos. O acesso é restrito a convidados e membros aprovados pelo comitê de score. Isso nos exclui da regulação da CVM (Comissão de Valores Mobiliários) quanto à oferta de títulos financeiros.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="text-zinc-600 font-black text-2xl italic select-none">03</div>
+                                <div>
+                                    <h4 className="text-white font-bold mb-1 uppercase text-xs tracking-widest">Mútuo Social e Privado</h4>
+                                    <p className="text-zinc-400 text-sm leading-relaxed">
+                                        Os apoios liberados no sistema são contratos civis de <strong>Mútuo Privado</strong> entre membros. As taxas cobradas visam a manutenção da infraestrutura e a proteção do lastro, sem configurar agiotagem ou atividade bancária ilícita.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* O Mercado como Prova de Valor */}
+                    <section className="bg-cyan-900/10 border border-cyan-500/20 p-8 rounded-3xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-10 opacity-5">
+                            <ShoppingBag size={150} />
+                        </div>
+                        <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-3 text-cyan-400 relative z-10">
+                            <ShoppingBag size={24} /> 2. O Ecossistema de Trocas
+                        </h2>
+                        <p className="text-zinc-300 text-sm leading-relaxed mb-6 relative z-10">
+                            A Cred30 fundamenta sua existência jurídica na operação de um <strong>Marketplace de Bens e Serviços</strong>. O saldo circulante no sistema é um crédito de troca comunitária ("Pontos de Troca"), lastreado pelos produtos reais anunciados por outros membros.
                         </p>
-                        <ul className="list-disc list-inside text-zinc-400 text-[10px] sm:text-xs space-y-2 ml-2 sm:ml-4 font-medium uppercase tracking-wider">
-                            <li>A adesão é restrita e baseada em convite e confiança mútua.</li>
-                            <li>O capital é formado por aportes de capital social (Participações) para uso exclusivo do grupo.</li>
-                            <li>As sobras financeiras são distribuídas como bonificação por participação, não como rendimento financeiro fixo.</li>
-                            <li>A plataforma NÃO realiza intermediação financeira pública e não é regulada pelo BACEN.</li>
-                            <li>A aquisição de participações não constitui investimento em valores mobiliários sob a ótica da CVM.</li>
+                        <div className="bg-black/40 p-5 rounded-2xl border border-white/5 relative z-10">
+                            <h4 className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.2em] mb-3">Compromisso de Transparência</h4>
+                            <p className="text-xs text-zinc-500 italic">"Nossa prioridade é o comércio entre associados. O apoio financeiro é apenas um recurso secundário de fomento à economia do clube."</p>
+                        </div>
+                    </section>
+
+                    {/* Prevenção de Crimes e Fraudes */}
+                    <section className="bg-zinc-900/30 border border-white/5 p-8 rounded-3xl">
+                        <h2 className="text-xl sm:text-2xl font-bold mb-6 flex items-center gap-3 text-red-500">
+                            <Lock size={24} /> 3. Tolerância Zero a Fraudes
+                        </h2>
+                        <p className="text-zinc-400 text-sm leading-relaxed mb-6">
+                            Embora preguemos a privacidade, reservamo-nos o direito de agir preventivamente contra crimes financeiros:
+                        </p>
+                        <ul className="space-y-4">
+                            <li className="flex gap-3">
+                                <CheckCircle2 size={16} className="text-emerald-500 mt-1 shrink-0" />
+                                <span className="text-zinc-300 text-sm italic">O sistema monitora padrões de movimentação e pode bloquear contas suspeitas de lavagem de dinheiro ou origem ilícita sem aviso prévio.</span>
+                            </li>
+                            <li className="flex gap-3">
+                                <CheckCircle2 size={16} className="text-emerald-500 mt-1 shrink-0" />
+                                <span className="text-zinc-300 text-sm italic">Para resgates acima de R$ 2.000,00, o clube poderá solicitar comprovação de origem dos recursos ou identificação adicional para proteção do associado ostensivo.</span>
+                            </li>
+                            <li className="flex gap-3">
+                                <CheckCircle2 size={16} className="text-emerald-500 mt-1 shrink-0" />
+                                <span className="text-zinc-300 text-sm italic">Tentativas de fraude no sistema de Score resultam em banimento imediato e retenção de multas administrativas.</span>
+                            </li>
                         </ul>
                     </section>
 
-                    {/* Seção 3 */}
-                    <section className="space-y-4 sm:space-y-6">
-                        <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-3">
-                            <Scale size={22} className="text-emerald-400" /> 3. Participações e Excedentes
-                        </h2>
-                        <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-                            <div className="bg-zinc-900/50 p-5 sm:p-6 rounded-xl sm:rounded-2xl border border-white/5">
-                                <h3 className="font-bold mb-2 text-white">Composição do Aporte</h3>
-                                <p className="text-zinc-400 text-xs sm:text-sm">Cada participação possui o valor total de R$ 50,00, sendo decomposta em: <br /> 1. **R$ 42,00** destinados ao Capital Social (valor passível de resgate conforme regras de carência). <br /> 2. **R$ 8,00** destinados à Taxa Administrativa de manutenção e infraestrutura (não resgatável).</p>
-                            </div>
-                            <div className="bg-zinc-900/50 p-5 sm:p-6 rounded-xl sm:rounded-2xl border border-white/5">
-                                <h3 className="font-bold mb-2 text-white">Excedentes (Participação)</h3>
-                                <p className="text-zinc-400 text-xs sm:text-sm">85% das sobras operacionais são distribuídas como bônus. A elegibilidade requer interatividade comprovada com a plataforma (uso ativo). Membros inativos não participam da distribuição.</p>
-                            </div>
-                            <div className="bg-zinc-900/50 p-5 sm:p-6 rounded-xl sm:rounded-2xl border border-white/5">
-                                <h3 className="font-bold mb-2 text-white">Cessão e Carência (Regra de 1 Ano)</h3>
-                                <p className="text-zinc-400 text-xs sm:text-sm">As participações têm carência de 1 ano (365 dias) para resgate integral. Resgates antes desse prazo implicam em multa de 40% sobre o valor, destinada ao fundo de reserva.</p>
-                            </div>
-                            <div className="bg-zinc-900/50 p-5 sm:p-6 rounded-xl sm:rounded-2xl border border-white/5">
-                                <h3 className="font-bold mb-2 text-white">Fundo de Reserva</h3>
-                                <p className="text-zinc-400 text-xs sm:text-sm">15% de todo excedente é retido para blindagem do capital contra inadimplência e manutenção da infraestrutura tecnológica.</p>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Seção 4 */}
-                    <section className="bg-zinc-900/30 border border-white/5 p-5 sm:p-8 rounded-2xl sm:rounded-3xl">
-                        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-3 text-emerald-400">
-                            <CreditCard size={22} /> 4. Apoio Mútuo (Mútuo Social)
-                        </h2>
-                        <p className="text-zinc-300 text-sm sm:text-base leading-relaxed mb-4">
-                            Os membros podem solicitar apoio financeiro do fundo comum sob a égide do Mútuo Civil (Art. 586 do CC). As condições são:
+                    {/* Rodapé Jurídico */}
+                    <section className="text-center space-y-4 pt-10">
+                        <div className="w-16 h-1 bg-zinc-800 mx-auto rounded-full"></div>
+                        <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-bold">
+                            Este regulamento tem força de CONTRATO SOCIAL PRIVADO entre as partes.
                         </p>
-                        <div className="space-y-3 sm:space-y-4">
-                            <div className="flex items-start gap-3">
-                                <div className="w-6 h-6 bg-emerald-500/20 rounded-full flex items-center justify-center text-emerald-400 flex-shrink-0 text-xs font-bold">1</div>
-                                <p className="text-zinc-400 text-xs sm:text-sm"><strong className="text-white">Limite Dinâmico:</strong> Calculado pelo score de reputação interna e garantias aportadas.</p>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <div className="w-6 h-6 bg-emerald-500/20 rounded-full flex items-center justify-center text-emerald-400 flex-shrink-0 text-xs font-bold">2</div>
-                                <p className="text-zinc-400 text-xs sm:text-sm"><strong className="text-white">Taxa de Sustentabilidade:</strong> Taxa de 20% destinada ao reequilíbrio do fundo e bonificação dos demais membros (não se confunde com juros bancários).</p>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <div className="w-6 h-6 bg-cyan-500/20 rounded-full flex items-center justify-center text-cyan-400 flex-shrink-0 text-xs font-bold">3</div>
-                                <p className="text-zinc-400 text-xs sm:text-sm"><strong className="text-white">Garantia Real:</strong> Os apoios são lastreados pelas licenças do membro. Em caso de atraso superior a 5 dias, o sistema executará automaticamente o lastro, liquidando as licenças necessárias para quitar o débito.</p>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <div className="w-6 h-6 bg-cyan-500/20 rounded-full flex items-center justify-center text-cyan-400 flex-shrink-0 text-xs font-bold">4</div>
-                                <p className="text-zinc-400 text-xs sm:text-sm"><strong className="text-white">Juros de Mora:</strong> Aplica-se multa diária de 0.5% sobre o valor total em atraso, além da restrição de score imediata.</p>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Seção 5 */}
-                    <section className="bg-zinc-900/30 border border-white/5 p-5 sm:p-8 rounded-2xl sm:rounded-3xl">
-                        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-3 text-cyan-400">
-                            <ShieldCheck size={22} /> 5. Resgates
-                        </h2>
-                        <p className="text-zinc-300 text-sm sm:text-base leading-relaxed mb-4">
-                            Os resgates são processados exclusivamente via PIX para a chave cadastrada. As regras aplicáveis são:
+                        <p className="text-[9px] text-zinc-700 max-w-lg mx-auto leading-relaxed">
+                            Foro eleito: Brasil. O uso continuado da plataforma implica na assinatura digital irrevogável deste estatuto. Qualquer dúvida deve ser sanada via suporte administrativo antes da realização de qualquer aporte.
                         </p>
-                        <ul className="list-disc list-inside text-zinc-400 text-xs sm:text-sm space-y-2 ml-2 sm:ml-4">
-                            <li>Resgates requerem autenticação de dois fatores (2FA) para segurança.</li>
-                            <li>Membros com licenças ativas em valor igual ou superior ao resgate estão isentos de taxa.</li>
-                            <li>Caso contrário, aplica-se uma contribuição administrativa de 2% (mínimo R$ 5,00) sobre o valor do resgate.</li>
-                            <li>85% dessa contribuição retorna ao caixa operacional e 15% vai para o pool de bônus ou excedentes.</li>
-                            <li>Resgates estão sujeitos à disponibilidade do caixa mútuo e podem ser enfileirados.</li>
-                        </ul>
-                    </section>
-
-                    {/* Seção 6 */}
-                    <section className="space-y-4 sm:space-y-6">
-                        <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-3">
-                            <Gavel size={22} className="text-cyan-400" /> 6. Conduta e Penalidades
-                        </h2>
-                        <div className="bg-red-500/10 border border-red-500/20 p-4 sm:p-6 rounded-xl sm:rounded-2xl">
-                            <h3 className="font-bold mb-2 text-red-400">Condutas Proibidas</h3>
-                            <ul className="text-red-200 text-xs sm:text-sm space-y-1">
-                                <li>• Utilizar a plataforma para lavagem de dinheiro ou atividades ilícitas.</li>
-                                <li>• Criar múltiplas contas para obter vantagens indevidas.</li>
-                                <li>• Tentar fraudar o sistema de score ou manipular transações.</li>
-                                <li>• Fornecer dados falsos ou de terceiros sem autorização.</li>
-                            </ul>
+                        <div className="flex justify-center gap-6 pt-6 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
+                            <img src="https://logodownload.org/wp-content/uploads/2014/10/bcb-logo.png" alt="Informação" className="h-6 object-contain" />
+                            <img src="https://logodownload.org/wp-content/uploads/2016/10/cvm-logo.png" alt="Informação" className="h-6 object-contain" />
                         </div>
-                        <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
-                            A violação de qualquer regra pode resultar em suspensão ou exclusão permanente do sistema, sem direito a ressarcimento de valores aportados em licenças, salvo deliberação contrária.
-                        </p>
-                    </section>
-
-                    {/* Seção 7 - NOVO (Mercado Cred30) */}
-                    <section className="bg-zinc-900/30 border border-white/5 p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-[0_0_20px_rgba(34,211,238,0.05)]">
-                        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-3 text-cyan-400">
-                            <ShoppingBag size={22} /> 7. Mercado Cred30 (P2P e Escrow)
-                        </h2>
-                        <p className="text-zinc-300 text-sm sm:text-base leading-relaxed mb-4">
-                            O Mercado Cred30 é um ambiente de troca entre membros. A Cred30 atua EXCLUSIVAMENTE como custodiante dos fundos (Escrow) para garantir a segurança financeira da promessa de compra e venda:
-                        </p>
-                        <div className="space-y-4">
-                            <div className="bg-cyan-500/5 border border-cyan-500/10 p-4 rounded-xl">
-                                <h4 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
-                                    <ShieldCheck size={16} className="text-cyan-400" /> Sistema de Garantia
-                                </h4>
-                                <p className="text-xs text-zinc-400">Ao clicar em comprar, o saldo do comprador é retido pelo sistema. O valor só é liberado ao vendedor após a "Confirmação de Recebimento" pelo comprador.</p>
-                            </div>
-                            <div className="bg-zinc-800/50 p-4 rounded-xl">
-                                <h4 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
-                                    <Tag size={16} className="text-zinc-500" /> Taxa de Intermediação
-                                </h4>
-                                <p className="text-xs text-zinc-400">A Cred30 retém 5% do valor bruto da transação para cobrir custos de operação e garantia de rede.</p>
-                            </div>
-                            <div className="bg-red-500/5 border border-red-500/10 p-4 rounded-xl">
-                                <h4 className="text-sm font-bold text-red-400 mb-2 flex items-center gap-2">
-                                    <AlertTriangle size={16} /> Isenção de Responsabilidade do Objeto
-                                </h4>
-                                <p className="text-xs text-zinc-400">A Cred30 NÃO verifica a qualidade, procedência ou estado físico dos produtos anunciados. A responsabilidade pela entrega física é integralmente do vendedor. Em caso de não recebimento, o comprador deve abrir disputa antes de confirmar o recebimento.</p>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Seção 8 */}
-                    <section className="bg-zinc-900/30 border border-white/5 p-5 sm:p-8 rounded-2xl sm:rounded-3xl">
-                        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-3 text-emerald-400">
-                            <ClockIcon size={22} /> 8. Natureza Jurídica e Blindagem
-                        </h2>
-                        <div className="bg-zinc-800/30 p-4 rounded-xl border border-white/5 space-y-4 shadow-inner text-justify">
-                            <p className="text-zinc-300 text-xs sm:text-sm leading-relaxed">
-                                <strong>8.1. Sociedade em Conta de Participação (SCP):</strong> Ao aderir ao Cred30, você ingressa na qualidade de <strong>SÓCIO PARTICIPANTE</strong> (ou Sócio Oculto), nos termos dos artigos 991 a 996 do Código Civil Brasileiro. A administração e responsabilidade perante terceiros cabem exclusivamente ao <strong>SÓCIO OSTENSIVO</strong> (Gestor da Plataforma).
-                            </p>
-                            <p className="text-zinc-300 text-xs sm:text-sm leading-relaxed">
-                                <strong>8.2. Inexistência de Oferta Pública (Art. 19 Lei 6.385/76):</strong> A presente plataforma NÃO realiza oferta pública de valores mobiliários. O ingresso é restrito, privado e depende de convite/aceitação, configurando um contrato particular de sociedade e não um investimento de mercado de capitais fiscalizado pela CVM.
-                            </p>
-                            <p className="text-zinc-300 text-xs sm:text-sm leading-relaxed">
-                                <strong>8.3. Mútuo Privado (Não Bancário):</strong> As operações de crédito (apoio) realizadas internamente são contratos civis de mútuo entre parceiros privados (Peer-to-Peer lending em círculo fechado), não se confundindo com atividades privativas de instituições financeiras reguladas pelo Banco Central do Brasil.
-                            </p>
-                            <p className="text-zinc-300 text-xs sm:text-sm leading-relaxed">
-                                <strong>8.4. Riscos do Negócio:</strong> Como Sócio Participante, você declara ciência de que seus aportes (participações) integram o capital de giro da sociedade e participam dos riscos do negócio. <strong>Não há garantia de rentabilidade fixa</strong>, e os resultados dependem do sucesso comercial (vendas de publicidade, assinaturas e taxas de marketplace).
-                            </p>
-                        </div>
-                        <p className="text-zinc-500 text-[10px] sm:text-xs mt-6 italic text-center">
-                            Fica eleito o foro da Cidade de Curitiba/PR (sede administrativa do Sócio Ostensivo) para dirimir controvérsias oriundas deste Contrato Social Privado, renunciando a qualquer outro por mais privilegiado que seja.
-                        </p>
                     </section>
                 </div>
 
-                <footer className="mt-12 sm:mt-20 pt-8 sm:pt-10 border-t border-white/5 text-center">
-                    <p className="text-zinc-500 text-xs sm:text-sm italic">
-                        Ao utilizar o Cred30, você declara estar ciente e de acordo com todas as regras aqui estabelecidas.
-                    </p>
-                    <p className="text-zinc-600 text-xs mt-4">
-                        Cred30 © 2024 - Todos os direitos reservados.
+                <footer className="mt-20 pt-10 border-t border-white/5 text-center">
+                    <p className="text-zinc-600 text-[10px] uppercase font-black tracking-widest">
+                        Cred30 © 2024 - Sistema de Gestão Associativa Distribuída
                     </p>
                 </footer>
-            </main >
-        </div >
+            </main>
+        </div>
     );
 };
 
