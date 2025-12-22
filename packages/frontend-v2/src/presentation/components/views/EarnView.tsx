@@ -272,175 +272,171 @@ export const EarnView = ({ state, onBack, onSuccess, onError, onRefresh, onUpgra
                 </div>
             </div>
 
-        </div>
-
-            {/* Reputation Check (Serasa Style) Card */ }
-    <div className="bg-surface border border-surfaceHighlight rounded-3xl overflow-hidden shadow-2xl">
-        <div className="p-6">
-            <div className="flex items-center gap-2 mb-4">
-                <div className="bg-blue-500/10 p-2 rounded-xl text-blue-400">
-                    <Search size={20} />
-                </div>
-                <span className="text-xs font-black text-blue-400 uppercase">Consulta de Idoneidade</span>
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">Relatório de Parceiro</h3>
-            <p className="text-sm text-zinc-400 mb-6 font-medium">
-                Vai negociar no Marketplace? Verifique o <span className="text-white font-bold">Score</span> e a reputação oficial do associado antes de fechar o negócio.
-            </p>
-
-            <div className="flex gap-2 mb-6">
-                <input
-                    type="email"
-                    placeholder="E-mail do associado..."
-                    value={searchEmail}
-                    onChange={(e) => setSearchEmail(e.target.value)}
-                    className="flex-1 bg-background border border-surfaceHighlight rounded-2xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500/50 transition-all font-medium"
-                />
-                <button
-                    onClick={handleReputationCheck}
-                    disabled={searchingRep}
-                    className="bg-blue-500 hover:bg-blue-400 text-white px-6 rounded-2xl font-black text-xs transition active:scale-95 shadow-lg shadow-blue-500/20 disabled:opacity-50"
-                >
-                    {searchingRep ? <RefreshCw className="animate-spin" size={16} /> : 'CONSULTAR'}
-                </button>
-            </div>
-
-            {reputationData && (
-                <div className="animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="bg-zinc-800/50 border border-blue-500/20 rounded-2xl p-6 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-5">
-                            <ShieldCheck size={80} className="text-blue-400" />
+            {/* Reputation Check (Serasa Style) Card */}
+            <div className="bg-surface border border-surfaceHighlight rounded-3xl overflow-hidden shadow-2xl">
+                <div className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                        <div className="bg-blue-500/10 p-2 rounded-xl text-blue-400">
+                            <Search size={20} />
                         </div>
-                        <div className="space-y-4 relative z-10">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">Nome do Associado</p>
-                                    <h4 className="text-lg font-black text-white">{reputationData.name}</h4>
-                                </div>
-                                {reputationData.isVerified && (
-                                    <div className="bg-blue-500 text-white p-1 rounded-full">
-                                        <ShieldCheck size={16} />
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-black/20 p-4 rounded-xl border border-zinc-700/30">
-                                    <p className="text-[9px] text-zinc-500 font-bold uppercase mb-1">Score Cred30</p>
-                                    <p className={`text-2xl font-black ${reputationData.score >= 700 ? 'text-emerald-400' : (reputationData.score >= 400 ? 'text-yellow-400' : 'text-red-400')}`}>
-                                        {reputationData.score}
-                                    </p>
-                                </div>
-                                <div className="bg-black/20 p-4 rounded-xl border border-zinc-700/30">
-                                    <p className="text-[9px] text-zinc-500 font-bold uppercase mb-1">Status Global</p>
-                                    <p className={`text-xs font-black uppercase ${reputationData.status === 'ACTIVE' ? 'text-emerald-400' : 'text-red-500'}`}>
-                                        {reputationData.status === 'ACTIVE' ? 'CONTRATO ATIVO' : 'SUSPENSO'}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 text-[10px] text-zinc-500 font-bold pt-2 border-t border-zinc-700/50">
-                                <Clock size={12} />
-                                <span>MEMBRO DESDE: {new Date(reputationData.since).toLocaleDateString()}</span>
-                                <span className="mx-1">•</span>
-                                <span>PLANO: {reputationData.membership}</span>
-                            </div>
-                        </div>
+                        <span className="text-xs font-black text-blue-400 uppercase">Consulta de Idoneidade</span>
                     </div>
-                    <p className="text-[9px] text-zinc-600 text-center mt-4 uppercase font-bold italic">
-                        * Informações geradas com base nos dados reais de idoneidade da comunidade Cred30.
+                    <h3 className="text-xl font-bold text-white mb-2">Relatório de Parceiro</h3>
+                    <p className="text-sm text-zinc-400 mb-6 font-medium">
+                        Vai negociar no Marketplace? Verifique o <span className="text-white font-bold">Score</span> e a reputação oficial do associado antes de fechar o negócio.
+                    </p>
+
+                    <div className="flex gap-2 mb-6">
+                        <input
+                            type="email"
+                            placeholder="E-mail do associado..."
+                            value={searchEmail}
+                            onChange={(e) => setSearchEmail(e.target.value)}
+                            className="flex-1 bg-background border border-surfaceHighlight rounded-2xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500/50 transition-all font-medium"
+                        />
+                        <button
+                            onClick={handleReputationCheck}
+                            disabled={searchingRep}
+                            className="bg-blue-500 hover:bg-blue-400 text-white px-6 rounded-2xl font-black text-xs transition active:scale-95 shadow-lg shadow-blue-500/20 disabled:opacity-50"
+                        >
+                            {searchingRep ? <RefreshCw className="animate-spin" size={16} /> : 'CONSULTAR'}
+                        </button>
+                    </div>
+
+                    {reputationData && (
+                        <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+                            <div className="bg-zinc-800/50 border border-blue-500/20 rounded-2xl p-6 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-4 opacity-5">
+                                    <ShieldCheck size={80} className="text-blue-400" />
+                                </div>
+                                <div className="space-y-4 relative z-10">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">Nome do Associado</p>
+                                            <h4 className="text-lg font-black text-white">{reputationData.name}</h4>
+                                        </div>
+                                        {reputationData.isVerified && (
+                                            <div className="bg-blue-500 text-white p-1 rounded-full">
+                                                <ShieldCheck size={16} />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="bg-black/20 p-4 rounded-xl border border-zinc-700/30">
+                                            <p className="text-[9px] text-zinc-500 font-bold uppercase mb-1">Score Cred30</p>
+                                            <p className={`text-2xl font-black ${reputationData.score >= 700 ? 'text-emerald-400' : (reputationData.score >= 400 ? 'text-yellow-400' : 'text-red-400')}`}>
+                                                {reputationData.score}
+                                            </p>
+                                        </div>
+                                        <div className="bg-black/20 p-4 rounded-xl border border-zinc-700/30">
+                                            <p className="text-[9px] text-zinc-500 font-bold uppercase mb-1">Status Global</p>
+                                            <p className={`text-xs font-black uppercase ${reputationData.status === 'ACTIVE' ? 'text-emerald-400' : 'text-red-500'}`}>
+                                                {reputationData.status === 'ACTIVE' ? 'CONTRATO ATIVO' : 'SUSPENSO'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 text-[10px] text-zinc-500 font-bold pt-2 border-t border-zinc-700/50">
+                                        <Clock size={12} />
+                                        <span>MEMBRO DESDE: {new Date(reputationData.since).toLocaleDateString()}</span>
+                                        <span className="mx-1">•</span>
+                                        <span>PLANO: {reputationData.membership}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p className="text-[9px] text-zinc-600 text-center mt-4 uppercase font-bold italic">
+                                * Informações geradas com base nos dados reais de idoneidade da comunidade Cred30.
+                            </p>
+                        </div>
+                    )}
+
+                    {!reputationData && (
+                        <div className="flex items-center gap-2 text-[10px] text-zinc-600 font-bold uppercase tracking-tight justify-center">
+                            <ShieldAlert size={12} />
+                            Custo por consulta de idoneidade: R$ 35,00
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Share & Dividend Pool Card */}
+            <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6">
+                <div className="flex items-center gap-4 mb-4">
+                    <div className="bg-zinc-800 p-3 rounded-2xl">
+                        <TrendingUp size={24} className="text-emerald-400" />
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-bold text-white">Resultados Proporcionais</h4>
+                        <p className="text-[10px] text-zinc-500 uppercase font-black">Distribuição de Excedentes</p>
+                    </div>
+                </div>
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center text-xs">
+                        <span className="text-zinc-400">Total Distribuído</span>
+                        <span className="font-bold text-white">R$ {state.systemBalance.toLocaleString()}</span>
+                    </div>
+                    <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-emerald-500 h-full w-[65%]" />
+                    </div>
+                    <p className="text-[10px] text-zinc-500 italic leading-relaxed">
+                        Dica: Quanto mais membros usarem o Mercado e assistirem vídeos, maior será a distribuição proporcional por Participação adquirida.
                     </p>
                 </div>
-            )}
-
-            {!reputationData && (
-                <div className="flex items-center gap-2 text-[10px] text-zinc-600 font-bold uppercase tracking-tight justify-center">
-                    <ShieldAlert size={12} />
-                    Custo por consulta de idoneidade: R$ 35,00
-                </div>
-            )}
-        </div>
-    </div>
-
-    {/* Share & Dividend Pool Card */ }
-    <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6">
-        <div className="flex items-center gap-4 mb-4">
-            <div className="bg-zinc-800 p-3 rounded-2xl">
-                <TrendingUp size={24} className="text-emerald-400" />
             </div>
-            <div>
-                <h4 className="text-sm font-bold text-white">Resultados Proporcionais</h4>
-                <p className="text-[10px] text-zinc-500 uppercase font-black">Distribuição de Excedentes</p>
-            </div>
-        </div>
-        <div className="space-y-4">
-            <div className="flex justify-between items-center text-xs">
-                <span className="text-zinc-400">Total Distribuído</span>
-                <span className="font-bold text-white">R$ {state.systemBalance.toLocaleString()}</span>
-            </div>
-            <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                <div className="bg-emerald-500 h-full w-[65%]" />
-            </div>
-            <p className="text-[10px] text-zinc-500 italic leading-relaxed">
-                Dica: Quanto mais membros usarem o Mercado e assistirem vídeos, maior será a distribuição proporcional por Participação adquirida.
-            </p>
-        </div>
-    </div>
 
-    {/* Video Ad Modal */ }
-    {
-        showAdModal && (
-            <div className="fixed inset-0 bg-black/95 z-[200] flex items-center justify-center p-4">
-                <div className="bg-surface border border-surfaceHighlight rounded-3xl p-6 max-w-sm w-full relative">
-                    <button
-                        onClick={() => setShowAdModal(false)}
-                        className="absolute top-4 right-4 text-zinc-500 hover:text-white"
-                    >
-                        <XIcon size={20} />
-                    </button>
-
-                    <div className="text-center pt-4">
-                        <div className="w-20 h-20 bg-primary-500/10 rounded-full flex items-center justify-center mx-auto mb-6 relative">
-                            <div className="absolute inset-0 border-4 border-primary-500/20 rounded-full animate-spin-slow"></div>
-                            <PlayCircle size={40} className="text-primary-400" />
-                        </div>
-
-                        <h3 className="text-2xl font-bold text-white mb-2">Vídeo Publicitário</h3>
-                        <p className="text-sm text-zinc-400 mb-8 px-4">
-                            Assista ao vídeo do nosso parceiro para desbloquear sua recompensa exclusiva.
-                        </p>
-
-                        <div className="bg-black/50 rounded-xl p-4 border border-zinc-800 mb-6">
-                            <div className="flex items-center justify-between text-xs text-zinc-500 mb-2 uppercase font-bold tracking-wider">
-                                <span>Tempo Restante</span>
-                                <Clock size={14} />
-                            </div>
-                            <div className="text-4xl font-mono font-bold text-white tabular-nums">
-                                00:{countDown.toString().padStart(2, '0')}
-                            </div>
-                        </div>
-
+            {/* Video Ad Modal */}
+            {showAdModal && (
+                <div className="fixed inset-0 bg-black/95 z-[200] flex items-center justify-center p-4">
+                    <div className="bg-surface border border-surfaceHighlight rounded-3xl p-6 max-w-sm w-full relative">
                         <button
-                            onClick={handleAdRewardClaim}
-                            disabled={countDown > 0 || loading}
-                            className={`w-full py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${countDown > 0
-                                ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-                                : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_20px_rgba(16,185,129,0.3)]'
-                                }`}
+                            onClick={() => setShowAdModal(false)}
+                            className="absolute top-4 right-4 text-zinc-500 hover:text-white"
                         >
-                            {loading ? <RefreshCw className="animate-spin" size={20} /> : (
-                                countDown > 0 ? 'AGUARDE O VÍDEO...' : 'RESGATAR RECOMPENSA'
-                            )}
+                            <XIcon size={20} />
                         </button>
 
-                        <p className="text-[9px] text-zinc-600 mt-4 italic">
-                            Ao clicar em resgatar, você será redirecionado ao site do parceiro.
-                        </p>
+                        <div className="text-center pt-4">
+                            <div className="w-20 h-20 bg-primary-500/10 rounded-full flex items-center justify-center mx-auto mb-6 relative">
+                                <div className="absolute inset-0 border-4 border-primary-500/20 rounded-full animate-spin-slow"></div>
+                                <PlayCircle size={40} className="text-primary-400" />
+                            </div>
+
+                            <h3 className="text-2xl font-bold text-white mb-2">Vídeo Publicitário</h3>
+                            <p className="text-sm text-zinc-400 mb-8 px-4">
+                                Assista ao vídeo do nosso parceiro para desbloquear sua recompensa exclusiva.
+                            </p>
+
+                            <div className="bg-black/50 rounded-xl p-4 border border-zinc-800 mb-6">
+                                <div className="flex items-center justify-between text-xs text-zinc-500 mb-2 uppercase font-bold tracking-wider">
+                                    <span>Tempo Restante</span>
+                                    <Clock size={14} />
+                                </div>
+                                <div className="text-4xl font-mono font-bold text-white tabular-nums">
+                                    00:{countDown.toString().padStart(2, '0')}
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={handleAdRewardClaim}
+                                disabled={countDown > 0 || loading}
+                                className={`w-full py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${countDown > 0
+                                    ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                                    : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_20px_rgba(16,185,129,0.3)]'
+                                    }`}
+                            >
+                                {loading ? <RefreshCw className="animate-spin" size={20} /> : (
+                                    countDown > 0 ? 'AGUARDE O VÍDEO...' : 'RESGATAR RECOMPENSA'
+                                )}
+                            </button>
+
+                            <p className="text-[9px] text-zinc-600 mt-4 italic">
+                                Ao clicar em resgatar, você será redirecionado ao site do parceiro.
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        )
-    }
-        </div >
+            )}
+        </div>
     );
 };
