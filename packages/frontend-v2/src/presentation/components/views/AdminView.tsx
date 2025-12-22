@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import packageJson from '../../../../package.json';
 import {
-    ShieldCheck, RefreshCw, LogOut, Users, PieChart, DollarSign, PiggyBank, Coins, ArrowUpFromLine, ArrowDownLeft, TrendingUp, Clock, ArrowUpRight, Check, X as XIcon, AlertTriangle, Settings as SettingsIcon, ShoppingBag as ShoppingBagIcon, UserPlus, Trash2, MessageSquare, ExternalLink, Send, Clipboard, Gift, Activity, Cpu, Database, HardDrive, Zap
+    ShieldCheck, RefreshCw, LogOut, Users, PieChart, DollarSign, PiggyBank, Coins, ArrowUpFromLine, ArrowDownLeft, TrendingUp, Clock, ArrowUpRight, Check, X as XIcon, AlertTriangle, Settings as SettingsIcon, ShoppingBag as ShoppingBagIcon, UserPlus, Trash2, MessageSquare, ExternalLink, Send, Clipboard, Gift, Activity, Cpu, Database, HardDrive, Zap, Search
 } from 'lucide-react';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { PromptModal } from '../ui/PromptModal';
@@ -61,6 +61,7 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
     const [giftReason, setGiftReason] = useState('');
     const [healthMetrics, setHealthMetrics] = useState<any>(null);
     const [isMetricsLoading, setIsMetricsLoading] = useState(false);
+    const [metricsSearch, setMetricsSearch] = useState('');
 
     useEffect(() => {
         setIsLoading(false);
@@ -77,6 +78,11 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
 
         if (activeTab === 'metrics') {
             fetchHealthMetrics();
+            const metricsInterval = setInterval(fetchHealthMetrics, 10000); // Auto-refresh a cada 10s
+            return () => {
+                clearInterval(interval);
+                clearInterval(metricsInterval);
+            };
         }
 
         return () => clearInterval(interval);
@@ -381,6 +387,18 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                                     <div className="p-2 bg-primary-500/10 rounded-lg"><Cpu className="text-primary-400" size={20} /></div>
                                     Recursos do Sistema
                                 </h3>
+                                <div className="space-y-4 mb-6">
+                                    <div className="relative group">
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-primary-400 transition-colors" size={16} />
+                                        <input
+                                            type="text"
+                                            placeholder="Filtrar métricas..."
+                                            value={metricsSearch}
+                                            onChange={(e) => setMetricsSearch(e.target.value)}
+                                            className="w-full bg-black/40 border border-zinc-800 rounded-2xl pl-10 pr-4 py-3 text-xs text-white focus:outline-none focus:border-primary-500/50 transition-all"
+                                        />
+                                    </div>
+                                </div>
                                 <div className="space-y-6">
                                     <div className="flex justify-between items-center p-4 bg-black/20 rounded-2xl border border-zinc-800">
                                         <div className="flex items-center gap-3">
