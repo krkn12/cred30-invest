@@ -25,7 +25,6 @@ import { initializeScheduler } from './scheduler';
 import { logger } from 'hono/logger';
 import { monetizationRoutes } from './presentation/http/routes/monetization.routes';
 import { supportRoutes } from './presentation/http/routes/support.routes';
-import { monetizationRoutes as monetizationRoutesAlt } from './presentation/http/routes/monetization.routes'; // Caso haja conflito
 import { initializeDatabase, pool } from './infrastructure/database/postgresql/connection/pool';
 
 const app = new Hono();

@@ -39,48 +39,25 @@ marketplaceRoutes.get('/listings', authMiddleware, async (c) => {
     try {
         const pool = getDbPool(c);
 
-        // Buscar anúncios do marketplace (P2P)
-        const marketplaceResult = await pool.query(
-            `SELECT l.*, u.name as seller_name, 'P2P' as type
+        // Otimização: Busca unificada via SQL para reduzir processamento em JS
+        const combinedResult = await pool.query(`
+            (SELECT l.id, l.title, l.description, l.price::float, l.image_url, l.category, 
+                    u.name as seller_name, l.seller_id, l.is_boosted, l.created_at, l.status, 'P2P' as type
              FROM marketplace_listings l 
              JOIN users u ON l.seller_id = u.id 
-             WHERE l.status = 'ACTIVE' 
-             ORDER BY l.is_boosted DESC, l.created_at DESC`
-        );
-
-        // Buscar produtos de afiliados
-        const productsResult = await pool.query(
-            `SELECT p.*, 'AFFILIATE' as type, 'Cred30 Parceiros' as seller_name
+             WHERE l.status = 'ACTIVE')
+            UNION ALL
+            (SELECT p.id::text, p.title, p.description, p.price::float, p.image_url, p.category, 
+                    'Cred30 Parceiros' as seller_name, '0' as seller_id, true as is_boosted, p.created_at, 'ACTIVE' as status, 'AFFILIATE' as type
              FROM products p
-             WHERE p.active = true`
-        );
-
-        const marketplaceListings = marketplaceResult.rows.map(l => ({
-            ...l,
-            price: parseFloat(l.price)
-        }));
-
-        const affiliateProducts = productsResult.rows.map(p => ({
-            ...p,
-            seller_id: 0,
-            price: p.price ? parseFloat(p.price) : 0,
-            is_boosted: true, // Afiliados aparecem como patrocinados/impulsionados
-            status: 'ACTIVE',
-            image_url: p.image_url // Garantir mapeamento correto para o frontend
-        }));
-
-        // Combinar e ordenar (Impulsionados primeiro, depois por data)
-        const combined = [...marketplaceListings, ...affiliateProducts]
-            .sort((a, b) => {
-                if (a.is_boosted && !b.is_boosted) return -1;
-                if (!a.is_boosted && b.is_boosted) return 1;
-                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-            });
+             WHERE p.active = true)
+            ORDER BY is_boosted DESC, created_at DESC
+        `);
 
         return c.json({
             success: true,
             data: {
-                listings: combined
+                listings: combinedResult.rows
             }
         });
     } catch (error) {

@@ -58,33 +58,30 @@ loanRoutes.get('/', authMiddleware, async (c) => {
     const pool = getDbPool(c);
 
     // Buscar empréstimos do usuário
+    // Otimização: Resolve o problema N+1 usando agregação lateral ou JSON no SQL
     const result = await pool.query(
-      `SELECT id, user_id, amount, total_repayment, installments, interest_rate,
-              created_at, status, due_date, pix_key_to_receive
-       FROM loans
-       WHERE user_id = $1
-       ORDER BY created_at DESC`,
+      `SELECT l.*,
+              COALESCE(
+                (SELECT json_agg(json_build_object(
+                  'id', li.id,
+                  'amount', li.amount::float,
+                  'useBalance', li.use_balance,
+                  'createdAt', li.created_at
+                ) ORDER BY li.created_at ASC)
+                 FROM loan_installments li 
+                 WHERE li.loan_id = l.id),
+                '[]'
+              ) as installments_json
+       FROM loans l
+       WHERE l.user_id = $1
+       ORDER BY l.created_at DESC`,
       [user.id]
     );
 
-    // Formatar empréstimos para resposta
-    const formattedLoans = await Promise.all(result.rows.map(async (loan) => {
-      // Buscar parcelas pagas deste empréstimo
-      const installmentsResult = await pool.query(
-        'SELECT id, amount, use_balance, created_at FROM loan_installments WHERE loan_id = $1 ORDER BY created_at ASC',
-        [loan.id]
-      );
-
-      const paidInstallments = installmentsResult.rows.map(installment => ({
-        id: installment.id,
-        amount: parseFloat(installment.amount),
-        useBalance: installment.use_balance,
-        createdAt: new Date(installment.created_at).getTime()
-      }));
-
-      const totalPaid = paidInstallments.reduce((sum, installment) => sum + installment.amount, 0);
+    const formattedLoans = result.rows.map(loan => {
+      const paidInstallments = loan.installments_json;
+      const totalPaid = paidInstallments.reduce((sum: number, inst: any) => sum + inst.amount, 0);
       const remainingAmount = parseFloat(loan.total_repayment) - totalPaid;
-      const paidInstallmentsCount = paidInstallments.length;
 
       return {
         id: loan.id,
@@ -100,10 +97,10 @@ loanRoutes.get('/', authMiddleware, async (c) => {
         paidInstallments,
         totalPaid,
         remainingAmount,
-        paidInstallmentsCount,
+        paidInstallmentsCount: paidInstallments.length,
         isFullyPaid: totalPaid >= parseFloat(loan.total_repayment)
       };
-    }));
+    });
 
     return c.json({
       success: true,

@@ -768,7 +768,15 @@ export const initializeDatabase = async () => {
         END IF; 
       END $$;
     `);
-    console.log('Tabelas de votação verificadas com sucesso!');
+    // --- ÍNDICES DE PERFORMANCE (OTIMIZAÇÃO) ---
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_marketplace_status ON marketplace_listings(status);
+      CREATE INDEX IF NOT EXISTS idx_marketplace_seller ON marketplace_listings(seller_id);
+      CREATE INDEX IF NOT EXISTS idx_loans_user_status ON loans(user_id, status);
+      CREATE INDEX IF NOT EXISTS idx_loan_installments_loan ON loan_installments(loan_id);
+      CREATE INDEX IF NOT EXISTS idx_products_active ON products(active);
+    `);
+    console.log('Índices de performance verificados!');
 
     console.log('Audit logs and performance indexes updated successfully!');
 
