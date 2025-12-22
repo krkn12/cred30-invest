@@ -18,7 +18,8 @@ import { productsRoutes } from './presentation/http/routes/products.routes';
 import { webhookRoutes } from './presentation/http/routes/webhooks.routes';
 import { notificationRoutes } from './presentation/http/routes/notifications.routes';
 import { marketplaceRoutes } from './presentation/http/routes/marketplace.routes';
-import { educationRoutes } from './presentation/http/routes/education.routes'; // Import correto no topo
+import { educationRoutes } from './presentation/http/routes/education.routes';
+import { votingRoutes } from './presentation/http/routes/voting.routes';
 import { initializeScheduler } from './scheduler';
 
 import { logger } from 'hono/logger';
@@ -59,6 +60,7 @@ async function startServer() {
     app.route('/api/monetization', monetizationRoutes);
     app.route('/api/support', supportRoutes);
     app.route('/api/education', educationRoutes);
+    app.route('/api/voting', votingRoutes);
 
     // Rota de health check
     app.get('/api/health', (c) => {

@@ -5,7 +5,7 @@ import {
     Users, Gamepad2, TrendingUp, DollarSign, ArrowUpFromLine, BookOpen,
     Repeat, Crown, Clock, ArrowDownLeft, ArrowUpRight,
     PieChart, AlertTriangle, LogOut, Star, Zap,
-    ShoppingBag, Tag, PlusCircle, ShieldCheck, ChevronRight, Wallet, Coins, Settings
+    ShoppingBag, Tag, PlusCircle, ShieldCheck, ChevronRight, Wallet, Coins, Settings, BarChart3
 } from 'lucide-react';
 import { AppState, User } from '../../../domain/types/common.types';
 import { QUOTA_PRICE } from '../../../shared/constants/app.constants';
@@ -29,9 +29,10 @@ interface DashboardProps {
     onMarketplace: () => void;
     onEarn: () => void;
     onEducation: () => void;
+    onVoting: () => void;
 }
 
-export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onReinvest, onRefer, onVip, onLogout, onSuccess, onError, onChangePassword, onClaimReward, onMarketplace, onEarn, onEducation }: DashboardProps) => {
+export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onReinvest, onRefer, onVip, onLogout, onSuccess, onError, onChangePassword, onClaimReward, onMarketplace, onEarn, onEducation, onVoting }: DashboardProps) => {
     const user = state.currentUser!;
 
     const { userQuotas, totalInvested, totalCurrentValue, totalEarnings, earningsPercentage } = useMemo(() => {
@@ -248,6 +249,17 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                             <div>
                                 <p className="text-xs font-bold text-white">Convidar</p>
                                 <p className="text-[10px] text-zinc-500">Convide amigos</p>
+                            </div>
+                        </div>
+
+                        {/* 5. Votar (Governance) */}
+                        <div onClick={onVoting} className="bg-zinc-900/50 border border-zinc-800 p-3 rounded-xl flex flex-col items-center justify-center text-center gap-2 cursor-pointer hover:bg-zinc-800 transition-colors group hover:border-emerald-500/30">
+                            <div className="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform shadow-lg shadow-emerald-900/20">
+                                <BarChart3 size={20} />
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold text-white">Gevernança</p>
+                                <p className="text-[10px] text-zinc-500">Vote e ganhe score</p>
                             </div>
                         </div>
                     </div>

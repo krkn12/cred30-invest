@@ -34,6 +34,7 @@ export const SCORE_REWARDS = {
     LOAN_PAYMENT_ON_TIME: 25, // Por parcela paga em dia
     GAME_PARTICIPATION: 2,    // Por lote de giros/participação
     RELIABLE_MEMBER: 50,      // Bônus mensal para membros sem pendências (pode ser usado em scheduler)
+    VOTING_PARTICIPATION: 10, // Por voto em proposta de governança
 };
 
 export const SCORE_PENALTIES = {

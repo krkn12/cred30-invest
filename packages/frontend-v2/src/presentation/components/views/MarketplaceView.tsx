@@ -915,12 +915,15 @@ export const MarketplaceView = ({ state, onBack, onSuccess, onError, onRefresh }
                                             </button>
                                             <button
                                                 onClick={() => setBuyMethod('credit')}
-                                                className={`flex-1 py-4 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all active:scale-95 ${buyMethod === 'credit' ? 'bg-primary-500/10 border-primary-500 text-primary-400 shadow-lg shadow-primary-500/10' : 'bg-background border-surfaceHighlight text-zinc-500 hover:bg-zinc-900'}`}
+                                                className={`flex-1 py-4 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all relative active:scale-95 ${buyMethod === 'credit' ? 'bg-primary-500/10 border-primary-500 text-primary-400 shadow-lg shadow-primary-500/10' : 'bg-background border-surfaceHighlight text-zinc-500 hover:bg-zinc-900'}`}
                                             >
                                                 <div className="flex items-center gap-1.5">
                                                     <TrendingUp size={14} />
                                                     <span>APOIO SOCIAL</span>
                                                 </div>
+                                                <span className="absolute -top-2 -right-2 bg-emerald-500 text-black text-[7px] font-black px-1.5 py-0.5 rounded-full shadow-lg animate-pulse">
+                                                    TAXA REDUZIDA
+                                                </span>
                                             </button>
                                         </div>
 

@@ -733,6 +733,43 @@ export const initializeDatabase = async () => {
       CREATE INDEX IF NOT EXISTS idx_webhook_status ON webhook_logs(status);
     `);
 
+    // --- SISTEMA DE GOVERNANÇA (VOTAÇÃO) ---
+    console.log('Verificando tabelas de votação...');
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS voting_proposals (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT NOT NULL,
+        status VARCHAR(20) DEFAULT 'ACTIVE', -- ACTIVE, CLOSED
+        yes_votes INTEGER DEFAULT 0,
+        no_votes INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        closed_at TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS voting_votes (
+        id SERIAL PRIMARY KEY,
+        proposal_id INTEGER REFERENCES voting_proposals(id) ON DELETE CASCADE,
+        user_id ${userIdType} REFERENCES users(id),
+        vote VARCHAR(10) NOT NULL, -- YES, NO
+        weight INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(proposal_id, user_id)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_voting_votes_proposal ON voting_votes(proposal_id);
+      CREATE INDEX IF NOT EXISTS idx_voting_votes_user ON voting_votes(user_id);
+      
+      -- Garantir coluna weight para votos existentes ou novos
+      DO $$ 
+      BEGIN 
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='voting_votes' AND column_name='weight') THEN 
+          ALTER TABLE voting_votes ADD COLUMN weight INTEGER DEFAULT 1; 
+        END IF; 
+      END $$;
+    `);
+    console.log('Tabelas de votação verificadas com sucesso!');
+
     console.log('Audit logs and performance indexes updated successfully!');
 
     // Inicializar tabelas de auditoria e rate limiting
