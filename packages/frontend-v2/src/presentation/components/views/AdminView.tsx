@@ -67,6 +67,10 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
     const [isMetricsLoading, setIsMetricsLoading] = useState(false);
     const [metricsSearch, setMetricsSearch] = useState('');
 
+    const [systemCosts, setSystemCosts] = useState<any[]>([]);
+    const [newCostDescription, setNewCostDescription] = useState('');
+    const [newCostAmount, setNewCostAmount] = useState('');
+
     useEffect(() => {
         setIsLoading(false);
         fetchPendingChatsCount();
@@ -88,7 +92,21 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
             const metricsInterval = setInterval(fetchHealthMetrics, 10000);
             return () => clearInterval(metricsInterval);
         }
+        if (activeTab === 'system') {
+            fetchSystemCosts();
+        }
     }, [activeTab]); // Só quando a aba muda
+
+    const fetchSystemCosts = async () => {
+        try {
+            const res = await apiService.get<any>('/admin/costs');
+            if (res.success) {
+                setSystemCosts(res.data || []);
+            }
+        } catch (e) {
+            console.error('Erro ao buscar custos:', e);
+        }
+    };
 
     const fetchHealthMetrics = async () => {
         if (!healthMetrics) setIsMetricsLoading(true);
@@ -209,22 +227,40 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
         }
     };
 
-    const handleUpdateManualCost = async () => {
+    const handleAddCost = async () => {
         try {
-            const val = parseCurrencyInput(newManualCost);
-            if (isNaN(val) || val <= 0) throw new Error("Valor inválido");
-            const response = await apiService.post<any>('/admin/manual-cost', {
-                amount: val,
-                description: manualCostDescription || 'Custo manual'
+            const amount = parseCurrencyInput(newCostAmount);
+            if (isNaN(amount) || amount <= 0) throw new Error("Valor inválido");
+            if (!newCostDescription) throw new Error("Descrição necessária");
+
+            const response = await apiService.post<any>('/admin/costs', {
+                description: newCostDescription,
+                amount: amount,
+                isRecurring: true
             });
+
             if (response.success) {
-                clearAllCache();
+                onSuccess('Custo Adicionado', 'Despesa registrada com sucesso.');
+                setNewCostAmount('');
+                setNewCostDescription('');
+                fetchSystemCosts();
                 onRefresh();
-                setNewManualCost('');
-                setManualCostDescription('');
-                onSuccess('Custo Registrado', `Custo de R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} registrado.`);
             } else {
                 onError('Erro', response.message);
+            }
+        } catch (e: any) {
+            onError('Erro', e.message);
+        }
+    };
+
+    const handleDeleteCost = async (id: number) => {
+        if (!window.confirm('Remover este custo do sistema?')) return;
+        try {
+            const response = await apiService.delete<any>(`/admin/costs/${id}`);
+            if (response.success) {
+                onSuccess('Removido', 'Custo excluído.');
+                fetchSystemCosts();
+                onRefresh();
             }
         } catch (e: any) {
             onError('Erro', e.message);
@@ -372,8 +408,8 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <MetricCard title="Membros" value={state.users.length} subtitle="Usuários Totais" icon={Users} color="blue" />
                         <MetricCard title="Participações" value={state.stats?.quotasCount ?? 0} subtitle="Licenças em Operação" icon={PieChart} color="cyan" />
-                        <MetricCard title="Reserva Acumulada" value={formatCurrency(state.stats?.totalReserves || 0)} subtitle="Impostos + Op + Lucros" icon={ShieldCheck} color="blue" />
-                        <MetricCard title="Liquidez Real" value={formatCurrency(state.stats?.realLiquidity ?? state.systemBalance)} subtitle="Disponível p/ Saque/Apoio" icon={DollarSign} color="emerald" />
+                        <MetricCard title="Custo Fixo Mensal" value={formatCurrency(state.stats?.systemConfig?.monthly_fixed_costs || 0)} subtitle="Despesas Recorrentes" icon={TrendingUp} color="orange" />
+                        <MetricCard title="Liquidez Real" value={formatCurrency(state.stats?.systemConfig?.real_liquidity ?? state.systemBalance)} subtitle="Disponível p/ Saque/Apoio" icon={DollarSign} color="emerald" />
                     </div>
                 </div>
             )}
@@ -539,6 +575,69 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
             {activeTab === 'system' && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* Gestão de Custos Fixos */}
+                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
+                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
+                                <div className="p-2 bg-primary-500/10 rounded-lg"><TrendingUp className="text-primary-400" size={20} /></div>
+                                Custos Fixos Mensais
+                            </h3>
+                            <div className="space-y-6">
+                                <div className="bg-black/20 p-6 rounded-2xl border border-zinc-800">
+                                    <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Total de Despesas/Mês</p>
+                                    <p className="text-4xl font-black text-red-400 tracking-tighter">
+                                        -{formatCurrency(state.stats?.systemConfig?.monthly_fixed_costs || 0)}
+                                    </p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">Adicionar Nova Despesa</p>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Descrição (ex: MEI)"
+                                            value={newCostDescription}
+                                            onChange={(e) => setNewCostDescription(e.target.value)}
+                                            className="flex-1 bg-zinc-800/50 border border-zinc-700/50 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-primary-500/50"
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Valor"
+                                            value={newCostAmount}
+                                            onChange={(e) => setNewCostAmount(e.target.value)}
+                                            className="w-24 bg-zinc-800/50 border border-zinc-700/50 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-primary-500/50"
+                                        />
+                                        <button
+                                            onClick={handleAddCost}
+                                            className="bg-primary-500 hover:bg-primary-400 p-3 rounded-xl text-black transition-all"
+                                        >
+                                            <Check size={20} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+                                    {systemCosts.map((cost) => (
+                                        <div key={cost.id} className="group bg-black/40 border border-zinc-800/50 p-4 rounded-2xl flex justify-between items-center transition-all hover:border-zinc-700">
+                                            <div>
+                                                <p className="text-xs font-bold text-zinc-300">{cost.description}</p>
+                                                <p className="text-sm font-black text-white">{formatCurrency(parseFloat(cost.amount))}</p>
+                                            </div>
+                                            <button
+                                                onClick={() => handleDeleteCost(cost.id)}
+                                                className="p-2 text-zinc-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {systemCosts.length === 0 && (
+                                        <p className="text-center py-4 text-xs text-zinc-600 font-bold uppercase">Nenhum custo fixo lançado.</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Fundo de Recompensas */}
                         <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
                             <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
                                 <div className="p-2 bg-emerald-500/10 rounded-lg"><Coins className="text-emerald-400" size={20} /></div>
@@ -567,20 +666,23 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                             </div>
                         </div>
 
-                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
+                        {/* Varredura de Inadimplência */}
+                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl col-span-1 md:col-span-2">
                             <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
                                 <div className="p-2 bg-red-500/10 rounded-lg"><AlertTriangle className="text-red-400" size={20} /></div>
                                 Varredura de Inadimplência
                             </h3>
-                            <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
-                                Clique abaixo para executar manualmente a proteção de lastro. Usuários com atraso superior a 5 dias terão suas licenças executadas para cobrir a dívida.
-                            </p>
-                            <button
-                                onClick={handleRunLiquidation}
-                                className="w-full bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-black border border-red-500/30 font-black py-5 rounded-2xl transition-all uppercase tracking-widest text-xs"
-                            >
-                                Iniciar Varredura de Garantias
-                            </button>
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                                <p className="text-sm text-zinc-400 leading-relaxed max-w-xl">
+                                    Clique abaixo para executar manualmente a proteção de lastro. Usuários com atraso superior a 5 dias terão suas licenças executadas para cobrir a dívida.
+                                </p>
+                                <button
+                                    onClick={handleRunLiquidation}
+                                    className="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-black border border-red-500/30 font-black px-8 py-5 rounded-2xl transition-all uppercase tracking-widest text-xs whitespace-nowrap"
+                                >
+                                    Iniciar Varredura de Garantias
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

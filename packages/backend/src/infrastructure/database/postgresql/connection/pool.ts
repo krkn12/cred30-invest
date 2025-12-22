@@ -814,6 +814,17 @@ export const initializeDatabase = async () => {
     `);
     console.log('Índices de performance verificados!');
 
+    // Criar tabela de custos fixos do sistema
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS system_costs (
+        id SERIAL PRIMARY KEY,
+        description VARCHAR(255) NOT NULL,
+        amount DECIMAL(10,2) NOT NULL,
+        is_recurring BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     console.log('Audit logs and performance indexes updated successfully!');
 
     // Inicializar tabelas de auditoria e rate limiting

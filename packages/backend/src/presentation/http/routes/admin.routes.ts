@@ -78,6 +78,59 @@ const addQuotaSchema = z.object({
   reason: z.string().optional()
 });
 
+const createCostSchema = z.object({
+  description: z.string().min(3),
+  amount: z.number().positive(),
+  isRecurring: z.boolean().default(true),
+});
+
+// Listar custos do sistema
+adminRoutes.get('/costs', adminMiddleware, async (c) => {
+  try {
+    const pool = getDbPool(c);
+    const result = await pool.query('SELECT * FROM system_costs ORDER BY created_at DESC');
+    return c.json({ success: true, data: result.rows });
+  } catch (error: any) {
+    return c.json({ success: false, message: error.message }, 500);
+  }
+});
+
+// Adicionar custo do sistema
+adminRoutes.post('/costs', adminMiddleware, auditMiddleware('ADD_COST', 'SYSTEM'), async (c) => {
+  try {
+    const body = await c.req.json();
+    const { description, amount, isRecurring } = createCostSchema.parse(body);
+    const pool = getDbPool(c);
+
+    await pool.query(
+      'INSERT INTO system_costs (description, amount, is_recurring) VALUES ($1, $2, $3)',
+      [description, amount, isRecurring]
+    );
+
+    return c.json({ success: true, message: 'Custo adicionado com sucesso' });
+  } catch (error: any) {
+    return c.json({ success: false, message: error.message }, 500);
+  }
+});
+
+// Remover custo do sistema
+adminRoutes.delete('/costs/:id', adminMiddleware, auditMiddleware('DELETE_COST', 'SYSTEM'), async (c) => {
+  try {
+    const id = c.req.param('id');
+    const pool = getDbPool(c);
+
+    const result = await pool.query('DELETE FROM system_costs WHERE id = $1 RETURNING id', [id]);
+
+    if (result.rows.length === 0) {
+      return c.json({ success: false, message: 'Custo não encontrado' }, 404);
+    }
+
+    return c.json({ success: true, message: 'Custo removido com sucesso' });
+  } catch (error: any) {
+    return c.json({ success: false, message: error.message }, 500);
+  }
+});
+
 // Dashboard administrativo
 adminRoutes.get('/dashboard', adminMiddleware, async (c) => {
   try {
@@ -128,21 +181,28 @@ adminRoutes.get('/dashboard', adminMiddleware, async (c) => {
     config.total_operational_reserve = parseFloat(String(config.total_operational_reserve || 0));
     config.total_owner_profit = parseFloat(String(config.total_owner_profit || 0));
 
+    // Calcular custos fixos mensais
+    const costsResult = await pool.query('SELECT COALESCE(SUM(amount), 0) as total_costs FROM system_costs');
+    const totalMonthlyCosts = parseFloat(costsResult.rows[0].total_costs);
+
     // Calcular detalhamento de liquidez para o dashboard
     const totalReservesForRealLiquidity = config.total_tax_reserve +
       config.total_operational_reserve +
-      config.total_owner_profit;
+      config.total_owner_profit +
+      totalMonthlyCosts; // Incluir custos fixos na reserva de liquidez
 
     config.real_liquidity = config.system_balance - totalReservesForRealLiquidity;
     config.total_reserves = totalReservesForRealLiquidity;
     config.theoretical_cash = operationalCash;
+    config.monthly_fixed_costs = totalMonthlyCosts;
 
     // DEBUG: Informação detalhada de caixa
     console.log('DEBUG - Saúde Financeira:', {
       caixaBruto: config.system_balance,
       reservasTotal: totalReservesForRealLiquidity,
       liquidezReal: config.real_liquidity,
-      caixaTeorico: operationalCash
+      caixaTeorico: operationalCash,
+      custosFixos: totalMonthlyCosts
     });
 
 
