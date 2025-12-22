@@ -90,7 +90,7 @@ const WelcomePage = () => {
             <Shield size={14} /> Clube de Benefícios 100% Transparente
           </div>
           <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight leading-[1] text-white">
-            A comunidade que <br />
+            Cred<span className="text-cyan-400">30</span>: A comunidade que <br />
             <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent italic">valoriza</span> seu tempo.
           </h1>
           <p className="text-lg text-zinc-300 mb-10 max-w-xl mx-auto leading-relaxed">
