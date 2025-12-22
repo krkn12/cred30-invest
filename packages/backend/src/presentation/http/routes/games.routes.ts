@@ -64,13 +64,13 @@ gamesRoutes.post('/slot/spin', authMiddleware, async (c) => {
             // Importante: A aposta SEMPRE é revenue do sistema (85/15), e os prêmios são despesas.
             await updateUserBalance(client, user.id, BATCH_COST, 'debit');
 
-            // Distribuir a receita da aposta (85% Caixa / 15% Lucros)
-            const toSystem = BATCH_COST * 0.85;
-            const toProfitPool = BATCH_COST * 0.15;
+            // Distribuir a receita da aposta (85% para cotistas / 15% Operacional)
+            const toProfitPool = BATCH_COST * 0.85;
+            const toOperational = BATCH_COST * 0.15;
 
             await client.query(
                 'UPDATE system_config SET system_balance = system_balance + $1, profit_pool = profit_pool + $2',
-                [toSystem, toProfitPool]
+                [toOperational, toProfitPool]
             );
 
             // 3. Executar Lote de Giros (20x)

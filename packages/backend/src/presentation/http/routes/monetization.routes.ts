@@ -103,9 +103,9 @@ monetizationRoutes.post('/upgrade-pro', authMiddleware, async (c) => {
                 // Cobrar taxa
                 await client.query('UPDATE users SET balance = balance - $1, membership_type = $2 WHERE id = $3', [PRO_UPGRADE_FEE, 'PRO', user.id]);
 
-                // Distribuir lucros (50% dividendos)
-                const feeForProfit = PRO_UPGRADE_FEE * 0.5;
-                const feeForOperational = PRO_UPGRADE_FEE * 0.5;
+                // Distribuir lucros (85% para cotistas / 15% Operacional)
+                const feeForProfit = PRO_UPGRADE_FEE * 0.85;
+                const feeForOperational = PRO_UPGRADE_FEE * 0.15;
 
                 await client.query(
                     'UPDATE system_config SET system_balance = system_balance + $1, profit_pool = profit_pool + $2',
@@ -214,11 +214,12 @@ monetizationRoutes.post('/buy-verified-badge', authMiddleware, async (c) => {
             // Dar Score Bônus pela Confiança (+100)
             await updateScore(client, user.id, 100, 'Compra de Selo de Verificado (Confiança)');
 
-            // Distribuir Lucro (100% Margem) -> 50% Operacional / 50% Profit Pool
-            const profitShare = VERIFIED_BADGE_PRICE * 0.5;
+            // Distribuir Lucro (100% Margem) -> 85% Profit Pool / 15% Operacional
+            const feeForProfit = VERIFIED_BADGE_PRICE * 0.85;
+            const feeForOperational = VERIFIED_BADGE_PRICE * 0.15;
             await client.query(
-                'UPDATE system_config SET system_balance = system_balance + $1, profit_pool = profit_pool + $1',
-                [profitShare]
+                'UPDATE system_config SET system_balance = system_balance + $1, profit_pool = profit_pool + $2',
+                [feeForOperational, feeForProfit]
             );
 
             // Registrar Transação
@@ -262,11 +263,12 @@ monetizationRoutes.post('/buy-score-boost', authMiddleware, async (c) => {
             // Dar Boost
             await updateScore(client, user.id, SCORE_BOOST_POINTS, 'Compra de Pacote Score Boost');
 
-            // Distribuir Lucro
-            const profitShare = SCORE_BOOST_PRICE * 0.5;
+            // Distribuir Lucro -> 85% Profit Pool / 15% Operacional
+            const feeForProfit = SCORE_BOOST_PRICE * 0.85;
+            const feeForOperational = SCORE_BOOST_PRICE * 0.15;
             await client.query(
-                'UPDATE system_config SET system_balance = system_balance + $1, profit_pool = profit_pool + $1',
-                [profitShare]
+                'UPDATE system_config SET system_balance = system_balance + $1, profit_pool = profit_pool + $2',
+                [feeForOperational, feeForProfit]
             );
 
             // Registrar Transação

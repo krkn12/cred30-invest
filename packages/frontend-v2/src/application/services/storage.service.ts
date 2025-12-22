@@ -142,6 +142,9 @@ export const loadState = async (): Promise<AppState> => {
             stats.totalTaxReserve = dashboard.data?.systemConfig?.total_tax_reserve || dashboard.systemConfig?.total_tax_reserve || 0;
             stats.totalOperationalReserve = dashboard.data?.systemConfig?.total_operational_reserve || dashboard.systemConfig?.total_operational_reserve || 0;
             stats.totalOwnerProfit = dashboard.data?.systemConfig?.total_owner_profit || dashboard.systemConfig?.total_owner_profit || 0;
+            stats.realLiquidity = dashboard.data?.systemConfig?.real_liquidity || dashboard.systemConfig?.real_liquidity || 0;
+            stats.totalReserves = dashboard.data?.systemConfig?.total_reserves || dashboard.systemConfig?.total_reserves || 0;
+            stats.theoreticalCash = dashboard.data?.systemConfig?.theoretical_cash || dashboard.systemConfig?.theoretical_cash || 0;
           }
 
           // DEBUG: Verificar valores extraídos

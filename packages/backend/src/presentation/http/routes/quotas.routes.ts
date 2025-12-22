@@ -125,9 +125,9 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
           throw new Error(updateResult.error);
         }
 
-        // Destinar a taxa de serviço (Regra 85/15)
-        const feeForOperational = serviceFee * 0.85;
-        const feeForProfit = serviceFee * 0.15;
+        // Destinar apenas a taxa de serviço (85% para cotistas / 15% Operacional)
+        const feeForProfit = serviceFee * 0.85;
+        const feeForOperational = serviceFee * 0.15;
 
         await client.query(
           'UPDATE system_config SET system_balance = system_balance + $1, profit_pool = profit_pool + $2',
@@ -171,22 +171,39 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
             const referrerId = referrerRes.rows[0].id;
             const bonusAmount = 5.00; // Valor fixo por conversão (CPA)
 
-            // Creditar bônus
-            await client.query('UPDATE users SET balance = balance + $1 WHERE id = $2', [bonusAmount, referrerId]);
+            const sysRes = await client.query('SELECT profit_pool FROM system_config LIMIT 1');
+            const profitPool = parseFloat(sysRes.rows[0].profit_pool);
 
-            // Registrar Custo de Marketing (Indicação) no Sistema
-            // Isso garante que o caixa reflete a saída dos R$ 5,00 (50 entrou - 5 saiu = 45 líquido)
-            await client.query('UPDATE system_config SET total_manual_costs = total_manual_costs + $1', [bonusAmount]);
+            if (profitPool >= bonusAmount) {
+              // Creditar bônus
+              await client.query('UPDATE users SET balance = balance + $1 WHERE id = $2', [bonusAmount, referrerId]);
 
-            // Registrar transação
-            await createTransaction(
-              client,
-              referrerId,
-              'REFERRAL_BONUS',
-              bonusAmount,
-              `Bônus por indicação: ${user.name} ativou licença(s)`,
-              'APPROVED'
-            );
+              // Deduzir do Pool de Lucros (Só libera se tiver gerado lucros)
+              await client.query(
+                'UPDATE system_config SET profit_pool = profit_pool - $1',
+                [bonusAmount]
+              );
+
+              // Registrar transação aprovada
+              await createTransaction(
+                client,
+                referrerId,
+                'REFERRAL_BONUS',
+                bonusAmount,
+                `Bônus por indicação: ${user.name} comprou licença`,
+                'APPROVED'
+              );
+            } else {
+              // Registrar transação pendente (aguardando lucro do sistema)
+              await createTransaction(
+                client,
+                referrerId,
+                'REFERRAL_BONUS',
+                bonusAmount,
+                `Bônus por indicação: ${user.name} comprou licença (AGUARDANDO RESULTADOS)`,
+                'PENDING'
+              );
+            }
           }
         }
 
@@ -392,6 +409,8 @@ quotaRoutes.post('/sell', authMiddleware, async (c) => {
         [finalAmount, user.id]
       );
 
+      // NOTA: Não subtraímos do system_balance aqui. A saída de capital do banco só ocorre no saque.
+
       // Adicionar multa ao lucro de juros (se houver multa)
       if (profitAmount > 0) {
         await client.query(
@@ -545,6 +564,8 @@ quotaRoutes.post('/sell-all', authMiddleware, async (c) => {
         'UPDATE users SET balance = balance + $1 WHERE id = $2',
         [totalReceived, user.id]
       );
+
+      // NOTA: No resgate total, o capital fica no saldo do usuário. Só sai do banco via saque PIX.
 
       // CORREÇÃO: Não adicionamos multas ao lucro de juros, pois isso criaria dinheiro do nada
       // As multas são penalidades reais que reduzem o dinheiro em circulação

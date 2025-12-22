@@ -82,6 +82,9 @@ export interface AppState {
     totalTaxReserve?: number;
     totalOperationalReserve?: number;
     totalOwnerProfit?: number;
+    realLiquidity?: number;
+    totalReserves?: number;
+    theoreticalCash?: number;
   };
 }
 

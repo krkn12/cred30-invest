@@ -432,10 +432,10 @@ marketplaceRoutes.post('/order/:id/receive', authMiddleware, async (c) => {
 
             await updateUserBalance(client, order.seller_id, sellerAmount, 'credit');
 
-            // 3. Contabilizar a taxa de serviço (Regra 85/15)
+            // 3. Contabilizar a taxa de serviço (85% para cotistas / 15% Operacional)
             const feeAmount = parseFloat(order.fee_amount);
-            const feeForOperational = feeAmount * 0.85;
-            const feeForProfit = feeAmount * 0.15;
+            const feeForProfit = feeAmount * 0.85;
+            const feeForOperational = feeAmount * 0.15;
 
             await client.query(
                 'UPDATE system_config SET system_balance = system_balance + $1, profit_pool = profit_pool + $2',
@@ -541,9 +541,9 @@ marketplaceRoutes.post('/boost', authMiddleware, async (c) => {
                 [expiresAt, listingId]
             );
 
-            // 4. Distribuir dividendos (15% para cotistas)
-            const feeForProfit = BOOST_FEE * 0.15;
-            const feeForOperational = BOOST_FEE * 0.85;
+            // 4. Distribuir dividendos (85% para cotistas / 15% Operacional)
+            const feeForProfit = BOOST_FEE * 0.85;
+            const feeForOperational = BOOST_FEE * 0.15;
 
             await client.query(
                 'UPDATE system_config SET system_balance = system_balance + $1, profit_pool = profit_pool + $2',

@@ -397,8 +397,8 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <MetricCard title="Membros" value={state.users.length} subtitle="Usuários Totais" icon={Users} color="blue" />
                         <MetricCard title="Participações" value={state.stats?.quotasCount ?? 0} subtitle="Licenças em Operação" icon={PieChart} color="cyan" />
-                        <MetricCard title="Liquidez" value={formatCurrency(state.systemBalance)} subtitle="Caixa Disponível" icon={DollarSign} color="emerald" />
-                        <MetricCard title="Recompensas" value={formatCurrency(state.profitPool)} subtitle="Bônus Disponível" icon={PiggyBank} color="yellow" />
+                        <MetricCard title="Reserva Acumulada" value={formatCurrency(state.stats?.totalReserves || 0)} subtitle="Impostos + Op + Lucros" icon={ShieldCheck} color="blue" />
+                        <MetricCard title="Liquidez Real" value={formatCurrency(state.stats?.realLiquidity ?? state.systemBalance)} subtitle="Disponível p/ Saque/Apoio" icon={DollarSign} color="emerald" />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -427,12 +427,12 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                                 </div>
                                 <div className="grid grid-cols-2 gap-6 pt-4">
                                     <div className="bg-black/20 p-5 rounded-2xl border border-zinc-800">
-                                        <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Disponível</p>
+                                        <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Caixa Bruto</p>
                                         <p className="text-2xl font-bold text-white tracking-tight">{formatCurrency(state.systemBalance)}</p>
                                     </div>
                                     <div className="bg-black/20 p-5 rounded-2xl border border-zinc-800">
-                                        <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Reserva (30%)</p>
-                                        <p className="text-2xl font-bold text-primary-400/80 tracking-tight">{formatCurrency((state.stats?.quotasCount || 0) * 50 * 0.3)}</p>
+                                        <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Reservas Totais</p>
+                                        <p className="text-2xl font-bold text-primary-400/80 tracking-tight">{formatCurrency(state.stats?.totalReserves || 0)}</p>
                                     </div>
                                 </div>
                             </div>

@@ -110,18 +110,9 @@ adminRoutes.get('/dashboard', adminMiddleware, async (c) => {
     );
     const totalLoaned = parseFloat(totalLoanedResult.rows[0].total_loaned);
 
-    // Calcular caixa operacional disponível
-    // Agora o valor é deduzido do caixa quando o empréstimo é aprovado (valor vai para o saldo do usuário)
+    // Calcular "Saúde Financeira" Teórica (Deveria existir = Capital - Saídas)
+    // Brindes agora são considerados entradas de dinheiro (capitalização do sistema)
     const operationalCash = totalQuotasValue - totalLoaned;
-
-    // DEBUG: Log para depuração
-    console.log('DEBUG - Cálculo do Caixa Operacional:', {
-      activeQuotasCount,
-      totalQuotasValue,
-      totalLoaned,
-      operationalCash,
-      QUOTA_PRICE
-    });
 
     // Converter valores numéricos para garantir consistência e evitar strings
     config.system_balance = parseFloat(String(config.system_balance || 0));
@@ -133,25 +124,22 @@ adminRoutes.get('/dashboard', adminMiddleware, async (c) => {
     config.total_operational_reserve = parseFloat(String(config.total_operational_reserve || 0));
     config.total_owner_profit = parseFloat(String(config.total_owner_profit || 0));
 
-    // DEBUG: Verificar se há algum valor salvo no banco que possa estar sobrescrevendo
-    const dbBalanceResult = await pool.query('SELECT system_balance FROM system_config LIMIT 1');
-    const dbBalance = parseFloat(String(dbBalanceResult.rows[0]?.system_balance || 0));
+    // Calcular detalhamento de liquidez para o dashboard
+    const totalReservesForRealLiquidity = config.total_tax_reserve +
+      config.total_operational_reserve +
+      config.total_owner_profit;
 
-    console.log('DEBUG - Valores de balance:', {
-      calculatedBalance: operationalCash,
-      configBalance: config.system_balance,
-      dbBalance: dbBalance,
-      difference: dbBalance - operationalCash
+    config.real_liquidity = config.system_balance - totalReservesForRealLiquidity;
+    config.total_reserves = totalReservesForRealLiquidity;
+    config.theoretical_cash = operationalCash;
+
+    // DEBUG: Informação detalhada de caixa
+    console.log('DEBUG - Saúde Financeira:', {
+      caixaBruto: config.system_balance,
+      reservasTotal: totalReservesForRealLiquidity,
+      liquidezReal: config.real_liquidity,
+      caixaTeorico: operationalCash
     });
-
-    // Se o valor no banco for diferente do calculado, usar o do banco pois pode incluir juros já processados
-    if (Math.abs(dbBalance - operationalCash) > 0.01) {
-      console.log('DEBUG - Usando valor do banco que inclui juros processados:', dbBalance);
-      config.system_balance = dbBalance;
-    } else {
-      // Atualizar system_balance para refletir o valor real (mas não salvar no banco)
-      config.system_balance = operationalCash;
-    }
 
 
 
@@ -286,8 +274,14 @@ adminRoutes.post('/users/add-quota', adminMiddleware, auditMiddleware('MANUAL_AD
         );
       }
 
-      // 3. Atualizar Score do Usuário (Benefício da Cota)
-      // Mesmo sendo Gift, a posse da cota confere benefícios de score para crédito
+      // 3. Registrar a entrada de capital das cotas presenteadas (Admin aportando/capitalizando)
+      const giftAmount = quantity * QUOTA_PRICE;
+      await client.query(
+        'UPDATE system_config SET system_balance = system_balance + $1',
+        [giftAmount]
+      );
+
+      // 4. Atualizar Score do Usuário (Benefício da Cota)
       await updateScore(client, user.id, SCORE_REWARDS.QUOTA_PURCHASE * quantity, `Ganhou ${quantity} cotas (Gift Admin)`);
 
       // 3. Registrar Log no histórico do usuário

@@ -282,22 +282,41 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
       if (referrerRes.rows.length > 0) {
         const referrerId = referrerRes.rows[0].id;
         const bonusAmount = 5.00;
+        // --- PAGAMENTO DE BÔNUS DE INDICAÇÃO (R$ 5,00) ---
+        // REGRA: Só libera se tiver gerado lucros (profit_pool)
+        const sysRes = await client.query('SELECT profit_pool FROM system_config LIMIT 1');
+        const profitPool = parseFloat(sysRes.rows[0].profit_pool);
 
-        // Creditar Bônus
-        await updateUserBalance(client, referrerId, bonusAmount, 'credit');
+        if (profitPool >= bonusAmount) {
+          // Creditar Bônus
+          await updateUserBalance(client, referrerId, bonusAmount, 'credit');
 
-        // Registrar custo no sistema
-        await client.query('UPDATE system_config SET total_manual_costs = total_manual_costs + $1', [bonusAmount]);
+          // Deduzir do Pool de Lucros (Bônus é pago com o lucro gerado)
+          await client.query(
+            'UPDATE system_config SET profit_pool = profit_pool - $1',
+            [bonusAmount]
+          );
 
-        // Registrar Transação do Bônus
-        await createTransaction(
-          client,
-          referrerId,
-          'REFERRAL_BONUS',
-          bonusAmount,
-          `Bônus por indicação: ${buyer.name} comprou cota(s)`,
-          'APPROVED'
-        );
+          // Registrar Transação do Bônus
+          await createTransaction(
+            client,
+            referrerId,
+            'REFERRAL_BONUS',
+            bonusAmount,
+            `Bônus por indicação: ${buyer.name} comprou cota(s)`,
+            'APPROVED'
+          );
+        } else {
+          // Se não houver lucro no momento, o bônus fica registrado como PENDING (aguardando lucro)
+          await createTransaction(
+            client,
+            referrerId,
+            'REFERRAL_BONUS',
+            bonusAmount,
+            `Bônus por indicação: ${buyer.name} comprou cota(s) (AGUARDANDO RESULTADOS DO SISTEMA)`,
+            'PENDING'
+          );
+        }
       }
     }
 
@@ -316,7 +335,7 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
       );
 
       // Atualizar caixa do sistema com o valor PRINCIPAL (valor limpo)
-      // Não subtraímos gatewayCost aqui porque o cliente já pagou no Gross-up.
+      // Taxas do gateway são repassadas, então o PRINCIPAL entra integral no caixa.
       await client.query(
         'UPDATE system_config SET system_balance = system_balance + $1, total_gateway_costs = total_gateway_costs + $2',
         [principalAmount, gatewayCost]
@@ -364,7 +383,8 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
         const principalPortion = actualPaymentAmount * (loanPrincipal / loanTotal);
         const interestPortion = actualPaymentAmount - principalPortion;
 
-        // O saldo do sistema sobe pelo valor principal pago (Net).
+        // O saldo do sistema sobe pelo valor principal pago.
+        // Taxas são repassadas.
         await client.query(
           'UPDATE system_config SET system_balance = system_balance + $1',
           [principalPortion]
@@ -393,11 +413,10 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
     // 1. Ativar Plano PRO para o usuário
     await client.query('UPDATE users SET membership_type = $1 WHERE id = $2', ['PRO', transaction.user_id]);
 
-    // 2. Distribuir o valor (50% Caixa / 50% Compartilhado)
-    // O valor em 'amount' é negativo na transação (débito), então usamos o valor absoluto
+    // 2. Distribuir o valor (85% para cotistas / 15% Operacional)
     const upgradeFee = Math.abs(parseFloat(transaction.amount));
-    const feeForProfit = upgradeFee * 0.5;
-    const feeForOperational = upgradeFee * 0.5;
+    const feeForProfit = upgradeFee * 0.85;
+    const feeForOperational = upgradeFee * 0.15;
 
     await client.query(
       'UPDATE system_config SET system_balance = system_balance + $1, profit_pool = profit_pool + $2',
@@ -420,16 +439,18 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
     const netAmount = parseFloat(metadata.netAmount || transaction.amount);
     const feeAmount = parseFloat(metadata.feeAmount || '0');
 
-    // --- RE-VALIDAÇÃO DE LIQUIDEZ ---
-    const systemQuotasRes = await client.query("SELECT COUNT(*) as count FROM quotas WHERE status = 'ACTIVE'");
-    const systemActiveLoansRes = await client.query("SELECT COALESCE(SUM(amount), 0) as total FROM loans WHERE status IN ('APPROVED', 'PAYMENT_PENDING')");
-    const systemQuotasCount = parseInt(systemQuotasRes.rows[0].count);
-    const systemTotalLoaned = parseFloat(systemActiveLoansRes.rows[0].total);
-    const systemGrossCash = systemQuotasCount * 50; // Preço fixo da cota (QUOTA_PRICE)
-    const realLiquidity = systemGrossCash - systemTotalLoaned;
+    // --- RE-VALIDAÇÃO DE LIQUIDEZ REAL ---
+    const configRes = await client.query("SELECT system_balance, total_tax_reserve, total_operational_reserve, total_owner_profit FROM system_config LIMIT 1");
+    const config = configRes.rows[0];
+
+    const totalReserves = parseFloat(config.total_tax_reserve) +
+      parseFloat(config.total_operational_reserve) +
+      parseFloat(config.total_owner_profit);
+
+    const realLiquidity = parseFloat(config.system_balance) - totalReserves;
 
     if (netAmount > realLiquidity) {
-      throw new Error(`Aprovação bloqueada: Liquidez insuficiente no caixa (Disponível: R$ ${realLiquidity.toFixed(2)}).`);
+      throw new Error(`Aprovação bloqueada: Liquidez real insuficiente no caixa (Disponível: R$ ${realLiquidity.toFixed(2)}, Reservas: R$ ${totalReserves.toFixed(2)}).`);
     }
 
     let feeForOperational = 0;
@@ -441,10 +462,10 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
       [netAmount]
     );
 
-    // 2. Se houver taxa cobrada, aplicar a regra de divisão: 85% Volta pro Caixa / 15% Vai pros Lucros
+    // 2. Se houver taxa cobrada, aplicar a regra de divisão: 85% vai pros Lucros / 15% Volta pro Caixa
     if (feeAmount > 0) {
-      feeForOperational = feeAmount * 0.85;
-      feeForProfit = feeAmount * 0.15;
+      feeForProfit = feeAmount * 0.85;
+      feeForOperational = feeAmount * 0.15;
 
       await client.query(
         'UPDATE system_config SET system_balance = system_balance + $1',
@@ -553,6 +574,16 @@ export const processLoanApproval = async (client: PoolClient, id: string, action
   const netAmount = grossAmount - originationFee;
 
   await updateUserBalance(client, loan.user_id, netAmount, 'credit');
+
+  // Distribuir a Taxa de Originação (85% para cotistas / 15% Operacional)
+  const feeForProfit = originationFee * 0.85;
+  const feeForOperational = originationFee * 0.15;
+  await client.query(
+    'UPDATE system_config SET system_balance = system_balance + $1, profit_pool = profit_pool + $2',
+    [feeForOperational, feeForProfit]
+  );
+
+  // NOTA: Não deduzimos do system_balance aqui. A liquidez real só sai do banco quando o usuário sacar.
 
   await createTransaction(
     client,
