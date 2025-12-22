@@ -63,7 +63,7 @@ const WelcomePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white selection:bg-cyan-500/30 font-sans">
+    <main className="min-h-screen bg-zinc-950 text-white selection:bg-cyan-500/30 font-sans">
       {/* Background Aurora */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-cyan-500/10 rounded-full blur-[120px] animate-pulse"></div>
@@ -74,7 +74,7 @@ const WelcomePage = () => {
       <nav className={`relative z-10 px-6 py-8 transition-all duration-1000 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
         <div className="max-w-6xl mx-auto flex justify-between items-center bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-4 rounded-2xl">
           <div className="flex items-center gap-3">
-            <img src="/pwa-192x192.png" alt="Cred30 Logo" className="w-10 h-10 rounded-xl shadow-[0_0_15px_rgba(34,211,238,0.4)]" />
+            <img src="/pwa-192x192.png" alt="Cred30 Logo" width="40" height="40" className="w-10 h-10 rounded-xl shadow-[0_0_15px_rgba(34,211,238,0.4)]" />
             <span className="text-xl font-bold tracking-tighter">Cred<span className="text-cyan-400">30</span></span>
           </div>
           <button onClick={() => navigate('/auth')} className="bg-white text-black font-bold px-6 py-2.5 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-white/10 text-sm">
@@ -93,7 +93,7 @@ const WelcomePage = () => {
             A comunidade que <br />
             <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent italic">valoriza</span> seu tempo.
           </h1>
-          <p className="text-lg text-zinc-400 mb-10 max-w-xl mx-auto leading-relaxed">
+          <p className="text-lg text-zinc-300 mb-10 max-w-xl mx-auto leading-relaxed">
             Torne-se membro em minutos e tenha acesso a recompensas exclusivas hoje com total segurança.
           </p>
 
@@ -154,7 +154,7 @@ const WelcomePage = () => {
               </div>
             )}
 
-            <p className="text-zinc-500 text-xs font-medium">Download rápido • 0.5 MB • 100% Seguro</p>
+            <p className="text-zinc-400 text-xs font-medium">Download rápido • 0.5 MB • 100% Seguro</p>
           </div>
         </div>
       </section>
@@ -162,8 +162,8 @@ const WelcomePage = () => {
       {/* Footer Minimal */}
       <footer className="relative z-10 px-6 py-12">
         <div className="max-w-6xl mx-auto text-center border-t border-white/5 pt-8">
-          <p className="text-zinc-600 text-[10px] uppercase tracking-widest mb-4">© 2024 Cred30 Plataforma Digital</p>
-          <div className="flex justify-center gap-6 text-zinc-500 text-xs font-bold uppercase transition-colors">
+          <p className="text-zinc-500 text-[10px] uppercase tracking-widest mb-4">© 2024 Cred30 Plataforma Digital</p>
+          <div className="flex justify-center gap-6 text-zinc-400 text-xs font-bold uppercase transition-colors">
             <button onClick={() => navigate('/terms')} className="hover:text-white">Termos</button>
             <button onClick={() => navigate('/privacy')} className="hover:text-white">Privacidade</button>
           </div>
@@ -190,7 +190,7 @@ const WelcomePage = () => {
       )}
 
 
-    </div>
+    </main>
   );
 };
 

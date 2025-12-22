@@ -144,7 +144,7 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-3 sm:p-6 md:p-8 relative">
+        <main className="min-h-screen flex items-center justify-center bg-background p-3 sm:p-6 md:p-8 relative">
             <div className="w-full max-w-[98vw] sm:max-w-md bg-surface border border-surfaceHighlight p-4 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl relative overflow-hidden max-h-[95vh] overflow-y-auto">
                 <div className="absolute top-0 left-0 w-full h-1.5 sm:h-2 bg-gradient-to-r from-primary-400 to-primary-600"></div>
 
@@ -159,9 +159,9 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
                 </button>
 
                 <div className="text-center mb-4 sm:mb-8">
-                    <img src="/pwa-192x192.png" alt="Cred30 Logo" className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl shadow-[0_0_25px_rgba(6,182,212,0.4)] mx-auto mb-4" />
+                    <img src="/pwa-192x192.png" alt="Cred30 Logo" width="80" height="80" className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl shadow-[0_0_25px_rgba(6,182,212,0.4)] mx-auto mb-4" />
                     <h1 className="text-xl sm:text-3xl font-bold text-white tracking-tighter">Cred<span className="text-primary-400">30</span></h1>
-                    <p className="text-zinc-500 mt-1 text-[10px] sm:text-sm">Sua liberdade financeira começa aqui.</p>
+                    <p className="text-zinc-400 mt-1 text-[10px] sm:text-sm">Sua liberdade financeira começa aqui.</p>
                 </div>
 
                 {/* Custom Error Alert */}
@@ -321,7 +321,7 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
                                             required
                                         />
                                     </div>
-                                    <p className="text-[10px] text-zinc-500 px-1 italic">O Cred30 é exclusivo. Registros exigem um convite.</p>
+                                    <p className="text-[10px] text-zinc-400 px-1 italic">O Cred30 é exclusivo. Registros exigem um convite.</p>
                                 </>
                             )}
 
@@ -375,10 +375,10 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
                     </div>
                 )}
 
-                <footer className="mt-8 pt-6 border-t border-white/5 text-center text-[10px] text-zinc-600 space-y-2">
+                <footer className="mt-8 pt-6 border-t border-white/5 text-center text-[10px] text-zinc-500 space-y-2">
                     <div className="flex justify-center gap-4">
-                        <a href="/terms" target="_blank" className="hover:text-zinc-400 underline transition-colors">Termos de Uso</a>
-                        <button type="button" onClick={() => setShowTerms(true)} className="hover:text-zinc-400 underline transition-colors">Política de Privacidade</button>
+                        <a href="/terms" target="_blank" className="hover:text-zinc-300 underline transition-colors">Termos de Uso</a>
+                        <button type="button" onClick={() => setShowTerms(true)} className="hover:text-zinc-300 underline transition-colors">Política de Privacidade</button>
                     </div>
                     <p className="font-medium">Cred30 Associativo • © 2025 Comunidade Segura</p>
                 </footer>
@@ -493,6 +493,6 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
                 onClose={() => setShowTerms(false)}
                 onAccept={handleConfirmRegistration}
             />
-        </div>
+        </main >
     );
 };

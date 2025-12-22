@@ -40,7 +40,7 @@ const MetricCard = ({ title, value, subtitle, icon: Icon, color }: any) => {
                 <span className="text-xs font-bold uppercase tracking-wider opacity-80">{title}</span>
             </div>
             <p className="text-3xl font-bold tracking-tight">{value}</p>
-            <p className="text-[10px] opacity-70 mt-1 font-medium uppercase">{subtitle}</p>
+            <p className="text-[10px] opacity-90 mt-1 font-medium uppercase">{subtitle}</p>
         </div>
     );
 };

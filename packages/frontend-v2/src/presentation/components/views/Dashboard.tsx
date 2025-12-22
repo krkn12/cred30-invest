@@ -97,9 +97,9 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                             <Star size={10} className="text-primary-400" fill="currentColor" />
                             <span className="font-bold text-white">{user.score || 0}</span>
                         </div>
-                        <p className="text-xs text-zinc-500">Membro desde {new Date(user.joinedAt).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })} • v{packageJson.version}</p>
+                        <p className="text-xs text-zinc-400">Membro desde {new Date(user.joinedAt).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })} • v{packageJson.version}</p>
                     </div>
-                    <p className="text-xs text-zinc-600 mt-1">Código: <span className="text-zinc-400 font-mono select-all cursor-pointer">{user.referralCode}</span></p>
+                    <p className="text-xs text-zinc-500 mt-1">Código: <span className="text-zinc-400 font-mono select-all cursor-pointer">{user.referralCode}</span></p>
                 </div>
                 <div className="flex flex-col items-end gap-2">
                     <div className="flex gap-2">
@@ -140,7 +140,7 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                             <span className="text-sm font-medium text-zinc-400">Minhas Licenças</span>
                         </div>
                         <h3 className="text-2xl font-bold text-white">{formatCurrency(totalInvested)}</h3>
-                        <p className="text-xs text-zinc-500 mt-1">{userQuotas.length} licenças ativas</p>
+                        <p className="text-xs text-zinc-400 mt-1">{userQuotas.length} licenças ativas</p>
                     </div>
                 </div>
 
@@ -167,7 +167,7 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                             <span className="text-sm font-medium text-zinc-400">Auxílios Ativos</span>
                         </div>
                         <h3 className="text-2xl font-bold text-red-400">{formatCurrency(totalDebt)}</h3>
-                        <p className="text-xs text-zinc-500 mt-1">{userLoans.length} contratos ativos</p>
+                        <p className="text-xs text-zinc-400 mt-1">{userLoans.length} contratos ativos</p>
                     </div>
                 </div>
             </div>
@@ -185,7 +185,7 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                             style={{ width: `${Math.min(progressToNext, 100)}%` }}
                         ></div>
                     </div>
-                    <p className="text-xs text-zinc-500 mt-2">Faltam {nextLevel.goal - userQuotas.length} licenças para alcançar o próximo nível</p>
+                    <p className="text-xs text-zinc-400 mt-2">Faltam {nextLevel.goal - userQuotas.length} licenças para alcançar o próximo nível</p>
                 </div>
             )}
 
@@ -202,7 +202,7 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                                 <Zap size={20} className="text-yellow-500 fill-yellow-500" />
                                 Central de Prêmios
                             </h3>
-                            <p className="text-xs text-zinc-500">Cumpra tarefas e ganhe Score para aumentar seu limite</p>
+                            <p className="text-xs text-zinc-400">Cumpra tarefas e ganhe Score para aumentar seu limite</p>
                         </div>
                     </div>
 
@@ -388,7 +388,7 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium text-white">{t.description}</p>
-                                    <p className="text-xs text-zinc-500">{t.date ? new Date(t.date).toLocaleDateString('pt-BR') : 'Data não disponível'}</p>
+                                    <p className="text-xs text-zinc-400">{t.date ? new Date(t.date).toLocaleDateString('pt-BR') : 'Data não disponível'}</p>
                                 </div>
                             </div>
                             <div className="text-right">

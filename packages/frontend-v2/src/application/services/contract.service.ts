@@ -1,5 +1,3 @@
-import jsPDF from 'jspdf';
-
 interface LoanContractData {
     loanId: string;
     userName: string;
@@ -18,7 +16,8 @@ interface LoanContractData {
 /**
  * Gera o PDF do Contrato de Empréstimo
  */
-export const generateLoanContractPDF = (data: LoanContractData): jsPDF => {
+const generateLoanContractPDF = async (data: LoanContractData): Promise<any> => {
+    const { default: jsPDF } = await import('jspdf');
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 20;
@@ -27,7 +26,7 @@ export const generateLoanContractPDF = (data: LoanContractData): jsPDF => {
     // Helpers
     const centerText = (text: string, yPos: number, size = 12) => {
         doc.setFontSize(size);
-        const textWidth = doc.getStringUnitWidth(text) * size / doc.internal.scaleFactor;
+        const textWidth = doc.getStringUnitWidth(text) * size / (doc.internal as any).scaleFactor;
         doc.text(text, (pageWidth - textWidth) / 2, yPos);
     };
 
@@ -192,8 +191,8 @@ export const generateLoanContractPDF = (data: LoanContractData): jsPDF => {
 /**
  * Baixa o PDF do contrato
  */
-export const downloadLoanContract = (data: LoanContractData) => {
-    const doc = generateLoanContractPDF(data);
+export const downloadLoanContract = async (data: LoanContractData) => {
+    const doc = await generateLoanContractPDF(data);
     doc.save(`contrato_mutuo_${data.contractNumber}.pdf`);
 };
 
