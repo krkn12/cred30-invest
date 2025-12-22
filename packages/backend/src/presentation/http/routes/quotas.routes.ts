@@ -96,18 +96,18 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
     const user = c.get('user') as UserContext;
     const pool = getDbPool(c);
 
-    // Validar limites
-    if (quantity > 100) {
+    // Validar limites (Proteção contra movimentações atípicas)
+    if (quantity > 20) {
       return c.json({
         success: false,
-        message: 'Quantidade máxima por ativação é 100 licenças'
+        message: 'Quantidade máxima por ativação é 20 licenças (R$ 1.000,00)'
       }, 400);
     }
 
-    if (baseCost > 50000) {
+    if (baseCost > 1000) {
       return c.json({
         success: false,
-        message: 'Valor máximo por ativação é R$ 50.000,00'
+        message: 'Valor máximo por ativação é R$ 1.000,00'
       }, 400);
     }
 
