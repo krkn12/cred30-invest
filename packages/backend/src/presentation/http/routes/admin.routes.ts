@@ -131,6 +131,61 @@ adminRoutes.delete('/costs/:id', adminMiddleware, auditMiddleware('DELETE_COST',
   }
 });
 
+// Pagamento de custo do sistema
+adminRoutes.post('/costs/:id/pay', adminMiddleware, auditMiddleware('PAY_COST', 'SYSTEM'), async (c) => {
+  try {
+    const id = c.req.param('id');
+    const pool = getDbPool(c);
+
+    const result = await executeInTransaction(pool, async (client) => {
+      // 1. Buscar o custo
+      const costRes = await client.query('SELECT description, amount FROM system_costs WHERE id = $1', [id]);
+      if (costRes.rows.length === 0) {
+        throw new Error('Custo não encontrado');
+      }
+      const cost = costRes.rows[0];
+      const amount = parseFloat(cost.amount);
+
+      // 2. Subtrair do saldo do sistema
+      const configRes = await client.query('SELECT system_balance FROM system_config LIMIT 1');
+      if (parseFloat(configRes.rows[0].system_balance) < amount) {
+        throw new Error('Saldo do sistema insuficiente para realizar este pagamento.');
+      }
+
+      await client.query('UPDATE system_config SET system_balance = system_balance - $1', [amount]);
+
+      // 3. Remover o custo (como solicitado: "as dívidas somem")
+      await client.query('DELETE FROM system_costs WHERE id = $1', [id]);
+
+      return { description: cost.description, amount: amount };
+    });
+
+    if (!result.success) return c.json({ success: false, message: result.error }, 400);
+
+    return c.json({ success: true, message: `Pagamento de "${result.data?.description}" realizado com sucesso!` });
+  } catch (error: any) {
+    return c.json({ success: false, message: error.message }, 500);
+  }
+});
+
+// Histórico Financeiro do Admin (Extrato)
+adminRoutes.get('/finance-history', adminMiddleware, async (c) => {
+  try {
+    const pool = getDbPool(c);
+    const result = await pool.query(`
+      SELECT l.*, u.name as admin_name 
+      FROM admin_logs l
+      LEFT JOIN users u ON l.admin_id = u.id
+      WHERE l.action IN ('MANUAL_PROFIT_ADD', 'PAY_COST', 'ADD_COST', 'DELETE_COST', 'MANUAL_ADD_QUOTA')
+      ORDER BY l.created_at DESC
+      LIMIT 50
+    `);
+    return c.json({ success: true, data: result.rows });
+  } catch (error: any) {
+    return c.json({ success: false, message: error.message }, 500);
+  }
+});
+
 // Dashboard administrativo
 adminRoutes.get('/dashboard', adminMiddleware, async (c) => {
   try {

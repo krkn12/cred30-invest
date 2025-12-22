@@ -71,6 +71,9 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
     const [newCostDescription, setNewCostDescription] = useState('');
     const [newCostAmount, setNewCostAmount] = useState('');
 
+    const [financeHistory, setFinanceHistory] = useState<any[]>([]);
+    const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+
     useEffect(() => {
         setIsLoading(false);
         fetchPendingChatsCount();
@@ -94,8 +97,23 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
         }
         if (activeTab === 'system') {
             fetchSystemCosts();
+            fetchFinanceHistory();
         }
     }, [activeTab]); // Só quando a aba muda
+
+    const fetchFinanceHistory = async () => {
+        setIsHistoryLoading(true);
+        try {
+            const res = await apiService.get<any>('/admin/finance-history');
+            if (res.success) {
+                setFinanceHistory(res.data || []);
+            }
+        } catch (e) {
+            console.error('Erro ao buscar histórico financeiro:', e);
+        } finally {
+            setIsHistoryLoading(false);
+        }
+    };
 
     const fetchSystemCosts = async () => {
         try {
@@ -247,6 +265,23 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                 onRefresh();
             } else {
                 onError('Erro', response.message);
+            }
+        } catch (e: any) {
+            onError('Erro', e.message);
+        }
+    };
+
+    const handlePayCost = async (id: number, description: string) => {
+        if (!window.confirm(`Confirmar o pagamento de "${description}"? O valor será debitado do saldo do sistema.`)) return;
+        try {
+            const response = await apiService.post<any>(`/admin/costs/${id}/pay`, {});
+            if (response.success) {
+                onSuccess('Pagamento Realizado', response.message);
+                fetchSystemCosts();
+                fetchFinanceHistory();
+                onRefresh();
+            } else {
+                onError('Erro no Pagamento', response.message);
             }
         } catch (e: any) {
             onError('Erro', e.message);
@@ -618,16 +653,24 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                                 <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
                                     {systemCosts.map((cost) => (
                                         <div key={cost.id} className="group bg-black/40 border border-zinc-800/50 p-4 rounded-2xl flex justify-between items-center transition-all hover:border-zinc-700">
-                                            <div>
+                                            <div className="flex-1">
                                                 <p className="text-xs font-bold text-zinc-300">{cost.description}</p>
                                                 <p className="text-sm font-black text-white">{formatCurrency(parseFloat(cost.amount))}</p>
                                             </div>
-                                            <button
-                                                onClick={() => handleDeleteCost(cost.id)}
-                                                className="p-2 text-zinc-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => handlePayCost(cost.id, cost.description)}
+                                                    className="bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-black px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all"
+                                                >
+                                                    PAGAR
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteCost(cost.id)}
+                                                    className="p-2 text-zinc-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
                                         </div>
                                     ))}
                                     {systemCosts.length === 0 && (
@@ -663,6 +706,57 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                                         Lançar Excedente
                                     </button>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Extrato Financeiro Administrativo */}
+                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl col-span-1 md:col-span-2">
+                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
+                                <div className="p-2 bg-primary-500/10 rounded-lg"><Activity className="text-primary-400" size={20} /></div>
+                                Extrato de Movimentações Administrativas
+                            </h3>
+
+                            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-3 custom-scrollbar">
+                                {isHistoryLoading && <div className="text-center py-10 text-zinc-500 text-xs font-bold uppercase animate-pulse">Carregando extrato...</div>}
+
+                                {financeHistory.map((log) => (
+                                    <div key={log.id} className="bg-black/30 border border-zinc-800/50 p-4 rounded-2xl flex items-center justify-between gap-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`p-3 rounded-xl ${log.action === 'PAY_COST' ? 'bg-red-500/10 text-red-400' :
+                                                    log.action === 'MANUAL_PROFIT_ADD' ? 'bg-emerald-500/10 text-emerald-400' :
+                                                        'bg-zinc-800 text-zinc-400'
+                                                }`}>
+                                                {log.action === 'PAY_COST' ? <ArrowUpRight size={18} /> :
+                                                    log.action === 'MANUAL_PROFIT_ADD' ? <ArrowDownLeft size={18} /> :
+                                                        <SettingsIcon size={18} />}
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-black text-white uppercase tracking-tight">
+                                                    {log.action === 'PAY_COST' ? 'PAGAMENTO REALIZADO' :
+                                                        log.action === 'MANUAL_PROFIT_ADD' ? 'EXCEDENTE ADICIONADO' :
+                                                            log.action.replace('_', ' ')}
+                                                </p>
+                                                <p className="text-[10px] text-zinc-500 font-bold uppercase">{new Date(log.created_at).toLocaleString('pt-BR')}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className={`text-sm font-black ${log.action === 'PAY_COST' ? 'text-red-400' :
+                                                    log.action === 'MANUAL_PROFIT_ADD' ? 'text-emerald-400' :
+                                                        'text-white'
+                                                }`}>
+                                                {log.action === 'PAY_COST' ? '-' : '+'}{formatCurrency(log.new_values?.amount || log.new_values?.addedAmount || 0)}
+                                            </p>
+                                            <p className="text-[9px] text-zinc-600 font-bold uppercase">POR: {log.admin_name}</p>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                {!isHistoryLoading && financeHistory.length === 0 && (
+                                    <div className="py-20 text-center opacity-30">
+                                        <Activity size={48} className="mx-auto mb-4" />
+                                        <p className="text-xs font-bold uppercase">Nenhuma movimentação registrada</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
