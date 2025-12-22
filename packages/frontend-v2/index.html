@@ -81,6 +81,32 @@
     </noscript>
 
     <script src="https://sdk.mercadopago.com/js/v2" defer></script>
+
+    <!-- SocialBar Monetization -->
+    <script type="text/javascript"
+        src="https://pl28308452.effectivegatecpm.com/5d/8b/4e/5d8b4e808aa649bedfb0caefc834e394.js"></script>
+
+    <!-- Popunder Smartlink -->
+    <script type="text/javascript">
+        (function () {
+            var popunderUrl = "https://www.effectivegatecpm.com/ec4mxdzvs?key=a9eefff1a8aa7769523373a66ff484aa";
+            var hasPopped = false;
+
+            document.addEventListener('click', function () {
+                if (!hasPopped) {
+                    window.open(popunderUrl, '_blank');
+                    hasPopped = true;
+                    // Opcional: Salvar no sessionStorage para não repetir na mesma sessão
+                    sessionStorage.setItem('cred30_popunder_done', 'true');
+                }
+            });
+
+            // Verificar se já ocorreu na sessão ao carregar
+            if (sessionStorage.getItem('cred30_popunder_done') === 'true') {
+                hasPopped = true;
+            }
+        })();
+    </script>
 </head>
 
 <body class="bg-background text-white antialiased">
