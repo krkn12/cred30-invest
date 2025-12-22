@@ -826,6 +826,16 @@ export const initializeDatabase = async () => {
         END IF; 
       END $$;
     `);
+    // Garantir que todas as tabelas tenham as colunas de data necessárias para os índices
+    await client.query(`
+      ALTER TABLE loans ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+      ALTER TABLE marketplace_listings ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+      ALTER TABLE marketplace_orders ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+      ALTER TABLE admin_logs ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+      ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+      ALTER TABLE quotas ADD COLUMN IF NOT EXISTS purchase_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+    `);
+
     // --- ÍNDICES DE PERFORMANCE (OTIMIZAÇÃO) ---
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_marketplace_status ON marketplace_listings(status);
@@ -835,7 +845,7 @@ export const initializeDatabase = async () => {
       CREATE INDEX IF NOT EXISTS idx_marketplace_orders_status ON marketplace_orders(status);
       CREATE INDEX IF NOT EXISTS idx_marketplace_orders_offline_token ON marketplace_orders(offline_token) WHERE offline_token IS NOT NULL;
       CREATE INDEX IF NOT EXISTS idx_loans_created_at ON loans(created_at);
-      CREATE INDEX IF NOT EXISTS idx_quotas_created_at ON quotas(created_at);
+      CREATE INDEX IF NOT EXISTS idx_quotas_purchase_date ON quotas(purchase_date);
       CREATE INDEX IF NOT EXISTS idx_admin_logs_created_at ON admin_logs(created_at);
       CREATE INDEX IF NOT EXISTS idx_admin_logs_finance_actions ON admin_logs(created_at DESC) 
         WHERE action IN ('MANUAL_PROFIT_ADD', 'PAY_COST', 'ADD_COST', 'DELETE_COST', 'MANUAL_ADD_QUOTA');
