@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { ArrowUpFromLine, ShieldCheck, Clock, XCircle, TrendingUp } from 'lucide-react';
-import packageJson from '../../../../package.json';
+// import packageJson from '../../../../package.json';
 import { User } from '../../../domain/types/common.types';
 import { apiService } from '../../../application/services/api.service';
 import { confirmWithdrawal } from '../../../application/services/storage.service';
@@ -316,7 +316,7 @@ export const WithdrawView = ({ balance, currentUser, totalQuotaValue, onSuccess,
                             </div>
                         </div>
 
-                        <p className="text-center text-[10px] text-zinc-600 mt-4 uppercase tracking-[0.2em]">Anúncio Premium • Cred30 v{packageJson.version}</p>
+                        <p className="text-center text-[10px] text-zinc-600 mt-4 uppercase tracking-[0.2em]">Anúncio Premium • Cred30 v1.0.139</p>
                     </div>
                 </div>
             )}

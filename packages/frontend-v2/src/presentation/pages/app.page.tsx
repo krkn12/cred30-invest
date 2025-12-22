@@ -106,6 +106,18 @@ export default function App() {
 
   const [confirmState, setConfirmState] = useState<{ id?: string, type: 'SELL' | 'SELL_ALL' } | null>(null);
 
+  const isStaff = React.useMemo(() => {
+    if (!state.currentUser) return false;
+    return state.currentUser.isAdmin || state.currentUser.role === 'ADMIN' || state.currentUser.role === 'ATTENDANT';
+  }, [state.currentUser?.isAdmin, state.currentUser?.role]);
+
+  const totalQuotaValue = React.useMemo(() => {
+    if (!state.currentUser) return 0;
+    return state.quotas
+      .filter(q => q.userId === state.currentUser.id)
+      .reduce((acc, q) => acc + (q.currentValue || 0), 0);
+  }, [state.quotas, state.currentUser?.id]);
+
   useEffect(() => {
     loadData();
     const interval = setInterval(() => {
@@ -396,11 +408,6 @@ export default function App() {
     );
   }
 
-  const isStaff = React.useMemo(() => {
-    if (!state.currentUser) return false;
-    return state.currentUser.isAdmin || state.currentUser.role === 'ADMIN' || state.currentUser.role === 'ATTENDANT';
-  }, [state.currentUser?.isAdmin, state.currentUser?.role]);
-
   if (isStaff) {
     return (
       <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center"><RefreshCw className="animate-spin text-primary-500" /></div>}>
@@ -492,11 +499,7 @@ export default function App() {
                       onSuccess={(title, message) => setShowSuccess({ isOpen: true, title, message })}
                       onError={(title, message) => setShowError({ isOpen: true, title, message })}
                       onRefresh={refreshState}
-                      totalQuotaValue={React.useMemo(() => state.quotas
-                        .filter(q => q.userId === state.currentUser!.id)
-                        .reduce((acc, q) => acc + (q.currentValue || 0), 0),
-                        [state.quotas, state.currentUser?.id]
-                      )}
+                      totalQuotaValue={totalQuotaValue}
                     />
                   </Suspense>
                 } />
