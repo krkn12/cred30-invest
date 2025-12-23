@@ -25,13 +25,25 @@ export const distributeProfits = async (pool: Pool | PoolClient): Promise<any> =
             FROM quotas q
             WHERE q.status = 'ACTIVE'
             AND (
-                EXISTS (SELECT 1 FROM loans l WHERE l.user_id = q.user_id)
+                -- Atividade 1: Participação Financeira (Apoios Ativos ou Pagos)
+                EXISTS (SELECT 1 FROM loans l WHERE l.user_id = q.user_id AND l.status IN ('APPROVED', 'PAYMENT_PENDING', 'PAID'))
                 OR 
+                -- Atividade 2: Transações no Ecossistema (Jogos, Ads, Academy, Mercado, Upgrades)
                 EXISTS (
                     SELECT 1 FROM transactions t 
                     WHERE t.user_id = q.user_id 
-                    AND t.type IN ('GAME_BET', 'MARKET_BOOST', 'AD_REWARD', 'MEMBERSHIP_UPGRADE', 'MARKET_PURCHASE_CREDIT', 'MARKET_SALE')
+                    AND t.type IN (
+                        'GAME_BET', 'AD_REWARD', 'EDUCATION_REWARD', 
+                        'MARKET_BOOST', 'MARKET_PURCHASE', 'MARKET_PURCHASE_CREDIT', 'MARKET_SALE',
+                        'MEMBERSHIP_UPGRADE', 'LOAN_PAYMENT', 'PREMIUM_PURCHASE', 'DAILY_CHECKIN', 'REPUTATION_CONSULT'
+                    )
                 )
+                OR
+                -- Atividade 3: Participação em Governança (Votação)
+                EXISTS (SELECT 1 FROM voting_votes vv WHERE vv.user_id = q.user_id)
+                OR
+                -- Atividade 4: Pedidos Ativos no Marketplace
+                EXISTS (SELECT 1 FROM marketplace_orders mo WHERE mo.buyer_id = q.user_id OR mo.seller_id = q.user_id)
             )
             GROUP BY q.user_id
         `;
