@@ -101,7 +101,7 @@ export const HistoryView = ({ transactions }: HistoryViewProps) => {
                     <p className="text-zinc-400 text-sm mt-1">{filteredTransactions.length} transações encontradas</p>
                 </div>
             </div>
-            </div>
+
 
             {/* Cards de resumo */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
