@@ -12,6 +12,7 @@ import { PIXModal } from '../components/ui/pix-modal.component';
 import { CardModal } from '../components/ui/card-modal.component';
 import { AuthScreen } from '../components/views/AuthScreen';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
+import { ReviewModal } from '../components/ui/ReviewModal';
 import { AIAssistant } from '../components/AIAssistant';
 import { OfflineNotice } from '../components/ui/offline-notice.component';
 import { useOnlineStatus } from '../hooks/use-online-status';
@@ -106,6 +107,12 @@ export default function App() {
 
   const [confirmState, setConfirmState] = useState<{ id?: string, type: 'SELL' | 'SELL_ALL' } | null>(null);
 
+  const [reviewModalData, setReviewModalData] = useState<{
+    isOpen: boolean;
+    transactionId: number;
+    amount: number;
+  }>({ isOpen: false, transactionId: 0, amount: 0 });
+
   const isStaff = React.useMemo(() => {
     if (!state.currentUser) return false;
     return state.currentUser.isAdmin || state.currentUser.role === 'ADMIN' || state.currentUser.role === 'ATTENDANT';
@@ -157,9 +164,18 @@ export default function App() {
     let cleanupNotifications: (() => void) | undefined;
     if (state.currentUser && isOnline) {
       cleanupNotifications = apiService.listenToNotifications((notif) => {
+        // Verificar se é notificação de saque processado solicitando avaliação
+        if (notif.type === 'PAYOUT_COMPLETED' && notif.metadata?.requiresReview) {
+          setReviewModalData({
+            isOpen: true,
+            transactionId: notif.metadata.transactionId,
+            amount: notif.metadata.amount
+          });
+        }
+
         setShowSuccess({
           isOpen: true,
-          title: 'Notificação',
+          title: notif.title || 'Notificação',
           message: notif.message || 'Status atualizado!'
         });
         refreshState();
@@ -616,6 +632,16 @@ export default function App() {
                   type="danger"
                 />
               )}
+
+              <ReviewModal
+                isOpen={reviewModalData.isOpen}
+                onClose={() => setReviewModalData({ isOpen: false, transactionId: 0, amount: 0 })}
+                onSubmit={async (rating, comment, isPublic) => {
+                  await apiService.submitReview(reviewModalData.transactionId, rating, comment, isPublic);
+                }}
+                transactionId={reviewModalData.transactionId}
+                amount={reviewModalData.amount}
+              />
             </Layout>
             <AIAssistant appState={state} />
           </>
