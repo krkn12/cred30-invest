@@ -399,8 +399,7 @@ class ApiService {
 
   // --- GOVERNANÇA (VOTAÇÃO) ---
   async getProposals(): Promise<any> {
-    const response = await this.request<any>('/voting/proposals');
-    return response.data;
+    return await this.request<any>('/voting/proposals');
   }
 
   async createProposal(title: string, description: string): Promise<any> {
