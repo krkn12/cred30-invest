@@ -5,6 +5,9 @@ import { updateScore, SCORE_REWARDS } from '../../../application/services/score.
 
 export const votingRoutes = new Hono();
 
+// Middleware Global para todas as rotas de votação
+votingRoutes.use('*', authMiddleware);
+
 // 1. Criar Proposta (Admin Only)
 votingRoutes.post('/proposal', adminMiddleware, async (c) => {
     const { title, description } = await c.req.json();
@@ -25,7 +28,7 @@ votingRoutes.post('/proposal', adminMiddleware, async (c) => {
 });
 
 // 2. Listar Propostas
-votingRoutes.get('/proposals', authMiddleware, async (c) => {
+votingRoutes.get('/proposals', async (c) => {
     try {
         // Retorna propostas e se o usuário já votou
         const userId = c.get('user').id;
@@ -43,7 +46,7 @@ votingRoutes.get('/proposals', authMiddleware, async (c) => {
 });
 
 // 3. Votar
-votingRoutes.post('/vote', authMiddleware, async (c) => {
+votingRoutes.post('/vote', async (c) => {
     const { proposalId, vote } = await c.req.json(); // vote: 'YES' ou 'NO'
     const user = c.get('user');
 
