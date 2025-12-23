@@ -16,6 +16,7 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
 
     // Form States
     const [name, setName] = useState('');
+    const [cpf, setCpf] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [secretPhrase, setSecretPhrase] = useState('');
@@ -104,7 +105,7 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
         setShowTerms(false);
         setError(null);
         try {
-            const res = await registerUser(name, email, password, pixKey, secretPhrase, referralCode);
+            const res = await registerUser(name, email, password, pixKey, secretPhrase, referralCode, cpf);
             if (res.twoFactor) {
                 setTwoFactorData(res.twoFactor);
                 setVerifyEmailAddr(email);
@@ -295,6 +296,20 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
 
                             {isRegister && (
                                 <>
+                                    <div className="relative animate-in fade-in slide-in-from-left-2">
+                                        <ShieldCheck className="absolute left-3 top-2.5 sm:top-3 text-zinc-500" size={18} />
+                                        <input
+                                            type="text"
+                                            name="cpf"
+                                            autoComplete="off"
+                                            placeholder="Seu CPF (11 dígitos)"
+                                            value={cpf}
+                                            onChange={e => setCpf(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                                            className="w-full bg-background border border-surfaceHighlight rounded-lg sm:rounded-xl py-2.5 sm:py-3 pl-10 text-sm sm:text-base text-white focus:border-primary-500 outline-none transition"
+                                            required
+                                        />
+                                    </div>
+
                                     <div className="relative">
                                         <QrCode className="absolute left-3 top-2.5 sm:top-3 text-zinc-500" size={18} />
                                         <input
@@ -486,7 +501,8 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
                         </form>
                     </div>
                 </div>
-            )}
+            )
+            }
 
             <TermsAcceptanceModal
                 isOpen={showTerms}

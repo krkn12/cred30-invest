@@ -323,7 +323,8 @@ export const registerUser = async (
   password: string,
   pixKey: string,
   secretPhrase: string,
-  referralCodeInput?: string
+  referralCodeInput?: string,
+  cpf?: string
 ): Promise<any> => {
   const response = await apiService.register(
     name,
@@ -331,7 +332,8 @@ export const registerUser = async (
     password,
     secretPhrase,
     pixKey,
-    referralCodeInput
+    referralCodeInput,
+    cpf
   );
   return {
     user: convertApiUserToUser(response.user),
