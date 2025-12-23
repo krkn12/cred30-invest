@@ -69,7 +69,7 @@ export const LEGAL_TERMINOLOGY = {
 
 // Cláusulas Obrigatórias no Contrato de Apoio Mútuo
 export const MUTUAL_AID_CONTRACT_CLAUSES = {
-    OBJECT: 'DO OBJETO: O presente instrumento particular de mútuo civil feneratício, regido pelo Art. 586 e seguintes do Código Civil Brasileiro, tem por objeto a transferência temporária de recursos entre MEMBROS PARTICIPANTES do clube de benefícios Cred30, operando sob o regime de Sociedade em Conta de Participação (SCP) conforme Art. 991 CC.',
+    OBJECT: 'DO OBJETO: O presente instrumento particular de mútuo civil fenerício, regido pelo Art. 586 e seguintes do Código Civil Brasileiro, tem por objeto a transferência temporária de recursos entre MEMBROS PARTICIPANTES do clube de benefícios Cred30, operando sob o regime de Sociedade em Conta de Participação (SCP) conforme Art. 991 CC.',
 
     NATURE: 'DA NATUREZA JURÍDICA: As partes reconhecem expressamente que esta operação NÃO configura atividade privativa de instituição financeira (Art. 17 Lei 4.595/64), tratando-se de operação civil entre particulares, com lastro em participações ativas no clube.',
 
@@ -107,6 +107,22 @@ Li e aceito integralmente o Regulamento Interno e a Política de Privacidade da 
 
 // Aviso de Risco para tela de Apoio Mútuo
 export const MUTUAL_AID_RISK_WARNING = 'Ao solicitar um apoio mútuo, você está firmando um contrato de mútuo civil privado (Art. 586 CC) com lastro em suas participações ativas. Em caso de atraso na reposição, suas participações poderão ser executadas automaticamente. A disponibilidade está sujeita ao caixa do clube.';
+
+// Cláusulas Adicionais Recomendadas
+export const TERMINATION_CLAUSE = `
+DA RESCISÃO: O membro poderá solicitar a rescisão de sua participação no clube a qualquer momento mediante notificação prévia de 30 dias. Neste caso:
+- O saldo disponível será devolvido em até 15 dias úteis;
+- As participações ativas serão liquidadas pelo valor de aquisição;
+- O membro renuncia a quaisquer reivindicações futuras sobre excedentes operacionais.
+`;
+
+export const TERMS_MODIFICATION_CLAUSE = `
+DAS ALTERAÇÕES: A Cred30 reserva-se o direito de alterar este regulamento a qualquer momento, mediante comunicação prévia de 30 dias aos membros. O uso continuado da plataforma após as alterações constitui aceitação tácita dos novos termos.
+`;
+
+export const DATA_RETENTION_CLAUSE = `
+DA RETENÇÃO DE DADOS: Após a exclusão da conta, a Cred30 manterá os dados por período de 5 (cinco) anos para cumprimento de obrigações legais, fiscais e contábeis, conforme Art. 12, § 1º da LGPD.
+`;
 
 // Footer Legal Padrão
 export const LEGAL_FOOTER = `

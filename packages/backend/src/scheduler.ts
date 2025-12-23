@@ -47,7 +47,7 @@ export const initializeScheduler = (pool: Pool) => {
         try {
             const result = await runAutoLiquidation(pool);
             if (result.liquidatedCount > 0) {
-                console.log(`✅ [CRON] Liquidação finalizada: ${result.liquidatedCount} empréstimos processados.`);
+                console.log(`✅ [CRON] Liquidação finalizada: ${result.liquidatedCount} apoios mútuos processados.`);
             }
         } catch (error) {
             console.error('❌ [CRON] Erro fatal na liquidação automática:', error);

@@ -62,18 +62,18 @@ https://2830c6066fa5.ngrok-free.app
 
 - **Acesso**: https://2830c6066fa5.ngrok-free.app/admin
 - **Funcionalidades**:
-  - Gerenciar usuários
+  - Gerenciar membros
   - Aprovar/rejeitar transações
-  - Aprovar/rejeitar empréstimos
-  - Distribuir lucros
+  - Aprovar/rejeitar apoios mútuos
+  - Distribuir excedentes operacionais
   - Visualizar métricas financeiras
 
 #### Dashboard Cliente
 
 - **Acesso**: https://2830c6066fa5.ngrok-free.app (após login cliente)
 - **Funcionalidades**:
-  - Comprar cotas de investimento
-  - Solicitar empréstimos
+  - Adquirir participações no clube
+  - Solicitar apoios mútuos
   - Realizar saques
   - Indicar amigos
   - Visualizar extrato
@@ -88,14 +88,14 @@ https://2830c6066fa5.ngrok-free.app
 
 ### Teste 2: Investimento em Cotas
 
-1. Acesse "Investir"
-2. Compre 1 cota (R$ 50,00)
+1. Acesse "Participar"
+2. Adquira 1 participação (R$ 50,00)
 3. Verifique se aparece na carteira
 
 ### Teste 3: Empréstimo
 
-1. Acesse "Empréstimos"
-2. Solicite R$ 100,00 em 1 parcela
+1. Acesse "Apoios Mútuos"
+2. Solicite R$ 100,00 em 1 reposição
 3. Aguarde aprovação do administrador
 
 ### Teste 4: Saque
@@ -144,8 +144,8 @@ Admin: admin@cred30.com / admin123
 Cliente: joao@cred30.com / cliente123
 
 💰 Funcionalidades:
-- Investimento em cotas (R$ 50,00 cada)
-- Empréstimos (20% juros ao mês)
+- Participação em cotas (R$ 50,00 cada)
+- Apoios Mútuos (20% taxa de manutenção)
 - Saques (taxa de 2% ou R$ 5,00)
 - Sistema de indicações (R$ 5,00 por indicação)
 - Níveis VIP (Bronze, Prata, Ouro)
@@ -226,12 +226,10 @@ docker logs cred30-db-single
 Se encontrar problemas:
 
 1. **Verifique o status do ngrok**:
-
    - A janela do ngrok deve estar ativa
    - A URL deve estar acessível
 
 2. **Verifique os containers Docker**:
-
    - Todos os containers devem estar "running"
    - Não deve haver erros nos logs
 

@@ -38,22 +38,22 @@ export const FaqView: React.FC = () => {
         {
             icon: <ShieldCheck size={18} />,
             question: "O Cred30 é um banco?",
-            answer: "Não. O Cred30 é uma plataforma tecnológica que facilita a gestão de uma Sociedade em Conta de Participação (SCP) e contratos de Mútuo Civil entre pessoas físicas, conforme os Artigos 991 a 996 do Código Civil Brasileiro. Não somos uma instituição financeira regulada pelo BACEN."
+            answer: "Não. O Cred30 é uma plataforma tecnológica que facilita a gestão de um Clube de Benefícios operando sob Sociedade em Conta de Participação (SCP) e contratos de Mútuo Civil entre membros, conforme os Artigos 991 a 996 do Código Civil Brasileiro. Não somos uma instituição financeira regulada pelo BACEN."
         },
         {
             icon: <TrendingUp size={18} />,
             question: "Como funcionam as cotas de R$ 50,00?",
-            answer: "Ao adquirir uma cota (licença), você aporta R$ 42,00 no Capital Social (valor que gera bônus e é resgatável) e R$ 8,00 em uma Taxa Administrativa única para manutenção e tecnologia da plataforma. Esse modelo garante a sustentabilidade do clube a longo prazo."
+            answer: "Ao adquirir uma participação (licença), você aporta R$ 42,00 no Capital Social (valor que gera bônus e é resgatável) e R$ 8,00 em uma Taxa Administrativa única para manutenção e tecnologia da plataforma. Esse modelo garante a sustentabilidade do clube a longo prazo."
         },
         {
             icon: <DollarSign size={18} />,
             question: "Quando posso sacar meu dinheiro?",
-            answer: "Os bônus de participação podem ser sacados assim que atingirem o valor mínimo. Já o Capital Social das cotas possui um período de carência (vesting) para garantir a estabilidade do fundo comum. Consulte a aba 'Carteira' para ver seus prazos de resgate."
+            answer: "Os bônus de participação podem ser sacados assim que atingirem o valor mínimo. Já o Capital Social das participações possui um período de carência (vesting) para garantir a estabilidade do fundo comum. Consulte a aba 'Carteira' para ver seus prazos de resgate."
         },
         {
             icon: <Users size={18} />,
             question: "O que acontece se eu não pagar um apoio?",
-            answer: "Como todos os apoios são baseados em garantias reais, caso haja atraso superior a 5 dias, o sistema executa automaticamente o lastro (suas cotas de participação) para recompor o fundo comum. Seu score também será reduzido para zero."
+            answer: "Como todos os apoios mútuos são baseados em lastros reais, caso haja atraso superior a 5 dias, o sistema executa automaticamente o lastro (suas participações ativas) para recompor o fundo comum. Seu score também será reduzido para zero."
         },
         {
             icon: <MessageCircle size={18} />,

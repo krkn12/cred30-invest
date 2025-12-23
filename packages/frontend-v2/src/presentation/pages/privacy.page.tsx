@@ -133,7 +133,7 @@ const PrivacyPage = () => {
                             O score é uma pontuação interna baseada no seu comportamento na plataforma. Ele é <strong className="text-white">privado</strong> e utilizado exclusivamente para:
                         </p>
                         <ul className="list-disc list-inside text-zinc-400 text-xs sm:text-sm space-y-2 ml-2 sm:ml-4">
-                            <li>Calcular seu limite de crédito disponível para empréstimos.</li>
+                            <li>Calcular seu limite de apoio mútuo disponível para solicitação.</li>
                             <li>Definir elegibilidade para distribuição de bônus ou excedentes.</li>
                             <li>Identificar e prevenir atividades fraudulentas.</li>
                         </ul>

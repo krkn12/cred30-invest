@@ -26,16 +26,12 @@ export const HistoryView = ({ transactions }: HistoryViewProps) => {
             'DEPOSIT': 'Adesão Social',
             'WITHDRAWAL': 'Resgate de Capital',
             'DIVIDEND': 'Excedente Operacional',
-            'QUOTA_PURCHASE': 'Aquisição de Participação',
-            'QUOTA_SELL': 'Cessão de Participação',
-            'LOAN_RECEIVED': 'Apoio Mútuo Recebido',
-            'LOAN_PAYMENT': 'Reposição de Apoio',
-            'LOAN_INSTALLMENT': 'Reposição de Parcela',
             'REFERRAL_BONUS': 'Bônus de Indicação',
+            'LOAN_RECEIVED': 'Apoio Mútuo Recebido',
+            'QUOTA_SELL': 'Cessão de Participação',
             'EDUCATION_REWARD': 'Recompensa Educacional',
             'GAME_WIN': 'Bonificação de Interação',
-            'GAME_BET': 'Uso de Créditos',
-            'ADMIN_GIFT': 'Bonificação Administrativa',
+            'ADMIN_GIFT': 'Presente Administrativo',
         };
         return map[type] || type;
     };
@@ -105,6 +101,7 @@ export const HistoryView = ({ transactions }: HistoryViewProps) => {
                     <p className="text-zinc-400 text-sm mt-1">{filteredTransactions.length} transações encontradas</p>
                 </div>
             </div>
+            </div>
 
             {/* Cards de resumo */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
@@ -149,6 +146,8 @@ export const HistoryView = ({ transactions }: HistoryViewProps) => {
                     <button
                         onClick={() => setShowFilters(!showFilters)}
                         className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition ${showFilters ? 'bg-primary-500/10 border-primary-500/30 text-primary-400' : 'bg-surface border-surfaceHighlight text-zinc-400 hover:text-white'}`}
+                        aria-label="Abrir filtros"
+                        title="Abrir filtros"
                     >
                         <Filter size={18} />
                         <ChevronDown size={16} className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} />
@@ -181,9 +180,9 @@ export const HistoryView = ({ transactions }: HistoryViewProps) => {
                             <div className="flex flex-wrap gap-2">
                                 {[
                                     { value: 'ALL', label: 'Todos' },
-                                    { value: 'APPROVED', label: 'Aprovado' },
-                                    { value: 'PENDING', label: 'Pendente' },
-                                    { value: 'REJECTED', label: 'Rejeitado' },
+                                    { value: 'APPROVED', label: 'Aprovados' },
+                                    { value: 'PENDING', label: 'Pendentes' },
+                                    { value: 'REJECTED', label: 'Rejeitados' },
                                 ].map((opt) => (
                                     <button
                                         key={opt.value}
@@ -197,93 +196,96 @@ export const HistoryView = ({ transactions }: HistoryViewProps) => {
                         </div>
                     </div>
                 )}
-            </div>
 
-            {/* Lista de transações agrupadas por data */}
-            {Object.keys(groupedTransactions).length === 0 ? (
-                <div className="text-center py-16 bg-surface/50 rounded-2xl border border-surfaceHighlight border-dashed">
-                    <Receipt size={48} className="mx-auto text-zinc-600 mb-4" />
-                    <p className="text-zinc-500">Nenhuma transação encontrada.</p>
-                    {(searchTerm || typeFilter !== 'ALL' || statusFilter !== 'ALL') && (
-                        <button
-                            onClick={() => { setSearchTerm(''); setTypeFilter('ALL'); setStatusFilter('ALL'); }}
-                            className="mt-4 text-primary-400 text-sm hover:underline"
-                        >
-                            Limpar filtros
-                        </button>
-                    )}
-                </div>
-            ) : (
-                <div className="space-y-6">
-                    {Object.entries(groupedTransactions).map(([date, dayTransactions]) => (
-                        <div key={date} className="space-y-2">
-                            {/* Cabeçalho do dia */}
-                            <div className="flex items-center gap-2 text-zinc-500 text-xs font-medium px-1">
-                                <Calendar size={14} />
-                                <span>{date}</span>
-                                <span className="text-zinc-600">•</span>
-                                <span>{dayTransactions.length} transações</span>
-                            </div>
+                {/* Lista de transações agrupadas por data */}
+                {Object.keys(groupedTransactions).length === 0 ? (
+                    <div className="text-center py-16 bg-surface/50 rounded-2xl border border-surfaceHighlight border-dashed">
+                        <Receipt size={48} className="mx-auto text-zinc-600 mb-4" />
+                        <p className="text-zinc-500">Nenhuma transação encontrada.</p>
+                        {(searchTerm || typeFilter !== 'ALL' || statusFilter !== 'ALL') && (
+                            <button
+                                onClick={() => { setSearchTerm(''); setTypeFilter('ALL'); setStatusFilter('ALL'); }}
+                                className="mt-4 text-primary-400 text-sm hover:underline"
+                                aria-label="Limpar filtros"
+                                title="Limpar filtros"
+                            >
+                                Limpar filtros
+                            </button>
+                        )}
+                    </div>
+                ) : (
+                    <div className="space-y-6">
+                        {Object.entries(groupedTransactions).map(([date, dayTransactions]) => (
+                            <div key={date} className="space-y-2">
+                                {/* Cabeçalho do dia */}
+                                <div className="flex items-center gap-2 text-zinc-500 text-xs font-medium px-1">
+                                    <Calendar size={14} />
+                                    <span>{date}</span>
+                                    <span className="text-zinc-600">•</span>
+                                    <span>{dayTransactions.length} transações</span>
+                                </div>
 
-                            {/* Transações do dia */}
-                            <div className="bg-surface border border-surfaceHighlight rounded-xl sm:rounded-2xl divide-y divide-surfaceHighlight overflow-hidden">
-                                {dayTransactions.map((t) => {
-                                    const incoming = isIncoming(t.type);
-                                    const statusColor = t.status === 'APPROVED' || t.status === 'COMPLETED'
-                                        ? 'text-emerald-400'
-                                        : t.status === 'PENDING' || t.status === 'PAYMENT_PENDING'
-                                            ? 'text-yellow-400'
-                                            : 'text-red-400';
-                                    const StatusIcon = t.status === 'APPROVED' || t.status === 'COMPLETED'
-                                        ? CheckCircle2
-                                        : t.status === 'PENDING' || t.status === 'PAYMENT_PENDING'
-                                            ? Clock
-                                            : XCircle;
+                                {/* Transações do dia */}
+                                <div className="bg-surface border border-surfaceHighlight rounded-xl sm:rounded-2xl divide-y divide-surfaceHighlight overflow-hidden">
+                                    {dayTransactions.map((t) => {
+                                        const incoming = isIncoming(t.type);
+                                        const statusColor = t.status === 'APPROVED' || t.status === 'COMPLETED'
+                                            ? 'text-emerald-400'
+                                            : t.status === 'PENDING' || t.status === 'PAYMENT_PENDING'
+                                                ? 'text-yellow-400'
+                                                : 'text-red-400';
+                                        const StatusIcon = t.status === 'APPROVED' || t.status === 'COMPLETED'
+                                            ? CheckCircle2
+                                            : t.status === 'PENDING' || t.status === 'PAYMENT_PENDING'
+                                                ? Clock
+                                                : XCircle;
 
-                                    return (
-                                        <div key={t.id} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-surfaceHighlight/30 transition">
-                                            {/* Ícone */}
-                                            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shrink-0 ${incoming ? 'bg-emerald-500/10' : 'bg-red-500/10'}`}>
-                                                {incoming ? (
-                                                    <ArrowDownLeft className="text-emerald-400" size={20} />
-                                                ) : (
-                                                    <ArrowUpRight className="text-red-400" size={20} />
-                                                )}
-                                            </div>
+                                        return (
+                                            <div key={t.id} className="flex items-center sm:gap-4 p-3 sm:p-4 hover:bg-surfaceHighlight/30 transition">
+                                                {/* Ícone */}
+                                                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shrink-0 ${incoming ? 'bg-emerald-500/10' : 'bg-red-500/10'}`}>
+                                                    {incoming ? (
+                                                        <ArrowDownLeft className="text-emerald-400" size={20} />
+                                                    ) : (
+                                                        <ArrowUpRight className="text-red-400" size={20} />
+                                                    )}
+                                                </div>
 
-                                            {/* Info */}
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm sm:text-base font-medium text-white truncate">{translateType(t.type)}</p>
-                                                <p className="text-[10px] sm:text-xs text-zinc-500 truncate">{t.description || `ID: ${t.id}`}</p>
-                                            </div>
+                                                {/* Info */}
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm sm:text-base font-medium text-white truncate">{translateType(t.type)}</p>
+                                                    <p className="text-[10px] sm:text-xs text-zinc-500 truncate">{t.description || `ID: ${t.id}`}</p>
+                                                </div>
 
-                                            {/* Valor e Status */}
-                                            <div className="text-right shrink-0">
-                                                <p className={`text-sm sm:text-base font-bold ${incoming ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                    {incoming ? '+' : '-'}{formatCurrency(t.amount)}
-                                                </p>
-                                                <div className={`flex items-center gap-1 justify-end ${statusColor}`}>
-                                                    <StatusIcon size={12} />
-                                                    <span className="text-[10px] sm:text-xs">{translateStatus(t.status)}</span>
+                                                {/* Valor e Status */}
+                                                <div className="text-right shrink-0">
+                                                    <p className={`text-sm sm:text-base font-bold ${incoming ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                        {incoming ? '+' : '-'}{formatCurrency(t.amount)}
+                                                    </p>
+                                                    <div className={`flex items-center justify-end gap-1 ${statusColor}`}>
+                                                        <StatusIcon size={12} />
+                                                        <span className="text-[10px] sm:text-xs">{translateStatus(t.status)}</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        </div>
-                    ))}
-
-                    <div className="pt-4">
-                        <AdBanner
-                            type="BANNER"
-                            title="Aumente seu Score Hoje"
-                            description="Nossos parceiros ajudam você a limpar seu nome e conseguir mais crédito."
-                            actionText="ABRIR OFERTA"
-                        />
+                        ))}
                     </div>
+                )}
+
+                {/* Banner promocional */}
+                <div className="pt-4">
+                    <AdBanner
+                        type="BANNER"
+                        title="Aumente seu Score Hoje!"
+                        description="Nossos parceiros ajudam você a limpar seu nome e conseguir mais apoios mútuos."
+                        actionText="ABRIR OFERTA"
+                    />
                 </div>
-            )}
+            </div>
         </div>
     );
 };

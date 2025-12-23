@@ -41,7 +41,7 @@ export const AdminUserManagement = ({ onSuccess, onError }: { onSuccess: any, on
                 setUsers(res.data);
             }
         } catch (error: any) {
-            onError('Erro', 'Falha ao buscar usuários');
+            onError('Erro', 'Falha ao buscar membros');
         } finally {
             setLoading(false);
         }
@@ -78,7 +78,7 @@ export const AdminUserManagement = ({ onSuccess, onError }: { onSuccess: any, on
         switch (role) {
             case 'ADMIN': return <span className="flex items-center gap-1 text-[10px] font-black bg-red-500/10 text-red-400 px-2 py-1 rounded-full border border-red-500/20"><Shield size={10} /> ADMIN</span>;
             case 'ATTENDANT': return <span className="flex items-center gap-1 text-[10px] font-black bg-blue-500/10 text-blue-400 px-2 py-1 rounded-full border border-blue-500/20"><ShieldCheck size={10} /> ATENDENTE</span>;
-            default: return <span className="text-[10px] font-black bg-zinc-800 text-zinc-400 px-2 py-1 rounded-full border border-zinc-700/50">SÓCIO</span>;
+            default: return <span className="text-[10px] font-black bg-zinc-800 text-zinc-400 px-2 py-1 rounded-full border border-zinc-700/50">MEMBRO</span>;
         }
     };
 
@@ -102,9 +102,10 @@ export const AdminUserManagement = ({ onSuccess, onError }: { onSuccess: any, on
                         value={roleFilter}
                         onChange={(e) => setRoleFilter(e.target.value)}
                         className="bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs font-bold rounded-xl px-4 py-3.5 outline-none focus:border-primary-500/50 cursor-pointer"
+                        aria-label="Filtrar por cargo"
                     >
                         <option value="">Todos Cargos</option>
-                        <option value="MEMBER">Sócios</option>
+                        <option value="MEMBER">Membros</option>
                         <option value="ATTENDANT">Atendentes</option>
                         <option value="ADMIN">Admins</option>
                     </select>
@@ -123,7 +124,7 @@ export const AdminUserManagement = ({ onSuccess, onError }: { onSuccess: any, on
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-black/40 border-b border-zinc-800">
-                                <th className="px-6 py-5 text-[10px] font-black text-zinc-500 uppercase tracking-widest">Usuário</th>
+                                <th className="px-6 py-5 text-[10px] font-black text-zinc-500 uppercase tracking-widest">Membro</th>
                                 <th className="px-6 py-5 text-[10px] font-black text-zinc-500 uppercase tracking-widest">Status/Cargo</th>
                                 <th className="px-6 py-5 text-[10px] font-black text-zinc-500 uppercase tracking-widest text-right">Saldo/Score</th>
                                 <th className="px-6 py-5 text-[10px] font-black text-zinc-500 uppercase tracking-widest text-center">Ações</th>
@@ -138,7 +139,7 @@ export const AdminUserManagement = ({ onSuccess, onError }: { onSuccess: any, on
                                 </tr>
                             ) : users.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} className="py-20 text-center text-zinc-500 font-bold uppercase text-xs tracking-widest">Nenhum usuário encontrado</td>
+                                    <td colSpan={4} className="py-20 text-center text-zinc-500 font-bold uppercase text-xs tracking-widest">Nenhum membro encontrado</td>
                                 </tr>
                             ) : (
                                 users.map(user => (
@@ -229,6 +230,8 @@ export const AdminUserManagement = ({ onSuccess, onError }: { onSuccess: any, on
                         <button
                             onClick={() => setShowCreateModal(false)}
                             className="absolute top-6 right-6 text-zinc-500 hover:text-white"
+                            aria-label="Fechar modal"
+                            title="Fechar modal"
                         >
                             <XIcon size={24} />
                         </button>

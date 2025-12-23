@@ -1,8 +1,7 @@
-import { ObjectId } from 'mongodb';
-import { User } from './User';
-import { Quota } from './Quota';
-import { Loan } from './Loan';
-import { Transaction } from './Transaction';
+import { User } from './User.type';
+import { Quota } from './Quota.type';
+import { Loan } from './Loan.type';
+import { Transaction } from './Transaction.type';
 
 export interface AppState {
   currentUser: User | null;
@@ -11,7 +10,7 @@ export interface AppState {
   loans: Loan[];
   transactions: Transaction[];
   systemBalance: number; // Caixa Operacional (Depósitos, Capital de Giro)
-  profitPool: number; // Caixa de Lucros (Juros recebidos de empréstimos)
+  profitPool: number; // Caixa de Excedentes (Taxa de manutenção recebida de apoios mútuos)
 }
 
 export interface SystemConfig {

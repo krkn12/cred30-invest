@@ -33,7 +33,7 @@ const SecurityPage = () => {
             <main className="max-w-4xl mx-auto px-6 pt-32 pb-20">
                 <div className="mb-12">
                     <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 rounded-full text-emerald-400 text-sm font-bold mb-6">
-                        <ShieldCheck size={16} /> Segurança de Nível Bancário
+                        <ShieldCheck size={16} /> Segurança de Nível Corporativo
                     </div>
                     <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">Segurança do Sistema</h1>
                     <p className="text-zinc-400 text-lg">Tecnologia avançada para proteger seu patrimônio.</p>

@@ -104,16 +104,16 @@ export default defineConfig(({ mode }) => {
 
 ### Dashboard Administrativo
 
-- Gerenciar usuários
+- Gerenciar membros
 - Aprovar/rejeitar transações
-- Aprovar/rejeitar empréstimos
-- Distribuir lucros
+- Aprovar/rejeitar apoios mútuos
+- Distribuir excedentes operacionais
 - Visualizar métricas financeiras
 
 ### Dashboard Cliente
 
-- Comprar cotas de investimento
-- Solicitar empréstimos
+- Adquirir participações no clube
+- Solicitar apoios mútuos
 - Realizar saques
 - Indicar amigos
 - Visualizar extrato

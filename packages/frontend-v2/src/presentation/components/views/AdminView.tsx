@@ -309,7 +309,7 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
             setNewProfit('');
             onSuccess('Excedente Adicionado', `R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} adicionado com sucesso!`);
         } catch (e: any) {
-            onError('Erro ao Atualizar Lucro', e.message);
+            onError('Erro ao Atualizar Excedente', e.message);
         }
     };
 
@@ -388,7 +388,7 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
 
     const handleGiftQuota = async () => {
         if (!giftEmail || !giftQuantity) return;
-        if (!window.confirm(`CONFIRMAÇÃO: Enviar ${giftQuantity} cotas para ${giftEmail}? Esta ação criará as cotas e não cobrará do usuário.`)) return;
+        if (!window.confirm(`CONFIRMAÇÃO: Enviar ${giftQuantity} participações para ${giftEmail}? Esta ação criará as participações e não cobrará do usuário.`)) return;
 
         try {
             const response = await apiService.post<any>('/admin/users/add-quota', {
@@ -732,12 +732,16 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                                                 <button
                                                     onClick={() => handlePayCost(cost.id, cost.description)}
                                                     className="bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-black px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all"
+                                                    aria-label="Pagar custo"
+                                                    title="Pagar custo"
                                                 >
                                                     PAGAR
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteCost(cost.id)}
                                                     className="p-2 text-zinc-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                                    aria-label="Excluir custo"
+                                                    title="Excluir custo"
                                                 >
                                                     <Trash2 size={16} />
                                                 </button>
@@ -835,11 +839,11 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                         <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl col-span-1 md:col-span-2">
                             <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
                                 <div className="p-2 bg-red-500/10 rounded-lg"><AlertTriangle className="text-red-400" size={20} /></div>
-                                Varredura de Inadimplência
+                                Varredura de Atraso de Reposição
                             </h3>
                             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                                 <p className="text-sm text-zinc-400 leading-relaxed max-w-xl">
-                                    Clique abaixo para executar manualmente a proteção de lastro. Usuários com atraso superior a 5 dias terão suas licenças executadas para cobrir a dívida.
+                                    Clique abaixo para executar manualmente a proteção de lastro. Membros com atraso superior a 5 dias terão suas licenças executadas para cobrir o compromisso social.
                                 </p>
                                 <button
                                     onClick={handleRunLiquidation}
@@ -898,7 +902,12 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                                             <p className="text-[10px] text-zinc-500 font-bold mt-1 uppercase">Usos: {rc.current_uses} / {rc.max_uses || '∞'}</p>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <button onClick={() => handleDeleteReferralCode(rc.id)} className="p-2 text-zinc-500 hover:text-red-500 transition-colors">
+                                            <button
+                                                onClick={() => handleDeleteReferralCode(rc.id)}
+                                                className="p-2 text-zinc-500 hover:text-red-500 transition-colors"
+                                                aria-label="Excluir código de indicação"
+                                                title="Excluir código de indicação"
+                                            >
                                                 <Trash2 size={16} />
                                             </button>
                                         </div>
@@ -919,7 +928,7 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                     <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl max-w-2xl mx-auto opacity-50 hover:opacity-100 transition-opacity">
                         <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
                             <div className="p-2 bg-purple-500/10 rounded-lg"><Gift className="text-purple-400" size={20} /></div>
-                            Presentear Cotas (Ação Direta)
+                            Presentear Participações (Ação Direta)
                         </h3>
                         <div className="space-y-4">
                             <input

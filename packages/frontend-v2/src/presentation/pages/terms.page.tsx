@@ -144,10 +144,7 @@ const TermsPage = () => {
                         <p className="text-[9px] text-zinc-700 max-w-lg mx-auto leading-relaxed">
                             Foro eleito: Brasil. O uso continuado da plataforma implica na assinatura digital irrevogável deste estatuto. Qualquer dúvida deve ser sanada via suporte administrativo antes da realização de qualquer aporte.
                         </p>
-                        <div className="flex justify-center gap-6 pt-6 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
-                            <img src="https://logodownload.org/wp-content/uploads/2014/10/bcb-logo.png" alt="Informação" className="h-6 object-contain" />
-                            <img src="https://logodownload.org/wp-content/uploads/2016/10/cvm-logo.png" alt="Informação" className="h-6 object-contain" />
-                        </div>
+
                     </section>
                 </div>
 
