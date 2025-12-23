@@ -517,14 +517,59 @@ export const MarketplaceView = ({ state, onRefresh, onSuccess, onError }: Market
                         </div>
 
                         <div>
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 mb-1 block">Link da Imagem</label>
-                            <input
-                                type="url"
-                                value={newListing.image_url}
-                                onChange={(e) => setNewListing({ ...newListing, image_url: e.target.value })}
-                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary-500/50"
-                                placeholder="https://exemplo.com/imagem.jpg"
-                            />
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 mb-1 block">Foto do Produto (Automático)</label>
+                            <div className="flex gap-4 items-start">
+                                <div className="w-24 h-24 bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden flex items-center justify-center shrink-0">
+                                    {newListing.image_url ? (
+                                        <img src={newListing.image_url} alt="Preview" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <ImageIcon className="text-zinc-800" />
+                                    )}
+                                </div>
+                                <div className="flex-1">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                const reader = new FileReader();
+                                                reader.onload = (readerEvent) => {
+                                                    const img = new Image();
+                                                    img.onload = () => {
+                                                        const canvas = document.createElement('canvas');
+                                                        const ctx = canvas.getContext('2d');
+                                                        const size = 600; // Standard Size
+                                                        canvas.width = size;
+                                                        canvas.height = size;
+
+                                                        // Calculate crop (Cover)
+                                                        const ratio = Math.max(size / img.width, size / img.height);
+                                                        const centerShift_x = (size - img.width * ratio) / 2;
+                                                        const centerShift_y = (size - img.height * ratio) / 2;
+
+                                                        if (ctx) {
+                                                            ctx.clearRect(0, 0, size, size);
+                                                            ctx.drawImage(img, 0, 0, img.width, img.height,
+                                                                centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
+
+                                                            // Compression
+                                                            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                                                            setNewListing(prev => ({ ...prev, image_url: dataUrl }));
+                                                        }
+                                                    };
+                                                    img.src = readerEvent.target?.result as string;
+                                                };
+                                                reader.readAsDataURL(file);
+                                            }
+                                        }}
+                                        className="w-full text-xs text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-semibold file:bg-primary-500/10 file:text-primary-400 hover:file:bg-primary-500/20"
+                                    />
+                                    <p className="text-[9px] text-zinc-600 mt-2">
+                                        A imagem será automaticamente ajustada para o formato padrão do feed (Quadrado 600px).
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="pt-4 flex gap-3">

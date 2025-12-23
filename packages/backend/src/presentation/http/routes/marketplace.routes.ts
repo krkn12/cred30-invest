@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { getDbPool } from '../../../infrastructure/database/postgresql/connection/pool';
-import { MARKETPLACE_ESCROW_FEE_RATE, MARKET_CREDIT_INTEREST_RATE, MARKET_CREDIT_MAX_INSTALLMENTS, MARKET_CREDIT_MIN_SCORE, MARKET_CREDIT_MIN_QUOTAS } from '../../../shared/constants/business.constants';
+import { MARKETPLACE_ESCROW_FEE_RATE, MARKET_CREDIT_INTEREST_RATE, MARKET_CREDIT_MAX_INSTALLMENTS, MARKET_CREDIT_MIN_SCORE, MARKET_CREDIT_MIN_QUOTAS, LOGISTICS_SUSTAINABILITY_FEE_RATE } from '../../../shared/constants/business.constants';
 import { UserContext } from '../../../shared/types/hono.types';
 import { executeInTransaction, lockUserBalance, updateUserBalance, createTransaction, lockSystemConfig } from '../../../domain/services/transaction.service';
 import { calculateUserLoanLimit } from '../../../application/services/credit-analysis.service';
@@ -449,17 +449,44 @@ marketplaceRoutes.post('/order/:id/receive', authMiddleware, async (c) => {
             await updateUserBalance(client, order.seller_id, sellerAmount, 'credit');
 
             // Pagar Courier (se houver)
+            // Pagar Courier (se houver) com desconto de sustentabilidade do grupo
             if (courierId && courierFee > 0) {
-                await updateUserBalance(client, courierId, courierFee, 'credit');
+                const sustainabilityFee = courierFee * LOGISTICS_SUSTAINABILITY_FEE_RATE;
+                const courierNetInfo = courierFee - sustainabilityFee;
+
+                // 1. Pagar o Courier (Líquido)
+                await updateUserBalance(client, courierId, courierNetInfo, 'credit');
                 await createTransaction(
                     client,
                     courierId,
                     'LOGISTIC_REWARD',
-                    courierFee,
+                    courierNetInfo,
                     `Entrega Realizada: ${order.title}`,
                     'APPROVED',
-                    { orderId }
+                    { orderId, feeDeducted: sustainabilityFee }
                 );
+
+                // 2. Destinar a taxa para o sistema (Profit Pool)
+                // Se o pagamento for via Balance (Saldo), o fee já está no sistema (foi debitado do comprador).
+                // Se for via Crédito, o fee foi financiado (saiu do caixa do sistema para "pagar" o courier, agora parte volta).
+                // Independente da orign, o sustainabilityFee deve ir para o Profit Pool.
+
+                await client.query(
+                    'UPDATE system_config SET profit_pool = profit_pool + $1',
+                    [sustainabilityFee]
+                );
+
+                // Se o pagamento foi via BALANCE (Saldo), o valor total (courierFee) saiu do comprador e 'entrou' no sistema durante o Escrow.
+                // Agora, pagamos 'courierNetInfo' para o Courier. A diferença (sustainabilityFee) fica no 'system_balance' e vai para o 'profit_pool'.
+                // Se foi via CRÉDITO, 'system_balance' diminuiu em 'order.amount' (incluindo taxa).
+                // Precisamos garantir que o 'system_balance' reflita a realidade.
+
+                // No caso do crédito (linha 445): system_balance -= order.amount (Total Price + Fee)
+                // O Courier recebe + NetFee.
+                // O system_balance "ganha" o fee de volta? Não, o system_balance já contabilizou a saída total.
+                // Ajuste contábil: O fee é ganho do sistema.
+
+                // Simplificação: Apenas garantimos que o Profit Pool aumenta. O System Balance já contém os fundos se não foram pagos a ninguém.
             }
 
             // 3. Contabilizar a taxa de serviço (85% para cotistas / 15% Operacional)

@@ -40,6 +40,7 @@ export const MARKET_CREDIT_INTEREST_RATE = 0.015; // 1.5% ao mês (Mais barato q
 export const MARKET_CREDIT_MAX_INSTALLMENTS = 24; // Até 24x para facilitar compras grandes
 export const MARKET_CREDIT_MIN_SCORE = 450; // Score mínimo para comprar parcelado
 export const MARKET_CREDIT_MIN_QUOTAS = 1; // Mínimo de 1 cota ativa (Skin in the Game) para parcelar
+export const LOGISTICS_SUSTAINABILITY_FEE_RATE = 0.10; // 10% de taxa administrativa sobre o valor do frete para sustentabilidade do grupo
 
 // --- Novas Fontes de Receita (Alta Margem) ---
 export const VERIFIED_BADGE_PRICE = 9.90; // Taxa única para selo de confiança
