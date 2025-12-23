@@ -30,6 +30,7 @@ const MetricCard = ({ title, value, subtitle, icon: Icon, color }: any) => {
         yellow: "from-amber-600 to-amber-700 border-amber-500/30 shadow-amber-500/10",
         red: "from-red-600 to-red-700 border-red-500/30 shadow-red-500/10",
         orange: "from-orange-600 to-orange-700 border-orange-500/30 shadow-orange-500/10",
+        purple: "from-purple-600 to-purple-700 border-purple-500/30 shadow-purple-500/10",
     };
 
     return (
