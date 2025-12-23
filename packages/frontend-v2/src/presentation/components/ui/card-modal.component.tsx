@@ -139,7 +139,7 @@ export const CardModal: React.FC<CardModalProps> = ({
                     <div className="space-y-4">
                         {/* Payment Flags & Badges */}
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-2 px-1">
-                            <div className="flex items-center gap-2 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
+                            <div className="flex items-center gap-2">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" className="h-4 object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-4 object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/f/f1/Elo_logo.png" alt="Elo" className="h-4 object-contain bg-white rounded-sm px-0.5" />
