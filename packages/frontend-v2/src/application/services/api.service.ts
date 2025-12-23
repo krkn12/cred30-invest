@@ -444,9 +444,24 @@ class ApiService {
     return await this.request<any>('/transactions/reviews/public');
   }
 
+  // --- ADMIN: Gerenciamento de Avaliações ---
+  async getAdminReviews(): Promise<any> {
+    return await this.request<any>('/admin/reviews');
+  }
 
+  async approveReview(reviewId: number): Promise<any> {
+    return await this.request<any>(`/admin/reviews/${reviewId}/approve`, {
+      method: 'POST',
+    });
+  }
 
+  async rejectReview(reviewId: number): Promise<any> {
+    return await this.request<any>(`/admin/reviews/${reviewId}/reject`, {
+      method: 'POST',
+    });
+  }
 
+  // Obter limite de crédito disponível (Estilo Nubank)
 
 
 

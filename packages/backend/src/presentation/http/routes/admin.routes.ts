@@ -1837,5 +1837,76 @@ adminRoutes.post('/users/create-attendant', adminMiddleware, auditMiddleware('CR
   }
 });
 
+// --- GERENCIAMENTO DE AVALIAÇÕES/DEPOIMENTOS ---
+
+// Listar todas as avaliações (admin pode ver todas)
+adminRoutes.get('/reviews', adminMiddleware, async (c) => {
+  try {
+    const pool = getDbPool(c);
+
+    const result = await pool.query(`
+      SELECT 
+        r.id,
+        r.transaction_id,
+        r.rating,
+        r.comment,
+        r.is_public,
+        r.is_approved,
+        r.created_at,
+        u.name as user_name,
+        u.email as user_email,
+        t.amount as transaction_amount
+      FROM transaction_reviews r
+      JOIN users u ON r.user_id = u.id
+      JOIN transactions t ON r.transaction_id = t.id
+      ORDER BY r.created_at DESC
+    `);
+
+    return c.json({
+      success: true,
+      data: result.rows.map(row => ({
+        ...row,
+        transaction_amount: parseFloat(row.transaction_amount)
+      }))
+    });
+  } catch (error: any) {
+    return c.json({ success: false, message: error.message }, 500);
+  }
+});
+
+// Aprovar avaliação como depoimento público
+adminRoutes.post('/reviews/:id/approve', adminMiddleware, async (c) => {
+  try {
+    const reviewId = c.req.param('id');
+    const pool = getDbPool(c);
+
+    await pool.query(
+      'UPDATE transaction_reviews SET is_approved = TRUE WHERE id = $1',
+      [reviewId]
+    );
+
+    return c.json({ success: true, message: 'Avaliação aprovada como depoimento!' });
+  } catch (error: any) {
+    return c.json({ success: false, message: error.message }, 500);
+  }
+});
+
+// Rejeitar/desaprovar avaliação
+adminRoutes.post('/reviews/:id/reject', adminMiddleware, async (c) => {
+  try {
+    const reviewId = c.req.param('id');
+    const pool = getDbPool(c);
+
+    await pool.query(
+      'UPDATE transaction_reviews SET is_approved = FALSE, is_public = FALSE WHERE id = $1',
+      [reviewId]
+    );
+
+    return c.json({ success: true, message: 'Avaliação rejeitada.' });
+  } catch (error: any) {
+    return c.json({ success: false, message: error.message }, 500);
+  }
+});
+
 export { adminRoutes };
 
