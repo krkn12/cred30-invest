@@ -87,11 +87,17 @@ export const MarketplaceView = ({ state, onRefresh, onSuccess, onError }: Market
         setIsLoading(true);
         try {
             if (view === 'browse') {
-                const response = await apiService.get<any[]>('/marketplace/listings');
-                if (response.success) setListings(response.data || []);
+                const response = await apiService.get<any>('/marketplace/listings');
+                if (response.success) {
+                    const data = response.data;
+                    setListings(Array.isArray(data) ? data : (data?.listings || []));
+                }
             } else if (view === 'my-orders') {
-                const response = await apiService.get<any[]>('/marketplace/orders');
-                if (response.success) setMyOrders(response.data || []);
+                const response = await apiService.get<any>('/marketplace/my-orders');
+                if (response.success) {
+                    const data = response.data;
+                    setMyOrders(Array.isArray(data) ? data : (data?.orders || []));
+                }
             }
         } catch (error) {
             console.error('Erro ao buscar dados do marketplace:', error);
