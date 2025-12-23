@@ -198,3 +198,143 @@ transactionRoutes.get('/balance', authMiddleware, async (c) => {
 });
 
 export { transactionRoutes };
+
+// Schema de avaliação
+const reviewSchema = z.object({
+  transactionId: z.number().int().positive(),
+  rating: z.number().int().min(1).max(5),
+  comment: z.string().max(500).optional(),
+  isPublic: z.boolean().optional().default(false),
+});
+
+// Enviar avaliação de transação (saque)
+transactionRoutes.post('/review', authMiddleware, async (c) => {
+  try {
+    const body = await c.req.json();
+    const { transactionId, rating, comment, isPublic } = reviewSchema.parse(body);
+
+    const user = c.get('user') as UserContext;
+    const pool = getDbPool(c);
+
+    // Verificar se a transação existe e pertence ao usuário
+    const txCheck = await pool.query(
+      "SELECT id, payout_status FROM transactions WHERE id = $1 AND user_id = $2 AND type = 'WITHDRAWAL'",
+      [transactionId, user.id]
+    );
+
+    if (txCheck.rows.length === 0) {
+      return c.json({ success: false, message: 'Transação não encontrada ou não pertence a você' }, 404);
+    }
+
+    if (txCheck.rows[0].payout_status !== 'PAID') {
+      return c.json({ success: false, message: 'Você só pode avaliar saques já processados' }, 400);
+    }
+
+    // Verificar se já existe avaliação
+    const existingReview = await pool.query(
+      'SELECT id FROM transaction_reviews WHERE transaction_id = $1',
+      [transactionId]
+    );
+
+    if (existingReview.rows.length > 0) {
+      return c.json({ success: false, message: 'Você já avaliou esta transação' }, 400);
+    }
+
+    // Inserir avaliação
+    await pool.query(
+      `INSERT INTO transaction_reviews (transaction_id, user_id, rating, comment, is_public, is_approved, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [transactionId, user.id, rating, comment || null, isPublic, false, new Date()]
+    );
+
+    // Bônus de score por avaliar
+    await pool.query(
+      'UPDATE users SET score = LEAST(score + 2, 1000) WHERE id = $1',
+      [user.id]
+    );
+
+    return c.json({
+      success: true,
+      message: 'Obrigado pela sua avaliação! +2 pontos de Score.',
+      data: { rating, comment }
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return c.json({ success: false, message: 'Dados inválidos', errors: error.errors }, 400);
+    }
+    console.error('Erro ao enviar avaliação:', error);
+    return c.json({ success: false, message: 'Erro interno do servidor' }, 500);
+  }
+});
+
+// Listar avaliações públicas aprovadas (depoimentos)
+transactionRoutes.get('/reviews/public', async (c) => {
+  try {
+    const pool = getDbPool(c);
+
+    const result = await pool.query(`
+      SELECT r.rating, r.comment, r.created_at, u.name as user_name
+      FROM transaction_reviews r
+      JOIN users u ON r.user_id = u.id
+      WHERE r.is_public = TRUE AND r.is_approved = TRUE
+      ORDER BY r.created_at DESC
+      LIMIT 20
+    `);
+
+    // Anonimizar nomes (mostrar só primeiro nome e inicial do sobrenome)
+    const testimonials = result.rows.map(row => {
+      const nameParts = row.user_name.split(' ');
+      const firstName = nameParts[0];
+      const lastInitial = nameParts.length > 1 ? nameParts[nameParts.length - 1][0] + '.' : '';
+
+      return {
+        rating: row.rating,
+        comment: row.comment,
+        userName: `${firstName} ${lastInitial}`.trim(),
+        createdAt: row.created_at
+      };
+    });
+
+    return c.json({
+      success: true,
+      data: { testimonials }
+    });
+  } catch (error) {
+    console.error('Erro ao listar depoimentos:', error);
+    return c.json({ success: false, message: 'Erro interno do servidor' }, 500);
+  }
+});
+
+// Buscar transações pendentes de avaliação
+transactionRoutes.get('/pending-reviews', authMiddleware, async (c) => {
+  try {
+    const user = c.get('user') as UserContext;
+    const pool = getDbPool(c);
+
+    const result = await pool.query(`
+      SELECT t.id, t.amount, t.processed_at, t.metadata
+      FROM transactions t
+      LEFT JOIN transaction_reviews r ON t.id = r.transaction_id
+      WHERE t.user_id = $1 
+        AND t.type = 'WITHDRAWAL' 
+        AND t.payout_status = 'PAID'
+        AND r.id IS NULL
+      ORDER BY t.processed_at DESC
+    `, [user.id]);
+
+    const pendingReviews = result.rows.map(row => ({
+      transactionId: row.id,
+      amount: parseFloat(row.amount),
+      processedAt: row.processed_at,
+      pixKey: row.metadata?.pixKey || 'N/A'
+    }));
+
+    return c.json({
+      success: true,
+      data: { pendingReviews }
+    });
+  } catch (error) {
+    console.error('Erro ao buscar avaliações pendentes:', error);
+    return c.json({ success: false, message: 'Erro interno do servidor' }, 500);
+  }
+});

@@ -865,6 +865,22 @@ export const initializeDatabase = async () => {
         is_recurring BOOLEAN DEFAULT TRUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+
+      -- Tabela de avaliações de transações (saques, etc.)
+      CREATE TABLE IF NOT EXISTS transaction_reviews (
+        id SERIAL PRIMARY KEY,
+        transaction_id INTEGER NOT NULL REFERENCES transactions(id) ON DELETE CASCADE,
+        user_id ${userIdType} NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        comment TEXT,
+        is_public BOOLEAN DEFAULT FALSE,
+        is_approved BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(transaction_id)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_reviews_user ON transaction_reviews(user_id);
+      CREATE INDEX IF NOT EXISTS idx_reviews_approved ON transaction_reviews(is_approved, is_public);
     `);
 
     console.log('Audit logs and performance indexes updated successfully!');

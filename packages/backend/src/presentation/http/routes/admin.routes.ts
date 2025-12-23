@@ -584,10 +584,35 @@ adminRoutes.post('/confirm-payout', adminMiddleware, auditMiddleware('CONFIRM_PA
 
     await executeInTransaction(pool, async (client) => {
       if (type === 'TRANSACTION') {
+        // Atualizar status do pagamento
         await client.query(
           "UPDATE transactions SET payout_status = 'PAID', processed_at = $1 WHERE id = $2",
           [new Date(), id]
         );
+
+        // Buscar dados da transação para notificar o usuário
+        const txResult = await client.query(
+          'SELECT user_id, amount FROM transactions WHERE id = $1',
+          [id]
+        );
+
+        if (txResult.rows.length > 0) {
+          const { user_id, amount } = txResult.rows[0];
+
+          // Criar notificação solicitando avaliação
+          await client.query(
+            `INSERT INTO notifications (user_id, title, message, type, metadata, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6)`,
+            [
+              user_id,
+              '💸 Seu saque foi processado!',
+              `O valor de R$ ${parseFloat(amount).toFixed(2)} foi enviado para sua chave PIX. Que tal avaliar sua experiência?`,
+              'PAYOUT_COMPLETED',
+              JSON.stringify({ transactionId: id, amount: parseFloat(amount), requiresReview: true }),
+              new Date()
+            ]
+          );
+        }
       } else {
         throw new Error('Tipo de confirmação não suportado');
       }

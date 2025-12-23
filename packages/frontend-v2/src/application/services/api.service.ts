@@ -428,6 +428,22 @@ class ApiService {
     });
   }
 
+  // --- AVALIAÇÕES DE TRANSAÇÕES ---
+  async submitReview(transactionId: number, rating: number, comment: string, isPublic: boolean): Promise<any> {
+    return await this.request<any>('/transactions/review', {
+      method: 'POST',
+      body: JSON.stringify({ transactionId, rating, comment, isPublic }),
+    });
+  }
+
+  async getPendingReviews(): Promise<any> {
+    return await this.request<any>('/transactions/pending-reviews');
+  }
+
+  async getPublicTestimonials(): Promise<any> {
+    return await this.request<any>('/transactions/reviews/public');
+  }
+
 
 
 
