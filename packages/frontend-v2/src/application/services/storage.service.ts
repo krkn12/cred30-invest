@@ -18,6 +18,7 @@ const convertApiUserToUser = (apiUser: any): User => {
     isAdmin: apiUser.isAdmin || false,
     score: apiUser.score || 300,
     twoFactorEnabled: apiUser.twoFactorEnabled || false,
+    cpf: apiUser.cpf || null, // CPF do usuário (obrigatório para saque)
   };
 };
 
