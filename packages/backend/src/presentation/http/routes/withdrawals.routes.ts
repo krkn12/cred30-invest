@@ -89,15 +89,18 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
     const availableCredit = totalLoanAmount - totalWithdrawnAmount;
 
     // 4. VERIFICAÇÃO DE LIQUIDEZ DO SISTEMA (TRAVA ANTIFALÊNCIA)
-    const systemQuotasRes = await pool.query("SELECT COUNT(*) as count FROM quotas WHERE status = 'ACTIVE'");
-    const systemActiveLoansRes = await pool.query("SELECT COALESCE(SUM(amount), 0) as total FROM loans WHERE status IN ('APPROVED', 'PAYMENT_PENDING')");
+    // Nova Lógica: Liquidez Real = (Saldo em Conta do Sistema + Saldos de Usuários) - (Reservas Fixas)
+    // Mas para saques simples, verificamos se há saldo no "Pote Geral" (System Balance) que cubra a operação.
+    // O sistema de "System Balance" já agrega todo o dinheiro que entrou (Cotas, Depósitos, Lucros).
 
-    const systemQuotasCount = parseInt(systemQuotasRes.rows[0].count);
-    const systemTotalLoaned = parseFloat(systemActiveLoansRes.rows[0].total);
-    const systemGrossCash = systemQuotasCount * 50; // Preço fixo da cota
+    const systemConfigRes = await pool.query("SELECT system_balance FROM system_config LIMIT 1");
+    const systemBalance = parseFloat(systemConfigRes.rows[0]?.system_balance || '0');
 
-    // Liquidez Real = O que tem no "pote" agora
-    const realLiquidity = systemGrossCash - systemTotalLoaned;
+    // Se o saldo total do sistema for menor que o saque, temos um problema de liquidez real.
+    // (Ou seja, não tem dinheiro na conta do banco/digital para pagar o PIX).
+
+    const realLiquidity = systemBalance;
+    // Nota: Poderíamos descontar reservas obrigatórias aqui, mas para MVP vamos confiar no saldo global.
 
     if (amount > realLiquidity) {
       return c.json({

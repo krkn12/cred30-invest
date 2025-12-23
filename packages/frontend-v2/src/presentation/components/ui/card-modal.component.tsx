@@ -155,10 +155,13 @@ export const CardModal: React.FC<CardModalProps> = ({
                         </div>
 
                         <div className="relative">
-                            <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1 mb-1 block">Número do Cartão</label>
+                            <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1 mb-1 block" htmlFor="cardNumber">Número do Cartão</label>
                             <div className="relative">
                                 <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
                                 <input
+                                    id="cardNumber"
+                                    name="cardNumber"
+                                    autoComplete="cc-number"
                                     type="text"
                                     required
                                     placeholder="0000 0000 0000 0000"
@@ -170,10 +173,13 @@ export const CardModal: React.FC<CardModalProps> = ({
                         </div>
 
                         <div>
-                            <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1 mb-1 block">Nome como no cartão</label>
+                            <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1 mb-1 block" htmlFor="cardName">Nome como no cartão</label>
                             <div className="relative">
                                 <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
                                 <input
+                                    id="cardName"
+                                    name="cardName"
+                                    autoComplete="cc-name"
                                     type="text"
                                     required
                                     placeholder="NOME COMPLETO"
@@ -186,8 +192,11 @@ export const CardModal: React.FC<CardModalProps> = ({
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1 mb-1 block">Validade (MM/YY)</label>
+                                <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1 mb-1 block" htmlFor="cardExpiry">Validade (MM/YY)</label>
                                 <input
+                                    id="cardExpiry"
+                                    name="cardExpiry"
+                                    autoComplete="cc-exp"
                                     type="text"
                                     required
                                     placeholder="MM/YY"
@@ -197,8 +206,11 @@ export const CardModal: React.FC<CardModalProps> = ({
                                 />
                             </div>
                             <div>
-                                <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1 mb-1 block">CVV</label>
+                                <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1 mb-1 block" htmlFor="cardCvv">CVV</label>
                                 <input
+                                    id="cardCvv"
+                                    name="cardCvv"
+                                    autoComplete="cc-csc"
                                     type="text"
                                     required
                                     placeholder="000"
@@ -215,8 +227,10 @@ export const CardModal: React.FC<CardModalProps> = ({
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2">
-                                    <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1 mb-1 block">CPF do Titular</label>
+                                    <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1 mb-1 block" htmlFor="holderCpf">CPF do Titular</label>
                                     <input
+                                        id="holderCpf"
+                                        name="holderCpf"
                                         type="text"
                                         required
                                         placeholder="000.000.000-00"
@@ -226,10 +240,13 @@ export const CardModal: React.FC<CardModalProps> = ({
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1 mb-1 block">CEP</label>
+                                    <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1 mb-1 block" htmlFor="billingZip">CEP</label>
                                     <div className="relative">
                                         <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={14} />
                                         <input
+                                            id="billingZip"
+                                            name="billingZip"
+                                            autoComplete="postal-code"
                                             type="text"
                                             required
                                             placeholder="00000-000"
@@ -240,8 +257,10 @@ export const CardModal: React.FC<CardModalProps> = ({
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1 mb-1 block">Nº</label>
+                                    <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1 mb-1 block" htmlFor="addressNumber">Nº</label>
                                     <input
+                                        id="addressNumber"
+                                        name="addressNumber"
                                         type="text"
                                         required
                                         placeholder="123"
@@ -251,10 +270,13 @@ export const CardModal: React.FC<CardModalProps> = ({
                                     />
                                 </div>
                                 <div className="col-span-2">
-                                    <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1 mb-1 block">Celular com DDD</label>
+                                    <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1 mb-1 block" htmlFor="contactPhone">Celular com DDD</label>
                                     <div className="relative">
                                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={14} />
                                         <input
+                                            id="contactPhone"
+                                            name="contactPhone"
+                                            autoComplete="tel"
                                             type="tel"
                                             required
                                             placeholder="(00) 00000-0000"
