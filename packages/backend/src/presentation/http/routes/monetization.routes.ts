@@ -85,7 +85,7 @@ monetizationRoutes.post('/upgrade-pro', authMiddleware, async (c) => {
         const pool = getDbPool(c);
 
         // 1. Verificar se já é PRO
-        const userCheck = await pool.query('SELECT membership_type, balance, email, name FROM users WHERE id = $1', [user.id]);
+        const userCheck = await pool.query('SELECT membership_type, balance, email, name, cpf FROM users WHERE id = $1', [user.id]);
         if (userCheck.rows[0].membership_type === 'PRO') {
             return c.json({ success: false, message: 'Você já é um membro PRO!' }, 400);
         }
@@ -132,12 +132,18 @@ monetizationRoutes.post('/upgrade-pro', authMiddleware, async (c) => {
         // 3. Pagamento Externo (PIX ou CARTÃO)
         let paymentData: any;
 
+        // Buscar CPF do usuário para Asaas
+        const userCpf = userCheck.rows[0]?.cpf;
+        const userName = userCheck.rows[0]?.name;
+
         if (payMethod === 'pix') {
             paymentData = await createPixPayment({
                 amount: finalAmount,
-                description: `Upgrade PRO - ${userCheck.rows[0].name.split(' ')[0]}`,
+                description: `Upgrade PRO - ${userName?.split(' ')[0] || 'Usuário'}`,
                 email: userCheck.rows[0].email,
-                external_reference: user.id.toString()
+                external_reference: user.id.toString(),
+                cpf: userCpf,
+                name: userName
             });
         } else {
             if (!token) return c.json({ success: false, message: 'Token do cartão é obrigatório' }, 400);
@@ -149,7 +155,9 @@ monetizationRoutes.post('/upgrade-pro', authMiddleware, async (c) => {
                 external_reference: user.id.toString(),
                 installments: installments || 1,
                 payment_method_id,
-                issuer_id: issuer_id ? Number(issuer_id) : undefined
+                issuer_id: issuer_id ? Number(issuer_id) : undefined,
+                cpf: userCpf,
+                name: userName
             });
         }
 

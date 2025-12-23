@@ -48,12 +48,20 @@ export const SCORE_BOOST_PRICE = 15.00; // Preço do pacote de +100 Score
 export const SCORE_BOOST_POINTS = 100; // Pontos ganhos no pacote
 export const REPUTATION_CHECK_PRICE = 35.00; // Preço da consulta de reputação (Serasa Standard)
 
-// Taxas do Mercado Pago (Gateway)
-export const MERCADO_PAGO_PIX_FEE_PERCENT = 0.0099; // 0.99% para PIX
+// Taxas do Asaas (Gateway de Pagamento)
+// PIX: 0,99% (taxa padrão Asaas)
+export const MERCADO_PAGO_PIX_FEE_PERCENT = 0.0099; // 0.99% para PIX (mantido compatibilidade)
 export const MERCADO_PAGO_FIXED_FEE = 0.00; // R$ 0,00 fixo
 
-export const MERCADO_PAGO_CARD_FEE_PERCENT = 0.0499; // 4.99% para Cartão
-export const MERCADO_PAGO_CARD_FIXED_FEE = 0.40; // R$ 0,40 fixo
+// Cartão de Crédito: 2,99% + R$ 0,49 (taxa padrão Asaas - mais barato que MP)
+export const MERCADO_PAGO_CARD_FEE_PERCENT = 0.0299; // 2.99% para Cartão (Asaas)
+export const MERCADO_PAGO_CARD_FIXED_FEE = 0.49; // R$ 0,49 fixo (Asaas)
+
+// Alias com nomes corretos para Asaas
+export const ASAAS_PIX_FEE_PERCENT = 0.0099; // 0.99%
+export const ASAAS_PIX_FIXED_FEE = 0.00;
+export const ASAAS_CARD_FEE_PERCENT = 0.0299; // 2.99%
+export const ASAAS_CARD_FIXED_FEE = 0.49; // R$ 0,49
 
 // Níveis VIP
 export const VIP_LEVELS = {

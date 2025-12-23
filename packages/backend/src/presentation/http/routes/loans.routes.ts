@@ -297,6 +297,14 @@ loanRoutes.post('/repay', authMiddleware, async (c) => {
       return c.json({ success: false, message: 'Apoio Mútuo não disponível para reposição' }, 400);
     }
 
+    // Buscar CPF do usuário para pagamento no Asaas
+    const userInfoResult = await pool.query(
+      'SELECT cpf, name FROM users WHERE id = $1',
+      [user.id]
+    );
+    const userCpf = userInfoResult.rows[0]?.cpf;
+    const userName = userInfoResult.rows[0]?.name;
+
     // Calcular separação entre principal e juros
     const totalRepayment = parseFloat(loan.total_repayment);
     const principalAmount = parseFloat(loan.amount);
@@ -345,18 +353,22 @@ loanRoutes.post('/repay', authMiddleware, async (c) => {
             external_reference: `REPAY_${loanId}_${Date.now()}`,
             token,
             issuer_id: issuer_id ? Number(issuer_id) : undefined,
-            installments: installments
+            installments: installments,
+            cpf: userCpf,
+            name: userName
           });
         } else {
           mpData = await createPixPayment({
             amount: finalCost,
             description: `Reposição total de apoio no sistema Cred30`,
             email: user.email,
-            external_reference: `REPAY_${loanId}_${Date.now()}`
+            external_reference: `REPAY_${loanId}_${Date.now()}`,
+            cpf: userCpf,
+            name: userName
           });
         }
       } catch (mpError) {
-        console.error('Erro ao gerar cobrança Mercado Pago:', mpError);
+        console.error('Erro ao gerar cobrança Asaas:', mpError);
       }
     }
 
@@ -434,6 +446,14 @@ loanRoutes.post('/repay-installment', authMiddleware, async (c) => {
       return c.json({ success: false, message: 'Apoio não está ativo para pagamento' }, 400);
     }
 
+    // Buscar CPF do usuário para pagamento no Asaas
+    const userInfoResult = await pool.query(
+      'SELECT cpf, name FROM users WHERE id = $1',
+      [user.id]
+    );
+    const userCpf = userInfoResult.rows[0]?.cpf;
+    const userName = userInfoResult.rows[0]?.name;
+
     // Verificar se o apoio já tem parcelas pagas
     const paidInstallmentsResult = await pool.query(
       'SELECT COALESCE(SUM(CAST(amount AS NUMERIC)), 0) as paid_amount FROM loan_installments WHERE loan_id = $1',
@@ -467,18 +487,22 @@ loanRoutes.post('/repay-installment', authMiddleware, async (c) => {
             external_reference: `INSTALLMENT_${loanId}_${Date.now()}`,
             token,
             issuer_id: issuer_id ? Number(issuer_id) : undefined,
-            installments: installments
+            installments: installments,
+            cpf: userCpf,
+            name: userName
           });
         } else {
           mpData = await createPixPayment({
             amount: finalInstallmentCost,
             description: `Pagamento de parcela de apoio no Cred30`,
             email: user.email,
-            external_reference: `INSTALLMENT_${loanId}_${Date.now()}`
+            external_reference: `INSTALLMENT_${loanId}_${Date.now()}`,
+            cpf: userCpf,
+            name: userName
           });
         }
       } catch (mpError) {
-        console.error('Erro ao gerar cobrança Mercado Pago:', mpError);
+        console.error('Erro ao gerar cobrança Asaas:', mpError);
       }
 
       const transaction = await pool.query(

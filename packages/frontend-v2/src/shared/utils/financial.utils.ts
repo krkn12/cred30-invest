@@ -1,11 +1,12 @@
 import { MARKETPLACE_ESCROW_FEE_RATE } from '../constants/app.constants';
 
-// Taxas do Mercado Pago (Gateway) - Devem estar sincronizadas com o Backend
+// Taxas do Asaas (Gateway de Pagamento) - Sincronizadas com o Backend
 export const MERCADO_PAGO_PIX_FEE_PERCENT = 0.0099; // 0.99% para PIX
 export const MERCADO_PAGO_FIXED_FEE = 0.00; // R$ 0,00 fixo
 
-export const MERCADO_PAGO_CARD_FEE_PERCENT = 0.0499; // 4.99% para Cartão
-export const MERCADO_PAGO_CARD_FIXED_FEE = 0.40; // R$ 0,40 fixo
+// Cartão de Crédito: 2.99% + R$ 0.49 (Asaas - mais barato que MP)
+export const MERCADO_PAGO_CARD_FEE_PERCENT = 0.0299; // 2.99% para Cartão (Asaas)
+export const MERCADO_PAGO_CARD_FIXED_FEE = 0.49; // R$ 0,49 fixo (Asaas)
 
 export type PaymentMethod = 'pix' | 'card' | 'balance';
 
