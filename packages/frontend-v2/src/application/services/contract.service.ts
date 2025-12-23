@@ -1,3 +1,5 @@
+import { MUTUAL_AID_CONTRACT_CLAUSES, DISCLAIMERS } from '../../shared/constants/legal.constants';
+
 interface LoanContractData {
     loanId: string;
     userName: string;
@@ -14,14 +16,15 @@ interface LoanContractData {
 }
 
 /**
- * Gera o PDF do Contrato de Empréstimo
+ * Gera o PDF do Contrato de Mútuo Civil (Apoio Mútuo)
+ * BLINDAGEM JURÍDICA: Documento segue padrões de SCP e Mútuo Civil
  */
 const generateLoanContractPDF = async (data: LoanContractData): Promise<any> => {
     const { default: jsPDF } = await import('jspdf');
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 20;
-    let y = 25;
+    const margin = 15;
+    let y = 20;
 
     // Helpers
     const centerText = (text: string, yPos: number, size = 12) => {
@@ -33,160 +36,212 @@ const generateLoanContractPDF = async (data: LoanContractData): Promise<any> => 
     const addLine = (text: string, yPos: number, bold = false) => {
         doc.setFont('helvetica', bold ? 'bold' : 'normal');
         doc.text(text, margin, yPos);
-        return yPos + 7;
+        return yPos + 6;
+    };
+
+    const addParagraph = (text: string, yPos: number, maxWidth = pageWidth - 2 * margin) => {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        const lines = doc.splitTextToSize(text, maxWidth);
+        doc.text(lines, margin, yPos);
+        return yPos + lines.length * 4 + 3;
     };
 
     const formatCurrency = (val: number) =>
         val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
     // --- CABEÇALHO ---
-    doc.setFillColor(0, 150, 200);
-    doc.rect(0, 0, pageWidth, 40, 'F');
+    doc.setFillColor(15, 23, 42); // Slate-900
+    doc.rect(0, 0, pageWidth, 35, 'F');
 
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
-    centerText('CRED30 - SISTEMA DE APOIO MÚTUO', 15, 16);
-    centerText('CONTRATO DE MÚTUO ENTRE ASSOCIADOS', 28, 14);
+    centerText('CRED30 - CLUBE DE BENEFÍCIOS E APOIO MÚTUO', 12, 14);
+    doc.setFontSize(11);
+    centerText('INSTRUMENTO PARTICULAR DE MÚTUO CIVIL FENERATÍCIO', 22, 11);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    centerText('Sociedade em Conta de Participação - Art. 991 a 996 do Código Civil', 30, 8);
 
     // --- NÚMERO DO CONTRATO ---
     doc.setTextColor(0, 0, 0);
-    y = 50;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
+    y = 42;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
     doc.text(`Contrato Nº: ${data.contractNumber}`, margin, y);
-    doc.text(`Data: ${data.contractDate}`, pageWidth - margin - 50, y);
+    doc.text(`Data: ${data.contractDate}`, pageWidth - margin - 35, y);
+
+    // --- AVISO IMPORTANTE ---
+    y = 52;
+    doc.setFillColor(254, 243, 199); // Amber-100
+    doc.rect(margin, y, pageWidth - 2 * margin, 18, 'F');
+    doc.setDrawColor(245, 158, 11); // Amber-500
+    doc.rect(margin, y, pageWidth - 2 * margin, 18, 'S');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(146, 64, 14); // Amber-800
+    doc.text('AVISO LEGAL OBRIGATÓRIO:', margin + 3, y + 5);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6);
+    const avisoText = 'Este NÃO é um empréstimo bancário. Trata-se de operação de MÚTUO CIVIL PRIVADO (Art. 586 CC) entre membros de clube fechado, operando sob regime de SCP (Art. 991 CC). A Cred30 NÃO é banco, NÃO é fintech regulada e NÃO é instituição financeira.';
+    const avisoLines = doc.splitTextToSize(avisoText, pageWidth - 2 * margin - 6);
+    doc.text(avisoLines, margin + 3, y + 10);
+
+    y = 75;
+    doc.setTextColor(0, 0, 0);
 
     // --- PARTES ---
-    y = 65;
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    y = addLine('1. DAS PARTES', y, true);
-
-    doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
-    y = addLine('CREDORA: CRED30 - Sistema de Cooperação Financeira Mútua', y);
-    y = addLine(`DEVEDOR(A): ${data.userName}`, y);
-    y = addLine(`E-mail: ${data.userEmail}`, y);
-    y = addLine(`Chave PIX: ${data.userPixKey}`, y);
-    y += 5;
-
-    // --- OBJETO DO CONTRATO ---
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    y = addLine('2. DO OBJETO', y, true);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    const objetoText = 'O presente instrumento tem por objeto a concessão de empréstimo pessoal pela CREDORA ao DEVEDOR, nas condições abaixo especificadas.';
-    const objetoLines = doc.splitTextToSize(objetoText, pageWidth - 2 * margin);
-    doc.text(objetoLines, margin, y);
-    y += objetoLines.length * 5 + 5;
-
-    // --- CONDIÇÕES ---
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    y = addLine('3. DAS CONDIÇÕES FINANCEIRAS', y, true);
-    y += 3;
-
-    // Tabela de valores (aumentada para incluir data)
-    doc.setFillColor(240, 240, 240);
-    doc.rect(margin, y, pageWidth - 2 * margin, 60, 'F');
-    doc.setDrawColor(200, 200, 200);
-    doc.rect(margin, y, pageWidth - 2 * margin, 60, 'S');
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    const tableY = y + 10;
-    const col1 = margin + 5;
-    const col2 = pageWidth / 2;
-
-    doc.text('Data de Concessão:', col1, tableY);
-    doc.setFont('helvetica', 'bold');
-    doc.text(data.contractDate, col2, tableY);
-
-    doc.setFont('helvetica', 'normal');
-    doc.text('Valor do Empréstimo:', col1, tableY + 10);
-    doc.setFont('helvetica', 'bold');
-    doc.text(formatCurrency(data.loanAmount), col2, tableY + 10);
-
-    doc.setFont('helvetica', 'normal');
-    doc.text('Taxa de Juros:', col1, tableY + 20);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${(data.interestRate * 100).toFixed(0)}%`, col2, tableY + 20);
-
-    doc.setFont('helvetica', 'normal');
-    doc.text('Valor Total a Pagar:', col1, tableY + 30);
-    doc.setFont('helvetica', 'bold');
-    doc.text(formatCurrency(data.totalRepayment), col2, tableY + 30);
-
-    doc.setFont('helvetica', 'normal');
-    doc.text('Número de Parcelas:', col1, tableY + 40);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${data.installments}x de ${formatCurrency(data.installmentValue)}`, col2, tableY + 40);
-
-    y += 70;
-
-    // --- VENCIMENTO ---
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    y = addLine('4. DO VENCIMENTO', y, true);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    y = addLine(`Data de Vencimento Final: ${data.dueDate}`, y);
-    y += 5;
-
-    // --- INADIMPLÊNCIA ---
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    y = addLine('5. DA INADIMPLÊNCIA', y, true);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    const inadText = 'O não pagamento nas datas acordadas resultará em: (a) bloqueio de novos empréstimos; (b) redução do score de crédito; (c) possível exclusão da cooperativa.';
-    const inadLines = doc.splitTextToSize(inadText, pageWidth - 2 * margin);
-    doc.text(inadLines, margin, y);
-    y += inadLines.length * 5 + 5;
-
-    // --- FORO ---
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    y = addLine('6. DO FORO', y, true);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    const foroText = 'Fica eleito o foro da comarca de residência do DEVEDOR para dirimir quaisquer controvérsias oriundas deste contrato.';
-    const foroLines = doc.splitTextToSize(foroText, pageWidth - 2 * margin);
-    doc.text(foroLines, margin, y);
-    y += foroLines.length * 5 + 15;
-
-    // --- ASSINATURA DIGITAL ---
-    doc.setFillColor(245, 245, 245);
-    doc.rect(margin, y, pageWidth - 2 * margin, 40, 'F');
-    doc.setDrawColor(0, 150, 200);
-    doc.setLineWidth(1);
-    doc.rect(margin, y, pageWidth - 2 * margin, 40, 'S');
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(0, 100, 150);
-    doc.text('ASSINATURA DIGITAL', margin + 5, y + 12);
+    y = addLine('1. DAS PARTES CONTRATANTES', y, true);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
-    doc.setTextColor(80, 80, 80);
-    doc.text(`Assinado eletronicamente por: ${data.userName}`, margin + 5, y + 22);
-    doc.text(`E-mail: ${data.userEmail}`, margin + 5, y + 30);
-    doc.text(`ID do Empréstimo: ${data.loanId}`, margin + 5, y + 38);
+    y = addLine('SÓCIO OSTENSIVO (Facilitador): CRED30 - Clube de Benefícios e Apoio Mútuo', y);
+    y = addLine(`SÓCIO PARTICIPANTE (Mutuário): ${data.userName}`, y);
+    y = addLine(`Identificação Digital: ${data.userEmail}`, y);
+    y = addLine(`Chave PIX para Reposição: ${data.userPixKey}`, y);
+    y += 3;
+
+    // --- CLÁUSULA 2: OBJETO ---
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    y = addLine('2. DO OBJETO DO CONTRATO', y, true);
+    y = addParagraph(MUTUAL_AID_CONTRACT_CLAUSES.OBJECT, y);
+
+    // --- CLÁUSULA 3: NATUREZA JURÍDICA ---
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    y = addLine('3. DA NATUREZA JURÍDICA', y, true);
+    y = addParagraph(MUTUAL_AID_CONTRACT_CLAUSES.NATURE, y);
+
+    // --- CLÁUSULA 4: CONDIÇÕES FINANCEIRAS ---
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    y = addLine('4. DAS CONDIÇÕES DO APOIO MÚTUO', y, true);
+    y += 2;
+
+    // Tabela de valores
+    doc.setFillColor(248, 250, 252); // Slate-50
+    doc.rect(margin, y, pageWidth - 2 * margin, 35, 'F');
+    doc.setDrawColor(203, 213, 225); // Slate-300
+    doc.rect(margin, y, pageWidth - 2 * margin, 35, 'S');
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    const tableY = y + 7;
+    const col1 = margin + 3;
+    const col2 = pageWidth / 2 + 10;
+
+    doc.text('Valor do Apoio Mútuo:', col1, tableY);
+    doc.setFont('helvetica', 'bold');
+    doc.text(formatCurrency(data.loanAmount), col2, tableY);
+
+    doc.setFont('helvetica', 'normal');
+    doc.text('Taxa de Manutenção (20%):', col1, tableY + 8);
+    doc.setFont('helvetica', 'bold');
+    doc.text(formatCurrency(data.totalRepayment - data.loanAmount), col2, tableY + 8);
+
+    doc.setFont('helvetica', 'normal');
+    doc.text('Valor Total a Repor:', col1, tableY + 16);
+    doc.setFont('helvetica', 'bold');
+    doc.text(formatCurrency(data.totalRepayment), col2, tableY + 16);
+
+    doc.setFont('helvetica', 'normal');
+    doc.text('Reposições:', col1, tableY + 24);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${data.installments}x de ${formatCurrency(data.installmentValue)}`, col2, tableY + 24);
+
+    y += 42;
+
+    // --- CLÁUSULA 5: TAXA DE MANUTENÇÃO ---
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    y = addLine('5. DA TAXA DE MANUTENÇÃO', y, true);
+    y = addParagraph(MUTUAL_AID_CONTRACT_CLAUSES.MAINTENANCE_FEE, y);
+
+    // --- CLÁUSULA 6: LASTRO E EXECUÇÃO ---
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    y = addLine('6. DO LASTRO E EXECUÇÃO AUTOMÁTICA', y, true);
+    y = addParagraph(MUTUAL_AID_CONTRACT_CLAUSES.GUARANTEE, y);
+
+    // --- NOVA PÁGINA ---
+    doc.addPage();
+    y = 20;
+
+    // --- CLÁUSULA 7: ISENÇÃO DE RESPONSABILIDADE ---
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    y = addLine('7. DA ISENÇÃO DE RESPONSABILIDADE', y, true);
+    y = addParagraph(MUTUAL_AID_CONTRACT_CLAUSES.WAIVER, y);
+
+    // --- CLÁUSULA 8: DECLARAÇÃO DE VOLUNTARIEDADE ---
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    y = addLine('8. DA VOLUNTARIEDADE E CIÊNCIA', y, true);
+    y = addParagraph(MUTUAL_AID_CONTRACT_CLAUSES.VOLUNTARY, y);
+
+    // --- CLÁUSULA 9: VENCIMENTO ---
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    y = addLine('9. DO VENCIMENTO E MORA', y, true);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    y = addLine(`Data de Vencimento Final: ${data.dueDate}`, y);
+    y = addParagraph('O atraso na reposição superior a 5 (cinco) dias autoriza a execução automática do lastro em participações, sem necessidade de notificação adicional.', y);
+
+    // --- CLÁUSULA 10: FORO ---
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    y = addLine('10. DO FORO', y, true);
+    y = addParagraph(MUTUAL_AID_CONTRACT_CLAUSES.JURISDICTION, y);
+
+    // --- ASSINATURA DIGITAL ---
+    y += 5;
+    doc.setFillColor(240, 253, 244); // Emerald-50
+    doc.rect(margin, y, pageWidth - 2 * margin, 35, 'F');
+    doc.setDrawColor(16, 185, 129); // Emerald-500
+    doc.setLineWidth(0.5);
+    doc.rect(margin, y, pageWidth - 2 * margin, 35, 'S');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(6, 95, 70); // Emerald-800
+    doc.text('ASSINATURA ELETRÔNICA', margin + 3, y + 8);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(60, 60, 60);
+    doc.text(`Assinado digitalmente por: ${data.userName}`, margin + 3, y + 16);
+    doc.text(`E-mail vinculado: ${data.userEmail}`, margin + 3, y + 22);
+    doc.text(`ID do Contrato: ${data.contractNumber}`, margin + 3, y + 28);
+    doc.text(`Data/Hora: ${new Date().toLocaleString('pt-BR')}`, margin + 3, y + 34);
+
+    y += 45;
+
+    // --- DISCLAIMER FINAL ---
+    doc.setFillColor(254, 226, 226); // Red-100
+    doc.rect(margin, y, pageWidth - 2 * margin, 25, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6);
+    doc.setTextColor(127, 29, 29); // Red-900
+    doc.text('DISCLAIMER LEGAL:', margin + 3, y + 5);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(5.5);
+    const disclaimerLines = doc.splitTextToSize(DISCLAIMERS.RISK_DISCLOSURE, pageWidth - 2 * margin - 6);
+    doc.text(disclaimerLines, margin + 3, y + 10);
 
     // --- RODAPÉ ---
-    doc.setFontSize(8);
+    doc.setFontSize(7);
     doc.setTextColor(150, 150, 150);
-    doc.text('Este documento foi gerado eletronicamente pelo sistema Cred30 e possui validade jurídica.', margin, 280);
-    doc.text(`Contrato Nº ${data.contractNumber} - ${data.contractDate}`, margin, 286);
+    doc.text('Documento gerado eletronicamente pelo sistema Cred30 - Validade jurídica conforme MP 2.200-2/2001', margin, 285);
+    doc.text(`${data.contractNumber} | SCP Art. 991 CC | Mútuo Civil Art. 586 CC | ${data.contractDate}`, margin, 290);
 
     return doc;
 };
+
 
 /**
  * Baixa o PDF do contrato
