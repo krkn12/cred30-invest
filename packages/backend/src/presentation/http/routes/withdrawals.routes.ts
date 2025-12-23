@@ -135,17 +135,24 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
       }, 403);
     }
 
-    // Validar se o cliente tem limite disponível
-    if (amount > availableCredit) {
+    // Validar se o cliente tem SALDO disponível (Check simples antes da transação)
+    const userBalanceRes = await pool.query('SELECT balance FROM users WHERE id = $1', [user.id]);
+    const currentBalance = parseFloat(userBalanceRes.rows[0].balance);
+
+    // Se o saque for maior que o saldo + credit_limit (se houver), bloqueia.
+    // Mas no modelo atual, o "availableCredit" era derivado de Empréstimos Aprovados x Saques Realizados.
+    // ISSO ESTÁ ERRADO para um SAQUE DE SALDO COMUM.
+    // O usuário está sacando o dinheiro que ele TEM na conta (ganho de vendas, cotas, etc).
+
+    // Então, a única verificação deve ser: Ele tem saldo?
+    // A validação real de saldo acontece dentro da transaction com lock (updateUserBalance), 
+    // mas vamos deixar um feedback amigável aqui.
+
+    if (amount > currentBalance) {
       return c.json({
         success: false,
-        message: `Limite indisponível. Seu limite disponível é R$ ${availableCredit.toFixed(2)}`,
-        data: {
-          availableCredit,
-          requestedAmount: amount,
-          totalLoanAmount,
-          totalWithdrawnAmount
-        }
+        message: `Saldo insuficiente. Seu saldo disponível é R$ ${currentBalance.toFixed(2)}`,
+        errorCode: 'INSUFFICIENT_FUNDS'
       }, 400);
     }
 
