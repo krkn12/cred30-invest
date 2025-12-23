@@ -173,11 +173,15 @@ class ApiService {
     password: string,
     secretPhrase: string,
     pixKey: string,
-    referralCode?: string
+    referralCode?: string,
+    cpf?: string
   ): Promise<AuthResponse & { twoFactor?: { secret: string, qrCode: string, otpUri: string } }> {
     const requestBody: any = { name, email, password, secretPhrase, pixKey };
     if (referralCode && referralCode.trim() !== '') {
       requestBody.referralCode = referralCode;
+    }
+    if (cpf && cpf.trim() !== '') {
+      requestBody.cpf = cpf.replace(/\D/g, ''); // Apenas números
     }
 
     const response = await this.request<AuthResponse & { twoFactor?: { secret: string, qrCode: string, otpUri: string } }>('/auth/register', {
@@ -217,6 +221,15 @@ class ApiService {
     // Remover token
     this.token = null;
     localStorage.removeItem('authToken');
+  }
+
+  // Atualizar CPF do usuário
+  async updateCpf(cpf: string): Promise<{ success: boolean; message: string }> {
+    const response = await this.request<{ success: boolean; message: string }>('/users/update-cpf', {
+      method: 'POST',
+      body: JSON.stringify({ cpf }),
+    });
+    return response.data!;
   }
 
   // Método para obter perfil do usuário

@@ -13,6 +13,7 @@ export interface User {
   role?: 'MEMBER' | 'ATTENDANT' | 'ADMIN';
   status?: 'ACTIVE' | 'BLOCKED';
   membership_type?: 'FREE' | 'PRO';
+  cpf?: string | null; // CPF do usuário (obrigatório para saque)
 }
 
 export interface Quota {

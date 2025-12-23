@@ -1,8 +1,9 @@
 import React from 'react';
-import { Star, Copy, Lock, ChevronRight, LogOut, Trash2, X as XIcon, ShieldCheck, QrCode, Repeat } from 'lucide-react';
+import { Star, Copy, Lock, ChevronRight, LogOut, Trash2, X as XIcon, ShieldCheck, QrCode, Repeat, AlertCircle, Check } from 'lucide-react';
 import { User } from '../../../domain/types/common.types';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { get2FASetup, verify2FA } from '../../../application/services/storage.service';
+import { apiService } from '../../../application/services/api.service';
 
 export const SettingsView = ({ user, onLogout, onDeleteAccount, onChangePassword, onRefresh }: {
     user: User,
@@ -20,11 +21,52 @@ export const SettingsView = ({ user, onLogout, onDeleteAccount, onChangePassword
     const [deleteCode, setDeleteCode] = React.useState('');
     const [error, setError] = React.useState('');
 
+    // CPF State
+    const [showCpfModal, setShowCpfModal] = React.useState(false);
+    const [cpfInput, setCpfInput] = React.useState('');
+    const [cpfError, setCpfError] = React.useState('');
+    const [cpfSuccess, setCpfSuccess] = React.useState('');
+    const [savingCpf, setSavingCpf] = React.useState(false);
+
     // 2FA Setup
     const [show2FASetup, setShow2FASetup] = React.useState(false);
     const [twoFactorData, setTwoFactorData] = React.useState<{ secret: string, qrCode: string, otpUri: string } | null>(null);
     const [verifyCode, setVerifyCode] = React.useState('');
     const [successMessage, setSuccessMessage] = React.useState('');
+
+    // Format CPF: 000.000.000-00
+    const formatCpf = (value: string) => {
+        const digits = value.replace(/\D/g, '').slice(0, 11);
+        if (digits.length <= 3) return digits;
+        if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+        if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+        return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+    };
+
+    const handleSaveCpf = async () => {
+        setCpfError('');
+        const cleanCpf = cpfInput.replace(/\D/g, '');
+        if (cleanCpf.length !== 11) {
+            setCpfError('CPF deve ter 11 dígitos');
+            return;
+        }
+        setSavingCpf(true);
+        try {
+            const res = await apiService.updateCpf(cleanCpf);
+            if (res.success) {
+                setCpfSuccess('CPF salvo com sucesso!');
+                setTimeout(() => {
+                    setShowCpfModal(false);
+                    setCpfSuccess('');
+                    if (onRefresh) onRefresh();
+                }, 1500);
+            }
+        } catch (err: any) {
+            setCpfError(err.message || 'Erro ao salvar CPF');
+        } finally {
+            setSavingCpf(false);
+        }
+    };
 
     const handle2FASetup = async () => {
         try {
@@ -103,6 +145,30 @@ export const SettingsView = ({ user, onLogout, onDeleteAccount, onChangePassword
                     <div>
                         <label className="text-xs text-zinc-500">Chave PIX</label>
                         <p className="text-white border-b border-surfaceHighlight pb-2">{user.pixKey}</p>
+                    </div>
+                    <div>
+                        <label className="text-xs text-zinc-500">CPF</label>
+                        <div className="flex items-center justify-between border-b border-surfaceHighlight pb-2">
+                            {user.cpf ? (
+                                <p className="text-white font-mono">{formatCpf(user.cpf)}</p>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <AlertCircle size={14} className="text-yellow-500" />
+                                    <p className="text-yellow-500 text-sm">Não cadastrado</p>
+                                </div>
+                            )}
+                            <button
+                                onClick={() => { setCpfInput(user.cpf || ''); setShowCpfModal(true); }}
+                                className="text-xs text-primary-400 hover:text-primary-300 font-bold"
+                            >
+                                {user.cpf ? 'Editar' : 'Adicionar'}
+                            </button>
+                        </div>
+                        {!user.cpf && (
+                            <p className="text-xs text-yellow-500/70 mt-1 italic">
+                                ⚠️ CPF obrigatório para realizar saques
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="text-xs text-zinc-500">Score de Confiança</label>
@@ -357,6 +423,53 @@ export const SettingsView = ({ user, onLogout, onDeleteAccount, onChangePassword
                                 {isSubmitting ? 'Verificando...' : 'Ativar 2FA Agora'}
                             </button>
                         </form>
+                    </div>
+                </div>
+            )}
+            {/* CPF Edit Modal */}
+            {showCpfModal && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4" onClick={(e) => { if (e.target === e.currentTarget) setShowCpfModal(false); }}>
+                    <div className="bg-surface border border-surfaceHighlight rounded-3xl p-6 w-full max-w-sm relative animate-fade-in shadow-2xl">
+                        <button title="Fechar" onClick={() => setShowCpfModal(false)} className="absolute top-4 right-4 text-zinc-400 hover:text-white bg-zinc-800 p-1.5 rounded-full z-10"><XIcon size={24} /></button>
+
+                        <h3 className="text-xl font-bold text-white mb-2">{user.cpf ? 'Editar CPF' : 'Adicionar CPF'}</h3>
+                        <p className="text-zinc-400 text-sm mb-6">Seu CPF é necessário para realizar saques via PIX.</p>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs text-zinc-400 font-medium mb-1.5 block">CPF</label>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    placeholder="000.000.000-00"
+                                    value={formatCpf(cpfInput)}
+                                    onChange={(e) => setCpfInput(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                                    className="w-full bg-background border border-surfaceHighlight rounded-xl py-3 px-4 text-white text-lg font-mono tracking-wider focus:border-primary-500 outline-none transition"
+                                />
+                            </div>
+
+                            {cpfError && (
+                                <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3 rounded-lg flex items-center gap-2">
+                                    <AlertCircle size={14} />
+                                    {cpfError}
+                                </div>
+                            )}
+
+                            {cpfSuccess && (
+                                <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs p-3 rounded-lg flex items-center gap-2">
+                                    <Check size={14} />
+                                    {cpfSuccess}
+                                </div>
+                            )}
+
+                            <button
+                                onClick={handleSaveCpf}
+                                disabled={savingCpf || cpfInput.length !== 11}
+                                className="w-full bg-primary-500 hover:bg-primary-400 disabled:opacity-50 text-black font-bold py-3 rounded-xl transition"
+                            >
+                                {savingCpf ? 'Salvando...' : 'Salvar CPF'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
