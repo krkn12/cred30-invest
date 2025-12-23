@@ -256,12 +256,12 @@ adminRoutes.get('/dashboard', adminMiddleware, async (c) => {
     const totalMonthlyCosts = parseFloat(stats.total_monthly_costs);
 
     // Calcular detalhamento de liquidez para o dashboard
-    // Liquidez Real = (Saldo em Conta) - (Saldos dos Usuários) - (Reservas Fixas) - (Custos do Mês) - (Lucros a Distribuir)
+    // Liquidez Real = (Saldo em Conta) - (Saldos dos Usuários) - (Reservas Fixas) - (Custos do Mês)
+    // O profit_pool NÃO é subtraído aqui porque ele é uma distribuição futura, não uma dívida imediata exigível (saque).
     const totalReservesForRealLiquidity = config.total_tax_reserve +
       config.total_operational_reserve +
       config.total_owner_profit +
       totalMonthlyCosts +
-      config.profit_pool +
       totalUserBalances;
 
     config.real_liquidity = config.system_balance - totalReservesForRealLiquidity;
