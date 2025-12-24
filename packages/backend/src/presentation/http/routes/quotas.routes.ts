@@ -98,6 +98,7 @@ quotaRoutes.get('/', authMiddleware, async (c) => {
 quotaRoutes.post('/buy', authMiddleware, async (c) => {
   try {
     const body = await c.req.json();
+    console.log('[QUOTAS] Processing /buy request:', JSON.stringify({ ...body, creditCard: 'REDACTED', creditCardHolderInfo: 'REDACTED' }));
     const { quantity, useBalance, paymentMethod, installments } = buyQuotaSchema.parse(body);
 
     // Nova Estrutura: R$ 42,00 capital + R$ 8,00 manutenção = R$ 50,00

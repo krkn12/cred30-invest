@@ -68,24 +68,39 @@ export interface PayoutResponse {
  */
 const asaasRequest = async (endpoint: string, options: RequestInit = {}): Promise<any> => {
     const url = `${ASAAS_BASE_URL}${endpoint}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds timeout
 
-    const response = await fetch(url, {
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            'access_token': ASAAS_API_KEY,
-            ...options.headers,
-        },
-    });
+    try {
+        console.log(`[ASAAS] Requesting ${endpoint}...`);
+        const response = await fetch(url, {
+            ...options,
+            signal: controller.signal,
+            headers: {
+                'Content-Type': 'application/json',
+                'access_token': ASAAS_API_KEY,
+                ...options.headers,
+            },
+        });
 
-    const data = await response.json();
+        clearTimeout(timeoutId);
 
-    if (!response.ok) {
-        console.error('Asaas API Error:', data);
-        throw new Error(data.errors?.[0]?.description || data.message || 'Erro na API Asaas');
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('Asaas API Error:', JSON.stringify(data));
+            throw new Error(data.errors?.[0]?.description || data.message || 'Erro na API Asaas');
+        }
+
+        return data;
+    } catch (error: any) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+            throw new Error('Timeout: Asaas API took too long to respond');
+        }
+        console.error(`Error in Asaas request to ${endpoint}:`, error);
+        throw error;
     }
-
-    return data;
 };
 
 /**
