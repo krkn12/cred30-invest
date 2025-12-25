@@ -614,4 +614,145 @@ authRoutes.get('/terms-status', authMiddleware, async (c) => {
   }
 });
 
+// ============================================
+// ROTA DE RECUPERAÇÃO DE 2FA
+// Permite desabilitar 2FA usando email + senha + frase secreta
+// ============================================
+const recover2FASchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+  secretPhrase: z.string().min(3),
+});
+
+authRoutes.post('/recover-2fa', async (c) => {
+  try {
+    const body = await c.req.json();
+    const data = recover2FASchema.parse(body);
+
+    const pool = getDbPool(c);
+
+    // Buscar usuário pelo email
+    const userResult = await pool.query(
+      'SELECT id, password_hash, secret_phrase, two_factor_enabled, name FROM users WHERE email = $1',
+      [data.email.toLowerCase()]
+    );
+
+    if (userResult.rows.length === 0) {
+      // Resposta genérica para não revelar se email existe
+      return c.json({
+        success: false,
+        message: 'Credenciais inválidas. Verifique email, senha e frase secreta.'
+      }, 400);
+    }
+
+    const user = userResult.rows[0];
+
+    // Verificar senha
+    const passwordMatch = await bcrypt.compare(data.password, user.password_hash);
+    if (!passwordMatch) {
+      return c.json({
+        success: false,
+        message: 'Credenciais inválidas. Verifique email, senha e frase secreta.'
+      }, 400);
+    }
+
+    // Verificar frase secreta (case insensitive)
+    if (user.secret_phrase.toLowerCase() !== data.secretPhrase.toLowerCase()) {
+      return c.json({
+        success: false,
+        message: 'Credenciais inválidas. Verifique email, senha e frase secreta.'
+      }, 400);
+    }
+
+    // Verificar se 2FA está habilitado
+    if (!user.two_factor_enabled) {
+      return c.json({
+        success: false,
+        message: 'A autenticação de dois fatores não está ativada nesta conta.'
+      }, 400);
+    }
+
+    // GERAR NOVO 2FA e desabilitar o antigo
+    const newSecret = twoFactorService.generateSecret();
+    const qrCode = twoFactorService.generateQRCode(newSecret, data.email);
+
+    // Atualizar usuário com novo segredo e MANTER 2FA DESABILITADO
+    // O usuário precisará ativar novamente após escanear o QR Code
+    await pool.query(
+      `UPDATE users 
+       SET two_factor_secret = $1, 
+           two_factor_enabled = FALSE 
+       WHERE id = $2`,
+      [newSecret, user.id]
+    );
+
+    // Log de segurança
+    console.log(`[SECURITY] 2FA recuperado para usuário ${user.id} (${data.email})`);
+
+    return c.json({
+      success: true,
+      message: '2FA desabilitado com sucesso! Configure novamente para maior segurança.',
+      data: {
+        twoFactor: {
+          secret: newSecret,
+          qrCode: qrCode,
+          otpUri: `otpauth://totp/Cred30:${data.email}?secret=${newSecret}&issuer=Cred30`
+        }
+      }
+    });
+
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return c.json({ success: false, message: 'Dados inválidos', errors: error.errors }, 400);
+    }
+    console.error('Erro ao recuperar 2FA:', error);
+    return c.json({ success: false, message: 'Erro interno do servidor' }, 500);
+  }
+});
+
+// Rota para admin desabilitar 2FA de um usuário
+authRoutes.post('/admin/disable-2fa', authMiddleware, async (c) => {
+  try {
+    const userPayload = c.get('user');
+
+    // Verificar se é admin
+    if (!userPayload?.isAdmin) {
+      return c.json({ success: false, message: 'Acesso negado' }, 403);
+    }
+
+    const { userId } = await c.req.json();
+
+    if (!userId) {
+      return c.json({ success: false, message: 'ID do usuário é obrigatório' }, 400);
+    }
+
+    const pool = getDbPool(c);
+
+    // Desabilitar 2FA do usuário
+    const result = await pool.query(
+      `UPDATE users 
+       SET two_factor_enabled = FALSE, 
+           two_factor_secret = NULL 
+       WHERE id = $1 
+       RETURNING email`,
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return c.json({ success: false, message: 'Usuário não encontrado' }, 404);
+    }
+
+    console.log(`[ADMIN] 2FA desabilitado pelo admin ${userPayload.id} para usuário ${userId}`);
+
+    return c.json({
+      success: true,
+      message: `2FA desabilitado para ${result.rows[0].email}`
+    });
+
+  } catch (error) {
+    console.error('Erro ao desabilitar 2FA:', error);
+    return c.json({ success: false, message: 'Erro interno do servidor' }, 500);
+  }
+});
+
 export { authRoutes };

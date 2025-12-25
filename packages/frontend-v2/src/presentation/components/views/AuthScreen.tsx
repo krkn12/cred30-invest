@@ -8,6 +8,7 @@ import { User } from '../../../domain/types/common.types';
 export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
     const [isRegister, setIsRegister] = useState(false);
     const [isForgot, setIsForgot] = useState(false);
+    const [isRecover2FA, setIsRecover2FA] = useState(false); // Recuperar autenticador perdido
 
     // Verification Modal State
     const [showVerifyModal, setShowVerifyModal] = useState(false);
@@ -98,6 +99,33 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
             } else {
                 setError(error.message);
             }
+        }
+    };
+
+    // Função para recuperar 2FA usando email + senha + frase secreta
+    const handleRecover2FA = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
+        setSuccess(null);
+
+        if (!email || !password || !secretPhrase) {
+            setError('Preencha email, senha e frase secreta.');
+            return;
+        }
+
+        try {
+            const res = await apiService.recover2FA(email, password, secretPhrase);
+            if (res.success && res.data?.twoFactor) {
+                setTwoFactorData(res.data.twoFactor);
+                setVerifyEmailAddr(email);
+                setIs2FASetup(true);
+                setShowVerifyModal(true);
+                setSuccess('2FA recuperado! Configure novamente seu autenticador.');
+            } else {
+                setError(res.message || 'Erro ao recuperar 2FA');
+            }
+        } catch (error: any) {
+            setError(error.message || 'Erro ao recuperar 2FA');
         }
     };
 
@@ -234,6 +262,56 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
                             </div>
                             <button type="submit" className="w-full bg-primary-500 hover:bg-primary-400 text-black font-bold py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] mt-4">Redefinir Senha</button>
                             <button type="button" onClick={() => setIsForgot(false)} className="w-full text-zinc-400 text-sm hover:text-white mt-2">Voltar para Login</button>
+                        </>
+                    ) : isRecover2FA ? (
+                        <>
+                            <h2 className="text-white text-lg font-medium text-center mb-4">Recuperar Autenticador 2FA</h2>
+                            <p className="text-zinc-400 text-sm text-center mb-4">
+                                Perdeu acesso ao seu app autenticador? Use seu email, senha e frase secreta para gerar um novo QR Code.
+                            </p>
+                            <div className="space-y-4">
+                                <div className="relative">
+                                    <Users className="absolute left-3 top-3 text-zinc-500" size={20} />
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        autoComplete="email"
+                                        placeholder="Email"
+                                        value={email}
+                                        onChange={e => setEmail(e.target.value)}
+                                        className="w-full bg-background border border-surfaceHighlight rounded-xl py-3 pl-10 text-white focus:border-primary-500 outline-none transition"
+                                        required
+                                    />
+                                </div>
+                                <div className="relative">
+                                    <Lock className="absolute left-3 top-3 text-zinc-500" size={20} />
+                                    <input
+                                        type="password"
+                                        name="password"
+                                        autoComplete="current-password"
+                                        placeholder="Senha"
+                                        value={password}
+                                        onChange={e => setPassword(e.target.value)}
+                                        className="w-full bg-background border border-surfaceHighlight rounded-xl py-3 pl-10 text-white focus:border-primary-500 outline-none transition"
+                                        required
+                                    />
+                                </div>
+                                <div className="relative">
+                                    <KeyRound className="absolute left-3 top-3 text-zinc-500" size={20} />
+                                    <input
+                                        type="text"
+                                        name="secretPhrase"
+                                        autoComplete="off"
+                                        placeholder="Frase Secreta"
+                                        value={secretPhrase}
+                                        onChange={e => setSecretPhrase(e.target.value)}
+                                        className="w-full bg-background border border-surfaceHighlight rounded-xl py-3 pl-10 text-white focus:border-primary-500 outline-none transition"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <button type="button" onClick={handleRecover2FA} className="w-full bg-primary-500 hover:bg-primary-400 text-black font-bold py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] mt-4">Recuperar 2FA</button>
+                            <button type="button" onClick={() => setIsRecover2FA(false)} className="w-full text-zinc-400 text-sm hover:text-white mt-2">Voltar para Login</button>
                         </>
                     ) : (
                         <>
@@ -374,7 +452,7 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
                     )}
                 </form>
 
-                {!isForgot && (
+                {!isForgot && !isRecover2FA && (
                     <div className="mt-4 sm:mt-6 text-center space-y-2">
                         <p className="text-zinc-400 text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-0">
                             <span>{isRegister ? 'Já tem uma conta?' : 'Não tem uma conta?'}</span>
@@ -383,9 +461,14 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
                             </button>
                         </p>
                         {!isRegister && (
-                            <button type="button" onClick={() => setIsForgot(true)} className="text-zinc-500 text-xs sm:text-sm hover:text-zinc-300 py-1">
-                                Esqueci minha senha
-                            </button>
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+                                <button type="button" onClick={() => setIsForgot(true)} className="text-zinc-500 text-xs sm:text-sm hover:text-zinc-300 py-1">
+                                    Esqueci minha senha
+                                </button>
+                                <button type="button" onClick={() => setIsRecover2FA(true)} className="text-zinc-500 text-xs sm:text-sm hover:text-primary-400 py-1">
+                                    Perdi meu autenticador 2FA
+                                </button>
+                            </div>
                         )}
                     </div>
                 )}

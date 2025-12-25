@@ -213,6 +213,24 @@ class ApiService {
     });
   }
 
+  // Método para recuperar 2FA (quando perdeu o autenticador)
+  async recover2FA(email: string, password: string, secretPhrase: string): Promise<{
+    success: boolean;
+    message: string;
+    data?: {
+      twoFactor: {
+        secret: string;
+        qrCode: string;
+        otpUri: string;
+      }
+    }
+  }> {
+    return this.request<any>('/auth/recover-2fa', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, secretPhrase }),
+    });
+  }
+
   // Método para logout
   async logout(): Promise<void> {
     await this.request<void>('/auth/logout', {
