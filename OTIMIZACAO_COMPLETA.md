@@ -137,22 +137,32 @@
 
 | Usuário | Dispositivo | Regra |
 |---------|-------------|-------|
-| **Cliente** | Desktop Web | ❌ BLOQUEADO - Deve instalar PWA |
+| **Cliente** | Desktop Web | ❌ **BLOQUEADO** - Deve instalar PWA |
 | **Cliente** | Desktop PWA | ✅ Permitido |
-| **Cliente** | Mobile Web | ⚠️ Aviso para instalar PWA |
+| **Cliente** | Mobile Web | ❌ **BLOQUEADO** - Deve instalar PWA |
 | **Cliente** | Mobile PWA | ✅ Permitido |
 | **Admin** | Desktop Web | ✅ Permitido (recomendado) |
 | **Admin** | Desktop PWA | ⚠️ Aviso para usar Web |
 | **Admin** | Mobile | ✅ Permitido (qualquer) |
 
+### Tela de Bloqueio:
+- Título: "Baixe o App Cred30"
+- Ícone de download (não mais cadeado vermelho)
+- Botão "INSTALAR APP CRED30" quando disponível
+- Instruções manuais específicas por plataforma:
+  - 📱 **iPhone/iPad**: Compartilhar → Adicionar à Tela de Início
+  - 📱 **Android**: Menu (⋮) → Instalar aplicativo
+  - 💻 **Desktop**: Menu (⋮) → Instalar Cred30
+
 ### Arquivos Modificados:
 - `pwa-enforcer.component.tsx` - Lógica de enforcement
-- `app.page.tsx` - Bloqueio antes do login
+- `app.page.tsx` - Componente `PWABlocker` + bloqueio antes do login
 
 ### Justificativa:
 1. **Segurança**: PWA instalado oferece proteção contra phishing
 2. **UX Consistente**: Todos clientes usam mesma experiência
-3. **Admin em Web**: Funcionalidades admin funcionam melhor em navegador
+3. **Controle**: App instalado evita acesso por URLs falsas
+4. **Admin em Web**: Funcionalidades admin funcionam melhor em navegador
 
 ---
 

@@ -16,7 +16,7 @@ import { ReviewModal } from '../components/ui/ReviewModal';
 import { AIAssistant } from '../components/AIAssistant';
 import { OfflineNotice } from '../components/ui/offline-notice.component';
 import { useOnlineStatus } from '../hooks/use-online-status';
-import { PWAEnforcer, PWAInstallBanner, isPWAInstalled, isDesktopDevice, usePWAInstall } from '../components/ui/pwa-enforcer.component';
+import { PWAEnforcer, isPWAInstalled, usePWAInstall } from '../components/ui/pwa-enforcer.component';
 
 // Helper para lidar com erro de carregamento de chunks (comum após deploys)
 const lazyWithRetry = (componentImport: () => Promise<any>) =>
@@ -58,36 +58,38 @@ const EducationView = lazyWithRetry(() => import('../components/views/EducationV
 const FaqView = lazyWithRetry(() => import('../components/views/FaqView').then(m => ({ default: m.FaqView })));
 const VotingView = lazyWithRetry(() => import('../components/views/VotingView').then(m => ({ default: m.VotingView })));
 
-// Componente de bloqueio para clientes desktop tentando acessar via web
-const DesktopPWABlocker = () => {
+// Componente de bloqueio para clientes tentando acessar via web (desktop E mobile)
+const PWABlocker = () => {
   const { isInstallable, promptInstall } = usePWAInstall();
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <div className="max-w-lg w-full">
         {/* Card principal de bloqueio */}
-        <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-red-500/30 rounded-3xl p-8 shadow-2xl shadow-red-900/20 text-center">
-          <div className="w-20 h-20 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-red-500/20">
-            <Lock className="text-red-400" size={40} />
+        <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-primary-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-primary-900/20 text-center">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 border border-primary-500/20">
+            <Download className="text-primary-400" size={isMobile ? 32 : 40} />
           </div>
 
-          <h1 className="text-2xl font-black text-white mb-3 tracking-tight">
-            Acesse pelo Aplicativo
+          <h1 className="text-xl sm:text-2xl font-black text-white mb-3 tracking-tight">
+            Baixe o App Cred30
           </h1>
 
           <p className="text-zinc-400 text-sm leading-relaxed mb-6">
-            Para sua segurança, o acesso ao Cred30 via navegador web em computadores não é permitido.
+            Para sua segurança, o acesso ao Cred30 via navegador web não é permitido.
             <br /><br />
             <strong className="text-white">Instale o aplicativo oficial</strong> para continuar.
           </p>
 
           {/* Alerta de segurança */}
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-6 text-left">
+          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 mb-6 text-left">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="text-amber-400 shrink-0 mt-0.5" size={18} />
-              <p className="text-amber-200/80 text-xs leading-relaxed">
+              <Lock className="text-emerald-400 shrink-0 mt-0.5" size={18} />
+              <p className="text-emerald-200/80 text-xs leading-relaxed">
                 O aplicativo instalado oferece proteção adicional contra phishing,
-                mantém suas sessões mais seguras e garante que você está acessando o sistema oficial.
+                mantém suas sessões mais seguras e garante que você está no sistema oficial.
               </p>
             </div>
           </div>
@@ -96,25 +98,51 @@ const DesktopPWABlocker = () => {
           {isInstallable ? (
             <button
               onClick={promptInstall}
-              className="w-full bg-primary-500 hover:bg-primary-400 text-black font-black py-4 rounded-2xl text-sm flex items-center justify-center gap-3 transition shadow-lg shadow-primary-500/20 mb-4"
+              className="w-full bg-primary-500 hover:bg-primary-400 text-black font-black py-4 rounded-2xl text-sm flex items-center justify-center gap-3 transition shadow-lg shadow-primary-500/20 mb-4 active:scale-95"
             >
               <Download size={20} />
-              INSTALAR APLICATIVO CRED30
+              INSTALAR APP CRED30
             </button>
           ) : (
             <div className="space-y-4">
               <p className="text-zinc-500 text-xs">
-                Se o botão de instalação não aparecer, siga os passos abaixo:
+                Siga os passos abaixo para instalar:
               </p>
-              <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-left">
-                <p className="text-xs text-zinc-400 mb-2 font-bold uppercase tracking-widest">Como instalar:</p>
-                <ol className="text-xs text-zinc-300 space-y-2 list-decimal list-inside">
-                  <li>Clique nos <strong>3 pontos (⋮)</strong> no canto superior direito do navegador</li>
-                  <li>Selecione <strong>"Instalar Cred30"</strong> ou <strong>"Adicionar à área de trabalho"</strong></li>
-                  <li>Confirme a instalação</li>
-                  <li>Abra o app instalado no seu desktop</li>
-                </ol>
-              </div>
+
+              {isIOS ? (
+                // Instruções para iOS (Safari)
+                <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-left">
+                  <p className="text-xs text-zinc-400 mb-2 font-bold uppercase tracking-widest">📱 iPhone/iPad:</p>
+                  <ol className="text-xs text-zinc-300 space-y-2 list-decimal list-inside">
+                    <li>Toque no botão <strong>Compartilhar</strong> (ícone de quadrado com seta ↑)</li>
+                    <li>Role para baixo e toque em <strong>"Adicionar à Tela de Início"</strong></li>
+                    <li>Toque em <strong>"Adicionar"</strong> no canto superior direito</li>
+                    <li>Abra o app <strong>Cred30</strong> na sua tela inicial</li>
+                  </ol>
+                </div>
+              ) : isMobile ? (
+                // Instruções para Android
+                <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-left">
+                  <p className="text-xs text-zinc-400 mb-2 font-bold uppercase tracking-widest">📱 Android:</p>
+                  <ol className="text-xs text-zinc-300 space-y-2 list-decimal list-inside">
+                    <li>Toque nos <strong>3 pontos (⋮)</strong> no canto superior direito</li>
+                    <li>Toque em <strong>"Instalar aplicativo"</strong> ou <strong>"Adicionar à tela inicial"</strong></li>
+                    <li>Confirme tocando em <strong>"Instalar"</strong></li>
+                    <li>Abra o app <strong>Cred30</strong> na sua tela inicial</li>
+                  </ol>
+                </div>
+              ) : (
+                // Instruções para Desktop
+                <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-left">
+                  <p className="text-xs text-zinc-400 mb-2 font-bold uppercase tracking-widest">💻 Computador:</p>
+                  <ol className="text-xs text-zinc-300 space-y-2 list-decimal list-inside">
+                    <li>Clique nos <strong>3 pontos (⋮)</strong> no canto superior direito do navegador</li>
+                    <li>Selecione <strong>"Instalar Cred30"</strong> ou <strong>"Adicionar à área de trabalho"</strong></li>
+                    <li>Confirme a instalação</li>
+                    <li>Abra o app instalado</li>
+                  </ol>
+                </div>
+              )}
             </div>
           )}
 
@@ -479,14 +507,13 @@ export default function App() {
     return <div className="min-h-screen bg-black flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary-500"></div></div>;
   }
 
-  // Verificação de acesso: Clientes desktop SÓ podem acessar via PWA instalado
-  const isDesktop = isDesktopDevice();
+  // Verificação de acesso: Clientes SÓ podem acessar via PWA instalado (desktop E mobile)
   const isInstalled = isPWAInstalled();
 
   if (!state.currentUser) {
-    // BLOQUEIA clientes desktop tentando acessar via web (não PWA)
-    if (isDesktop && !isInstalled) {
-      return <DesktopPWABlocker />;
+    // BLOQUEIA clientes tentando acessar via web (não PWA) - DESKTOP E MOBILE
+    if (!isInstalled) {
+      return <PWABlocker />;
     }
 
     return (
@@ -521,7 +548,6 @@ export default function App() {
     <PWAEnforcer isAdmin={false}>
       <OfflineNotice isOnline={isOnline} />
       <UpdateNotification />
-      <PWAInstallBanner />
       <Routes>
         <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
         <Route path="/auth" element={<Navigate to="/app/dashboard" replace />} />
