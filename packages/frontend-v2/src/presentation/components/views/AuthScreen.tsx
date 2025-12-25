@@ -262,11 +262,23 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
                             </div>
                             <button type="submit" className="w-full bg-primary-500 hover:bg-primary-400 text-black font-bold py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] mt-4">Redefinir Senha</button>
                             <button type="button" onClick={() => setIsForgot(false)} className="w-full text-zinc-400 text-sm hover:text-white mt-2">Voltar para Login</button>
+
+                            <div className="mt-8 p-4 bg-primary-500/5 rounded-xl border border-primary-500/10 text-center">
+                                <p className="text-zinc-400 text-xs mb-2 text-balance leading-relaxed">Esqueceu a senha E a frase secreta? Por segurança, sua conta foi bloqueada para auto-recuperação.</p>
+                                <a
+                                    href="https://wa.me/550000000000?text=Olá, perdi minha senha e frase secreta da Cred30 e preciso de ajuda com a recuperação de identidade."
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-primary-400 hover:text-primary-300 text-xs font-bold underline decoration-primary-500/30"
+                                >
+                                    Falar com Suporte Humano
+                                </a>
+                            </div>
                         </>
                     ) : isRecover2FA ? (
                         <>
                             <h2 className="text-white text-lg font-medium text-center mb-4">Recuperar Autenticador 2FA</h2>
-                            <p className="text-zinc-400 text-sm text-center mb-4">
+                            <p className="text-zinc-400 text-sm text-center mb-4 text-balance">
                                 Perdeu acesso ao seu app autenticador? Use seu email, senha e frase secreta para gerar um novo QR Code.
                             </p>
                             <div className="space-y-4">
@@ -312,6 +324,18 @@ export const AuthScreen = ({ onLogin }: { onLogin: (u: User) => void }) => {
                             </div>
                             <button type="button" onClick={handleRecover2FA} className="w-full bg-primary-500 hover:bg-primary-400 text-black font-bold py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] mt-4">Recuperar 2FA</button>
                             <button type="button" onClick={() => setIsRecover2FA(false)} className="w-full text-zinc-400 text-sm hover:text-white mt-2">Voltar para Login</button>
+
+                            <div className="mt-8 p-4 bg-primary-500/5 rounded-xl border border-primary-500/10 text-center">
+                                <p className="text-zinc-400 text-xs mb-2 text-balance leading-relaxed">Não lembra a frase secreta? O suporte pode desativar seu 2FA após confirmar sua identidade.</p>
+                                <a
+                                    href="https://wa.me/550000000000?text=Olá, perdi meu autenticador e não lembro minha frase secreta. Preciso de ajuda administrativa."
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-primary-400 hover:text-primary-300 text-xs font-bold underline decoration-primary-500/30"
+                                >
+                                    Falar com Suporte Humano
+                                </a>
+                            </div>
                         </>
                     ) : (
                         <>
