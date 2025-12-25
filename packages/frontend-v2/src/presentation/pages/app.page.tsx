@@ -57,6 +57,7 @@ const GamesView = lazyWithRetry(() => import('../components/views/GamesView').th
 const EducationView = lazyWithRetry(() => import('../components/views/EducationView').then(m => ({ default: m.EducationView })));
 const FaqView = lazyWithRetry(() => import('../components/views/FaqView').then(m => ({ default: m.FaqView })));
 const VotingView = lazyWithRetry(() => import('../components/views/VotingView').then(m => ({ default: m.VotingView })));
+const PromoVideosView = lazyWithRetry(() => import('../components/views/PromoVideosView').then(m => ({ default: m.PromoVideosView })));
 
 // Componente de bloqueio para clientes tentando acessar via web (desktop E mobile)
 const PWABlocker = () => {
@@ -509,10 +510,15 @@ export default function App() {
 
   // Verificação de acesso: Clientes SÓ podem acessar via PWA instalado (desktop E mobile)
   const isInstalled = isPWAInstalled();
+  const currentPath = window.location.pathname;
+
+  // EXCEÇÃO: Rotas legais são acessíveis sem PWA (usuário precisa ler termos antes de instalar)
+  const legalRoutes = ['/terms', '/privacy', '/security'];
+  const isLegalRoute = legalRoutes.some(route => currentPath.startsWith(route));
 
   if (!state.currentUser) {
-    // BLOQUEIA clientes tentando acessar via web (não PWA) - DESKTOP E MOBILE
-    if (!isInstalled) {
+    // BLOQUEIA clientes tentando acessar via web (não PWA) - EXCETO rotas legais
+    if (!isInstalled && !isLegalRoute) {
       return <PWABlocker />;
     }
 
@@ -593,7 +599,7 @@ export default function App() {
                     />
                   </Suspense>
                 } />
-                <Route path="invest" element={<Suspense fallback={null}><InvestView onBuy={handleBuyQuota} /></Suspense>} />
+                <Route path="invest" element={<Suspense fallback={null}><InvestView onBuy={handleBuyQuota} isPro={state.currentUser?.membership_type === 'PRO'} /></Suspense>} />
                 <Route path="portfolio" element={
                   <Suspense fallback={null}>
                     <PortfolioView
@@ -634,7 +640,8 @@ export default function App() {
                 <Route path="education" element={<Suspense fallback={null}><EducationView onBack={() => navigate('/app/dashboard')} onSuccess={(title, message) => setShowSuccess({ isOpen: true, title, message })} /></Suspense>} />
                 <Route path="faq" element={<Suspense fallback={null}><FaqView /></Suspense>} />
                 <Route path="voting" element={<Suspense fallback={null}><VotingView appState={state} onBack={() => navigate('/app/dashboard')} onRefresh={refreshState} onSuccess={(title, message) => setShowSuccess({ isOpen: true, title, message })} onError={(title, message) => setShowError({ isOpen: true, title, message })} /></Suspense>} />
-                <Route path="history" element={<Suspense fallback={null}><HistoryView transactions={state.transactions.filter(t => t.userId === state.currentUser!.id)} /></Suspense>} />
+                <Route path="promo-videos" element={<Suspense fallback={null}><PromoVideosView userBalance={state.currentUser.balance} onRefresh={refreshState} onSuccess={(title, message) => setShowSuccess({ isOpen: true, title, message })} onError={(title, message) => setShowError({ isOpen: true, title, message })} /></Suspense>} />
+                <Route path="history" element={<Suspense fallback={null}><HistoryView transactions={state.transactions.filter(t => t.userId === state.currentUser!.id)} isPro={state.currentUser?.membership_type === 'PRO'} /></Suspense>} />
                 <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
               </Routes>
 

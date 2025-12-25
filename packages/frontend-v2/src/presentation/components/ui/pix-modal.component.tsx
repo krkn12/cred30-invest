@@ -87,6 +87,10 @@ export const PIXModal: React.FC<PIXModalProps> = ({
                         O sistema identificará o pagamento automaticamente em instantes.
                     </p>
 
+                    <p className="text-[9px] text-zinc-600 text-center leading-relaxed mt-2">
+                        Pagamento processado via gateway Asaas. O Cred30 não armazena dados bancários.
+                    </p>
+
                     <button
                         onClick={onClose}
                         className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl font-bold transition-all shadow-lg mt-2"

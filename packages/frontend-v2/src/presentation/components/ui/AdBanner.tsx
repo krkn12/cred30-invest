@@ -6,9 +6,10 @@ interface AdBannerProps {
     title?: string;
     description?: string;
     actionText?: string;
+    hide?: boolean; // Esconde anúncios para usuários PRO
 }
 
-export const AdBanner = ({ type, title, description, actionText }: AdBannerProps) => {
+export const AdBanner = ({ type, title, description, actionText, hide }: AdBannerProps) => {
     const [isVisible, setIsVisible] = React.useState(true);
     const SMART_LINK = 'https://www.effectivegatecpm.com/ec4mxdzvs?key=a9eefff1a8aa7769523373a66ff484aa';
 
@@ -16,7 +17,8 @@ export const AdBanner = ({ type, title, description, actionText }: AdBannerProps
         window.open(SMART_LINK, '_blank');
     };
 
-    if (!isVisible) return null;
+    // Não renderiza se o usuário é PRO ou se foi fechado
+    if (!isVisible || hide) return null;
 
     if (type === 'NATIVE') {
         return (

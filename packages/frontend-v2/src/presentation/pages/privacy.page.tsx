@@ -211,7 +211,7 @@ const PrivacyPage = () => {
                         Dúvidas sobre seus dados? Entre em contato com nossa equipe de suporte.
                     </p>
                     <p className="text-zinc-600 text-xs mt-4">
-                        Cred30 © 2024 - Todos os direitos reservados.
+                        Cred30 © 2025 - Todos os direitos reservados.
                     </p>
                 </footer>
             </main>

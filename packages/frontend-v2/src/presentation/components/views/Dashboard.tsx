@@ -35,6 +35,9 @@ interface DashboardProps {
 export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onReinvest, onRefer, onVip, onLogout, onSuccess, onError, onChangePassword, onClaimReward, onMarketplace, onEarn, onEducation, onVoting }: DashboardProps) => {
     const user = state.currentUser!;
 
+    // Usuários PRO não veem anúncios
+    const isPro = user?.membership_type === 'PRO';
+
     const { userQuotas, totalInvested, totalCurrentValue, totalEarnings, earningsPercentage } = useMemo(() => {
         const quotas = state.quotas.filter((q: any) => q.userId === user.id);
         const invested = quotas.reduce((acc: number, q: any) => acc + q.purchasePrice, 0);
@@ -382,7 +385,7 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                 </div>
 
                 {/* Banner de Adsterra na Dashboard */}
-                <AdBanner type="NATIVE" title="Oportunidades Parceiras" description="Explore benefícios de nossos parceiros." actionText="VER AGORA" />
+                <AdBanner type="NATIVE" title="Oportunidades Parceiras" description="Explore benefícios de nossos parceiros." actionText="VER AGORA" hide={isPro} />
             </div>
 
             {/* Recent Transactions (Extrato) */}

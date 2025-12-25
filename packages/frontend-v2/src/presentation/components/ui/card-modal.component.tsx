@@ -313,7 +313,8 @@ export const CardModal: React.FC<CardModalProps> = ({
 
                 <p className="text-[9px] text-zinc-600 text-center mt-6 leading-relaxed uppercase font-bold tracking-tight">
                     Pagamento Transparente Asaas. <br />
-                    Ambiente 100% criptografado e seguro.
+                    Ambiente 100% criptografado e seguro. <br />
+                    O Cred30 não armazena dados do seu cartão.
                 </p>
             </div>
         </div>

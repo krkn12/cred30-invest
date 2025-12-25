@@ -493,4 +493,125 @@ authRoutes.post('/logout', async (c) => {
   });
 });
 
+// Rota para registrar aceite de termos (Blindagem Jurídica)
+const termsAcceptanceSchema = z.object({
+  termsVersion: z.string().default('2.0'),
+  privacyVersion: z.string().default('1.0'),
+  acceptedAgeRequirement: z.boolean().default(true),
+  acceptedRiskDisclosure: z.boolean().default(true),
+  acceptedTerms: z.boolean().default(true),
+  acceptedPrivacy: z.boolean().default(true),
+});
+
+authRoutes.post('/accept-terms', authMiddleware, async (c) => {
+  try {
+    const userPayload = c.get('user');
+    const body = await c.req.json();
+    const data = termsAcceptanceSchema.parse(body);
+
+    const pool = getDbPool(c);
+
+    // Coletar informações do cliente
+    const ipAddress = c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || '127.0.0.1';
+    const userAgent = c.req.header('user-agent') || 'Unknown';
+
+    // Registrar aceite de termos
+    await pool.query(
+      `INSERT INTO terms_acceptance 
+       (user_id, terms_version, privacy_version, ip_address, user_agent, 
+        accepted_age_requirement, accepted_risk_disclosure, accepted_terms, accepted_privacy)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       ON CONFLICT (user_id, terms_version, privacy_version) 
+       DO UPDATE SET 
+         ip_address = EXCLUDED.ip_address,
+         user_agent = EXCLUDED.user_agent,
+         accepted_at = CURRENT_TIMESTAMP`,
+      [
+        userPayload.id,
+        data.termsVersion,
+        data.privacyVersion,
+        ipAddress,
+        userAgent,
+        data.acceptedAgeRequirement,
+        data.acceptedRiskDisclosure,
+        data.acceptedTerms,
+        data.acceptedPrivacy
+      ]
+    );
+
+    // Também atualizar o campo simples na tabela users
+    await pool.query(
+      'UPDATE users SET accepted_terms_at = CURRENT_TIMESTAMP WHERE id = $1',
+      [userPayload.id]
+    );
+
+    console.log(`[LEGAL] Aceite de termos registrado para usuário ${userPayload.id} - IP: ${ipAddress}`);
+
+    return c.json({
+      success: true,
+      message: 'Aceite de termos registrado com sucesso',
+      data: {
+        termsVersion: data.termsVersion,
+        privacyVersion: data.privacyVersion,
+        acceptedAt: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao registrar aceite de termos:', error);
+    if (error instanceof z.ZodError) {
+      return c.json({ success: false, message: 'Dados inválidos', errors: error.errors }, 400);
+    }
+    return c.json({ success: false, message: 'Erro ao registrar aceite' }, 500);
+  }
+});
+
+// Rota para verificar se usuário aceitou termos atuais
+authRoutes.get('/terms-status', authMiddleware, async (c) => {
+  try {
+    const userPayload = c.get('user');
+    const pool = getDbPool(c);
+
+    const result = await pool.query(
+      `SELECT terms_version, privacy_version, accepted_at, 
+              accepted_age_requirement, accepted_risk_disclosure
+       FROM terms_acceptance 
+       WHERE user_id = $1 
+       ORDER BY accepted_at DESC 
+       LIMIT 1`,
+      [userPayload.id]
+    );
+
+    if (result.rows.length === 0) {
+      return c.json({
+        success: true,
+        data: {
+          hasAccepted: false,
+          needsUpdate: true,
+          currentTermsVersion: '2.0',
+          currentPrivacyVersion: '1.0'
+        }
+      });
+    }
+
+    const acceptance = result.rows[0];
+    const needsUpdate = acceptance.terms_version !== '2.0' || acceptance.privacy_version !== '1.0';
+
+    return c.json({
+      success: true,
+      data: {
+        hasAccepted: true,
+        needsUpdate,
+        acceptedTermsVersion: acceptance.terms_version,
+        acceptedPrivacyVersion: acceptance.privacy_version,
+        acceptedAt: acceptance.accepted_at,
+        currentTermsVersion: '2.0',
+        currentPrivacyVersion: '1.0'
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao verificar status de termos:', error);
+    return c.json({ success: false, message: 'Erro ao verificar status' }, 500);
+  }
+});
+
 export { authRoutes };

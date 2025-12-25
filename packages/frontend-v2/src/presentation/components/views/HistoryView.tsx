@@ -5,12 +5,13 @@ import { AdBanner } from '../ui/AdBanner';
 
 interface HistoryViewProps {
     transactions: Transaction[];
+    isPro?: boolean;
 }
 
 type FilterType = 'ALL' | 'IN' | 'OUT';
 type StatusFilter = 'ALL' | 'APPROVED' | 'PENDING' | 'REJECTED';
 
-export const HistoryView = ({ transactions }: HistoryViewProps) => {
+export const HistoryView = ({ transactions, isPro }: HistoryViewProps) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState<FilterType>('ALL');
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
@@ -283,6 +284,7 @@ export const HistoryView = ({ transactions }: HistoryViewProps) => {
                         title="Aumente seu Score Hoje!"
                         description="Nossos parceiros ajudam você a limpar seu nome e conseguir mais apoios mútuos."
                         actionText="ABRIR OFERTA"
+                        hide={isPro}
                     />
                 </div>
             </div>

@@ -25,6 +25,7 @@ import { initializeScheduler } from './scheduler';
 import { logger } from 'hono/logger';
 import { monetizationRoutes } from './presentation/http/routes/monetization.routes';
 import { supportRoutes } from './presentation/http/routes/support.routes';
+import { promoVideosRoutes } from './presentation/http/routes/promo-videos.routes';
 import { initializeDatabase, pool } from './infrastructure/database/postgresql/connection/pool';
 
 const app = new Hono();
@@ -60,6 +61,7 @@ async function startServer() {
     app.route('/api/support', supportRoutes);
     app.route('/api/education', educationRoutes);
     app.route('/api/voting', votingRoutes);
+    app.route('/api/promo-videos', promoVideosRoutes);
 
     // Rota raiz para evitar 404 em monitoramentos e pings de wakeup
     app.get('/', (c) => c.json({

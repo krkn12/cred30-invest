@@ -4,7 +4,12 @@ import { QUOTA_PRICE, QUOTA_SHARE_VALUE, QUOTA_ADM_FEE } from '../../../shared/c
 import { calculateTotalToPay } from '../../../shared/utils/financial.utils';
 import { AdBanner } from '../ui/AdBanner';
 
-export const InvestView = ({ onBuy }: { onBuy: (qty: number, method: 'PIX' | 'BALANCE' | 'CARD') => void }) => {
+interface InvestViewProps {
+    onBuy: (qty: number, method: 'PIX' | 'BALANCE' | 'CARD') => void;
+    isPro?: boolean;
+}
+
+export const InvestView = ({ onBuy, isPro }: InvestViewProps) => {
     const [qty, setQty] = useState(1);
     const [method, setMethod] = useState<'PIX' | 'BALANCE' | 'CARD'>('PIX');
     const [showConfirm, setShowConfirm] = useState(false);
@@ -100,6 +105,7 @@ export const InvestView = ({ onBuy }: { onBuy: (qty: number, method: 'PIX' | 'BA
                 <AdBanner
                     type="TIP"
                     description="Receba cashback em todas as suas compras com os cartões parceiros."
+                    hide={isPro}
                 />
             </div>
 
@@ -147,6 +153,10 @@ export const InvestView = ({ onBuy }: { onBuy: (qty: number, method: 'PIX' | 'BA
                                 </button>
                             </>
                         )}
+
+                        <p className="text-[9px] text-zinc-600 text-center mt-4 leading-relaxed">
+                            Ao confirmar, você declara ciência de que aportes de capital social são regidos pelos Termos de Uso (SCP) e não possuem garantia de rendimento.
+                        </p>
 
                         <button
                             onClick={() => setShowConfirm(false)}

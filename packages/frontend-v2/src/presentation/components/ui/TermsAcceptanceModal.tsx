@@ -117,9 +117,40 @@ export const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({ isOp
                         </div>
                     </section>
 
-                    <div className="pt-10 border-t border-zinc-900 text-center">
+                    {/* AVISO DE RISCO - CRÍTICO PARA BLINDAGEM */}
+                    <section className="space-y-4">
+                        <h3 className="text-lg md:text-xl font-bold text-red-500 flex items-center gap-2">
+                            ⚠️ 6. Aviso de Risco de Perda
+                        </h3>
+                        <div className="bg-red-500/10 border-2 border-red-500/30 p-5 rounded-2xl space-y-3">
+                            <p className="text-red-300 text-sm md:text-base font-bold">
+                                VOCÊ PODE PERDER TODO O CAPITAL APORTADO.
+                            </p>
+                            <p className="text-zinc-400 text-xs md:text-sm leading-relaxed">
+                                O sistema de apoio mútuo <strong className="text-white">NÃO GARANTE</strong> retorno do investimento.
+                                Os rendimentos passados não garantem rendimentos futuros.
+                                Não invista recursos que você não pode perder.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section className="space-y-4">
+                        <h3 className="text-lg md:text-xl font-bold text-purple-400 flex items-center gap-2">
+                            7. Elegibilidade
+                        </h3>
+                        <p className="text-zinc-400 text-xs md:text-sm leading-relaxed">
+                            Ao clicar em "Aceitar", você declara ter <strong className="text-white">18 anos ou mais</strong>,
+                            possuir plena capacidade civil e que leu, compreendeu e concorda com todos os termos acima,
+                            incluindo os <strong className="text-white">riscos de perda financeira</strong>.
+                        </p>
+                    </section>
+
+                    <div className="pt-10 border-t border-zinc-900 text-center space-y-2">
                         <p className="text-zinc-500 text-sm italic">
                             Fim dos termos. Role até o fim para habilitar o botão de aceite.
+                        </p>
+                        <p className="text-[10px] text-emerald-600 font-bold">
+                            Versão 2.0 • 25/12/2024
                         </p>
                     </div>
                 </div>

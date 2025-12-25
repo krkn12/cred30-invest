@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { LogOut, Home, PieChart, DollarSign, Settings, TrendingUp, ArrowUpFromLine, Gamepad2, ShoppingBag, HelpCircle, MessageCircle } from 'lucide-react';
+import { LogOut, Home, PieChart, DollarSign, Settings, TrendingUp, ArrowUpFromLine, Gamepad2, ShoppingBag, HelpCircle, MessageCircle, Play } from 'lucide-react';
 import { AdBanner } from '../ui/AdBanner';
 import { useNavigate } from 'react-router-dom';
 import { User } from '../../../domain/types/common.types';
@@ -15,6 +15,9 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children, user, currentView, onChangeView, onLogout }) => {
   const navigate = useNavigate();
   const [installPrompt, setInstallPrompt] = React.useState<any>(null);
+
+  // Usuários PRO não veem anúncios
+  const isPro = user?.membership_type === 'PRO';
 
   useEffect(() => {
     const handler = (e: any) => {
@@ -80,6 +83,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, currentView, onC
   const navItems = [
     { id: 'dashboard', label: 'Início', icon: Home },
     { id: 'marketplace', label: 'Clube', icon: ShoppingBag },
+    { id: 'promo-videos', label: 'Views', icon: Play },
     { id: 'invest', label: 'Ativação', icon: TrendingUp },
     { id: 'games', label: 'Diversão', icon: Gamepad2 },
     { id: 'portfolio', label: 'Meus Ativos', icon: PieChart },
@@ -141,7 +145,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, currentView, onC
 
           {/* Desktop Sidebar Ad - Monetização Extra */}
           <div className="pt-4">
-            <AdBanner type="NATIVE" title="Dica Exclusiva" description="Aumente seu score hoje." />
+            <AdBanner type="NATIVE" title="Dica Exclusiva" description="Aumente seu score hoje." hide={isPro} />
           </div>
         </nav>
         <div className="p-4 border-t border-surfaceHighlight">
@@ -207,7 +211,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, currentView, onC
       {/* Sticky Ad Footer (Apenas Mobile - No PC polui muito) */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-black border-t border-zinc-800 p-1 pb-1">
         <div className="mx-auto max-w-md">
-          <AdBanner type="BANNER" title="Parceiro em Destaque" description="Confira esta oferta especial." actionText="ABRIR" />
+          <AdBanner type="BANNER" title="Parceiro em Destaque" description="Confira esta oferta especial." actionText="ABRIR" hide={isPro} />
         </div>
       </div>
     </div>

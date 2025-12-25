@@ -92,6 +92,22 @@ const TermsPage = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Identificação do Sócio Ostensivo */}
+                        <div className="mt-8 pt-6 border-t border-white/5">
+                            <h4 className="text-white font-bold mb-3 uppercase text-xs tracking-widest flex items-center gap-2">
+                                <Users size={14} className="text-emerald-400" />
+                                Sócio Ostensivo (Responsável Legal)
+                            </h4>
+                            <div className="bg-black/30 p-4 rounded-xl border border-white/5 text-sm">
+                                <p className="text-zinc-300"><strong className="text-white">Nome:</strong> Josias da Silva Conceição</p>
+                                <p className="text-zinc-300"><strong className="text-white">CPF:</strong> 064.XXX.XXX-XX</p>
+                                <p className="text-zinc-300"><strong className="text-white">Endereço:</strong> Brasil</p>
+                                <p className="text-zinc-500 text-xs mt-2 italic">
+                                    Conforme Art. 991 do Código Civil, o Sócio Ostensivo é o único responsável perante terceiros pelas obrigações da sociedade.
+                                </p>
+                            </div>
+                        </div>
                     </section>
 
                     {/* O Mercado como Prova de Valor */}
@@ -135,6 +151,110 @@ const TermsPage = () => {
                         </ul>
                     </section>
 
+                    {/* AVISO DE RISCO - CRÍTICO */}
+                    <section className="bg-red-500/10 border-2 border-red-500/30 p-6 sm:p-8 rounded-3xl">
+                        <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-3 text-red-500">
+                            <AlertTriangle size={24} /> 4. Aviso de Risco de Perda
+                        </h2>
+                        <div className="space-y-4">
+                            <p className="text-red-300 text-sm sm:text-base font-bold leading-relaxed">
+                                ⚠️ VOCÊ PODE PERDER TODO O CAPITAL APORTADO.
+                            </p>
+                            <p className="text-zinc-400 text-sm leading-relaxed">
+                                O sistema de apoio mútuo <strong className="text-white">NÃO GARANTE</strong> retorno do investimento.
+                                Os rendimentos passados não garantem rendimentos futuros.
+                                Não invista recursos que você não pode perder.
+                            </p>
+                            <p className="text-zinc-500 text-xs italic">
+                                Ao aceitar estes termos, você declara ciência de que assume integralmente os riscos
+                                de perdas financeiras decorrentes da participação neste sistema de ajuda mútua.
+                            </p>
+                        </div>
+                    </section>
+
+                    {/* Elegibilidade e Capacidade */}
+                    <section className="bg-zinc-900/30 border border-white/5 p-6 sm:p-8 rounded-3xl">
+                        <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-3 text-purple-400">
+                            <Users size={24} /> 5. Elegibilidade e Capacidade
+                        </h2>
+                        <ul className="space-y-3 text-zinc-400 text-sm">
+                            <li className="flex gap-3">
+                                <CheckCircle2 size={16} className="text-emerald-500 mt-1 shrink-0" />
+                                <span>É necessário ter <strong className="text-white">18 anos ou mais</strong> e plena capacidade civil para participar.</span>
+                            </li>
+                            <li className="flex gap-3">
+                                <CheckCircle2 size={16} className="text-emerald-500 mt-1 shrink-0" />
+                                <span>O cadastro é pessoal e intransferível. Cada CPF pode ter apenas uma conta.</span>
+                            </li>
+                            <li className="flex gap-3">
+                                <CheckCircle2 size={16} className="text-emerald-500 mt-1 shrink-0" />
+                                <span>É obrigatório possuir um <strong className="text-white">código de indicação</strong> válido de membro ativo.</span>
+                            </li>
+                            <li className="flex gap-3">
+                                <CheckCircle2 size={16} className="text-emerald-500 mt-1 shrink-0" />
+                                <span>A Cred30 reserva-se o direito de recusar ou encerrar cadastros a seu exclusivo critério.</span>
+                            </li>
+                        </ul>
+                    </section>
+
+                    {/* Vigência e Rescisão */}
+                    <section className="bg-zinc-900/30 border border-white/5 p-6 sm:p-8 rounded-3xl">
+                        <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-3 text-amber-400">
+                            <ClockIcon size={24} /> 6. Vigência e Rescisão
+                        </h2>
+                        <p className="text-zinc-400 text-sm leading-relaxed mb-4">
+                            A associação se encerra nas seguintes situações:
+                        </p>
+                        <ul className="space-y-3 text-zinc-400 text-sm">
+                            <li className="flex gap-3">
+                                <span className="text-amber-500 font-bold">•</span>
+                                <span><strong className="text-white">Por vontade do membro:</strong> Mediante solicitação de exclusão de conta nas configurações.</span>
+                            </li>
+                            <li className="flex gap-3">
+                                <span className="text-amber-500 font-bold">•</span>
+                                <span><strong className="text-white">Por inadimplência:</strong> Após liquidação automática de licenças para quitação de débitos.</span>
+                            </li>
+                            <li className="flex gap-3">
+                                <span className="text-amber-500 font-bold">•</span>
+                                <span><strong className="text-white">Por violação:</strong> Tentativas de fraude, uso de múltiplas contas ou comportamento abusivo.</span>
+                            </li>
+                            <li className="flex gap-3">
+                                <span className="text-amber-500 font-bold">•</span>
+                                <span><strong className="text-white">Por decisão administrativa:</strong> A critério exclusivo do Sócio Ostensivo, sem necessidade de justificativa.</span>
+                            </li>
+                        </ul>
+                    </section>
+
+                    {/* Modificação dos Termos */}
+                    <section className="bg-zinc-900/30 border border-white/5 p-6 sm:p-8 rounded-3xl">
+                        <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-3 text-blue-400">
+                            <FileText size={24} /> 7. Modificação dos Termos
+                        </h2>
+                        <p className="text-zinc-400 text-sm leading-relaxed">
+                            Os presentes termos podem ser alterados a qualquer momento, a critério exclusivo da administração.
+                            O uso continuado da plataforma após alterações implica <strong className="text-white">aceite automático</strong> das novas condições.
+                            Membros serão notificados por email sobre mudanças relevantes.
+                        </p>
+                    </section>
+
+                    {/* Foro e Arbitragem */}
+                    <section className="bg-zinc-900/30 border border-white/5 p-6 sm:p-8 rounded-3xl">
+                        <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-3 text-cyan-400">
+                            <Gavel size={24} /> 8. Resolução de Conflitos
+                        </h2>
+                        <p className="text-zinc-400 text-sm leading-relaxed mb-4">
+                            Qualquer disputa oriunda deste contrato será resolvida preferencialmente por:
+                        </p>
+                        <ol className="space-y-3 text-zinc-400 text-sm list-decimal list-inside">
+                            <li><strong className="text-white">Negociação direta</strong> através do suporte ao cliente.</li>
+                            <li><strong className="text-white">Mediação/Arbitragem</strong> conforme Lei 9.307/96, em câmara a ser definida pelo Sócio Ostensivo.</li>
+                            <li>Caso necessário, o <strong className="text-white">Foro da Comarca de São Paulo/SP</strong> é eleito para dirimir questões não resolvidas.</li>
+                        </ol>
+                        <p className="text-zinc-500 text-xs italic mt-4">
+                            As partes renunciam a qualquer outro foro, por mais privilegiado que seja.
+                        </p>
+                    </section>
+
                     {/* Rodapé Jurídico */}
                     <section className="text-center space-y-4 pt-10">
                         <div className="w-16 h-1 bg-zinc-800 mx-auto rounded-full"></div>
@@ -142,15 +262,18 @@ const TermsPage = () => {
                             Este regulamento tem força de CONTRATO SOCIAL PRIVADO entre as partes.
                         </p>
                         <p className="text-[9px] text-zinc-700 max-w-lg mx-auto leading-relaxed">
-                            Foro eleito: Brasil. O uso continuado da plataforma implica na assinatura digital irrevogável deste estatuto. Qualquer dúvida deve ser sanada via suporte administrativo antes da realização de qualquer contribuição.
+                            O uso continuado da plataforma implica na assinatura digital irrevogável deste estatuto.
+                            Qualquer dúvida deve ser sanada via suporte administrativo antes da realização de qualquer contribuição.
                         </p>
-
+                        <p className="text-[10px] text-emerald-600 font-bold mt-4">
+                            Versão 2.0 • Vigente a partir de 25/12/2024
+                        </p>
                     </section>
                 </div>
 
                 <footer className="mt-20 pt-10 border-t border-white/5 text-center">
                     <p className="text-zinc-600 text-[10px] uppercase font-black tracking-widest">
-                        Cred30 © 2024 - Sistema de Gestão Associativa Distribuída
+                        Cred30 © 2025 - Sistema de Gestão Associativa Distribuída
                     </p>
                 </footer>
             </main>

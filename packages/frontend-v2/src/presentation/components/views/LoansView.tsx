@@ -22,6 +22,9 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
     const [viewDetailsId, setViewDetailsId] = useState<string | null>(null);
     const [installmentModalData, setInstallmentModalData] = useState<{ loanId: string, installmentAmount: number } | null>(null);
 
+    // Usuários PRO não veem anúncios
+    const isPro = currentUser?.membership_type === 'PRO';
+
     // Limite de Apoio Mútuo (Nubank Style)
     const [creditLimit, setCreditLimit] = useState<{ totalLimit: number; activeDebt: number; remainingLimit: number } | null>(null);
 
@@ -201,6 +204,7 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
                                 <AdBanner
                                     type="TIP"
                                     description="Precisa de mais? Membros PRO têm acesso a maiores limites de apoio mútuo."
+                                    hide={isPro}
                                 />
                             </div>
                         </div>
@@ -377,6 +381,10 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
                             >
                                 {payMethod === 'pix' ? 'Gerar PIX de Reposição' : 'Pagar com Cartão'}
                             </button>
+
+                            <p className="text-[9px] text-zinc-600 text-center mt-4 leading-relaxed">
+                                Pagamento processado via gateway Asaas. O valor reposto retorna ao fundo de apoio mútuo para beneficiar outros membros.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -438,6 +446,10 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
                             >
                                 {payMethod === 'pix' ? 'Gerar PIX da Parcela' : 'Pagar Parcela com Cartão'}
                             </button>
+
+                            <p className="text-[9px] text-zinc-600 text-center mt-4 leading-relaxed">
+                                Pagamento processado via gateway Asaas. O valor reposto retorna ao fundo de apoio mútuo.
+                            </p>
                         </div>
                     </div>
                 </div>
