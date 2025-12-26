@@ -36,25 +36,25 @@ export const EducationView: React.FC<EducationViewProps> = ({ onBack, onSuccess 
     const lessons = [
         {
             id: 1,
-            title: "Live: Como Negociar Dívidas (Sebrae)",
+            title: "Live: Como Negociar Compromissos (Sebrae)",
             duration: "55:00",
-            category: "Finanças Básicas",
+            category: "Gestão Financeira",
             videoUrl: "https://www.youtube.com/embed/yYyP1tX4c2o",
             thumbnail: "/images/education/managing-debts.png"
         },
         {
             id: 2,
-            title: "B3 Explica: Como Começar a Investir",
+            title: "B3 Explica: Como Iniciar seu Aporte Social",
             duration: "04:30",
-            category: "Investimentos",
+            category: "Participação Social",
             videoUrl: "https://www.youtube.com/embed/kYjY1tQ_j9o",
             thumbnail: "/images/education/investing-small.png"
         },
         {
             id: 3,
-            title: "Score 2.0: Aumente sua Pontuação",
+            title: "Score 2.0: Aumente sua Reputação",
             duration: "05:15",
-            category: "Score & Crédito",
+            category: "Score & Compromisso",
             videoUrl: "https://www.youtube.com/embed/kYc24d1a-O0",
             thumbnail: "/images/education/credit-score.png"
         }

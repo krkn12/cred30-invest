@@ -143,10 +143,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, currentView, onC
           ))}
 
 
-          {/* Desktop Sidebar Ad - Monetização Extra */}
-          <div className="pt-4">
-            <AdBanner type="NATIVE" title="Dica Exclusiva" description="Aumente seu score hoje." hide={isPro} />
-          </div>
+          {/* AdBanner removido para limpeza de UI */}
         </nav>
         <div className="p-4 border-t border-surfaceHighlight">
           <button
@@ -212,12 +209,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, currentView, onC
         ))}
       </div>
 
-      {/* Sticky Ad Footer (Apenas Mobile - No PC polui muito) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-black border-t border-zinc-800 p-1 pb-1">
-        <div className="mx-auto max-w-md">
-          <AdBanner type="BANNER" title="Parceiro em Destaque" description="Confira esta oferta especial." actionText="ABRIR" hide={isPro} />
-        </div>
-      </div>
+      {/* Removido Sticky Ad Footer para melhorar experiência mobile */}
     </div>
   );
 };

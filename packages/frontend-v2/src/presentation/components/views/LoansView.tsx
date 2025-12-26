@@ -200,13 +200,7 @@ export const LoansView = ({ loans, onRequest, onPay, onPayInstallment, userBalan
                                 {creditLimit?.totalLimit === 0 ? 'Ajuda Indisponível' : 'Solicitar Apoio Mútuo'}
                             </button>
 
-                            <div className="mt-4 shadow-sm">
-                                <AdBanner
-                                    type="TIP"
-                                    description="Precisa de mais? Membros PRO têm acesso a maiores limites de apoio mútuo."
-                                    hide={isPro}
-                                />
-                            </div>
+                            {/* AdBanner removido para limpeza de UI */}
                         </div>
                     </div>
                 </div>

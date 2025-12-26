@@ -122,7 +122,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ appState }) => {
   const EDY_AVATAR = "https://randomuser.me/api/portraits/men/62.jpg";
 
   return (
-    <div className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-[150] print:hidden">
+    <div className="fixed bottom-[180px] right-4 md:bottom-6 md:right-6 z-[150] print:hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`bg-primary-500 hover:bg-primary-400 text-black p-0 rounded-full shadow-lg transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center w-14 h-14 overflow-hidden border-2 border-primary-400`}

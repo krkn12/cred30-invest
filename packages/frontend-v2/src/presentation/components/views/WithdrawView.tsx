@@ -116,7 +116,7 @@ export const WithdrawView = ({ balance, currentUser, totalQuotaValue, onSuccess,
                         <ArrowUpFromLine size={32} className="text-white" />
                     </div>
                     <h2 className="text-2xl font-bold mb-2">Solicitar Resgate</h2>
-                    <p className="text-sm opacity-80">Transfira seu saldo disponível para sua conta bancária</p>
+                    <p className="text-sm opacity-80">Transfira seu saldo disponível para sua chave PIX cadastrada</p>
                 </div>
 
                 <div className="bg-white/20 rounded-xl p-4 mt-6">

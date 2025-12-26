@@ -165,7 +165,7 @@ export const PortfolioView = ({ quotas, hasLoans, onSell, onSellAll }: Portfolio
                 <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3">
                     <Lock className="text-red-500 shrink-0" size={24} />
                     <p className="text-red-400 text-sm">
-                        <span className="font-bold">Atenção:</span> Seus resgates estão bloqueados devido a um empréstimo em aberto. Quite sua dívida para desbloquear essa função.
+                        <span className="font-bold">Atenção:</span> Seus resgates estão bloqueados devido a um apoio mútuo em aberto. Quite seu compromisso para desbloquear essa função.
                     </p>
                 </div>
             )}

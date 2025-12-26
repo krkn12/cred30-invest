@@ -17,8 +17,8 @@ export const AdBanner = ({ type, title, description, actionText, hide }: AdBanne
         window.open(SMART_LINK, '_blank');
     };
 
-    // Não renderiza se o usuário é PRO ou se foi fechado
-    if (!isVisible || hide) return null;
+    // Não renderiza se o usuário é PRO, se foi fechado ou se há flag global de desativação
+    if (!isVisible || hide || (window as any).DISABLE_ALL_ADS) return null;
 
     if (type === 'NATIVE') {
         return (

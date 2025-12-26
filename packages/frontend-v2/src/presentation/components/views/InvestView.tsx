@@ -101,13 +101,7 @@ export const InvestView = ({ onBuy, isPro }: InvestViewProps) => {
                 {method === 'CARD' ? 'Ir para Pagamento Seguro' : 'Confirmar Aporte'}
             </button>
 
-            <div className="mt-6">
-                <AdBanner
-                    type="TIP"
-                    description="Receba cashback em todas as suas compras com os cartões parceiros."
-                    hide={isPro}
-                />
-            </div>
+            {/* AdBanner removido para limpeza de UI */}
 
             {/* Confirmation Modal - Bottom Sheet on Mobile */}
             {showConfirm && (

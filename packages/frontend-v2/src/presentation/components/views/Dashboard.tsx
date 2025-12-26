@@ -78,6 +78,51 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
         fetchWelcomeBenefit();
     }, []);
 
+    // Estados para o Baú de Recompensas (Faturamento Seguro)
+    const [chestCountdown, setChestCountdown] = useState(0);
+    const [chestsRemaining, setChestsRemaining] = useState(3);
+    const [isOpeningChest, setIsOpeningChest] = useState(false);
+
+    const handleOpenChest = async () => {
+        if (chestsRemaining <= 0 || chestCountdown > 0) return;
+
+        // Abrir link do anúncio (Faturamento para o dono)
+        window.open('https://www.effectivegatecpm.com/ec4mxdzvs?key=a9eefff1a8aa7769523373a66ff484aa', '_blank');
+
+        setIsOpeningChest(true);
+
+        // Simulando tempo do anúncio (5 segundos)
+        setTimeout(async () => {
+            try {
+                // R$ 0,01 a R$ 0,03 (Lucro garantido: CPM de R$ 0,04 - R$ 0,06)
+                const reward = (Math.random() * (0.03 - 0.01) + 0.01).toFixed(2);
+                await apiService.post('/earn/chest-reward', { amount: parseFloat(reward) });
+
+                onSuccess("Baú Aberto!", `Você recebeu um bônus de R$ ${reward} por sua fidelidade!`);
+                setChestsRemaining(prev => prev - 1);
+                setChestCountdown(3600); // 1 hora de intervalo entre baús
+                setIsOpeningChest(false);
+            } catch (error) {
+                console.error(error);
+                setIsOpeningChest(false);
+            }
+        }, 5000);
+    };
+
+    useEffect(() => {
+        let timer: any;
+        if (chestCountdown > 0) {
+            timer = setInterval(() => setChestCountdown(prev => prev - 1), 1000);
+        }
+        return () => clearInterval(timer);
+    }, [chestCountdown]);
+
+    const formatCountdown = (s: number) => {
+        const m = Math.floor(s / 60);
+        const sec = s % 60;
+        return `${m}:${sec.toString().padStart(2, '0')}`;
+    };
+
     const handleDeleteAccount = async () => {
         const res = await deleteUserAccount();
         if (!res.success) {
@@ -149,7 +194,7 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                         </p>
                         <div className="flex flex-wrap gap-2 mt-3">
                             <span className="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-1 rounded-full font-bold">
-                                Juros {welcomeBenefit.discountedRates?.loanInterestRate}
+                                Taxa Social {welcomeBenefit.discountedRates?.loanInterestRate}
                             </span>
                             <span className="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-1 rounded-full font-bold">
                                 Saque {welcomeBenefit.discountedRates?.withdrawalFee}
@@ -237,7 +282,7 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                     <div className="relative z-10">
                         <div className="flex items-center gap-2 mb-2">
                             <ArrowUpFromLine size={16} className="text-emerald-400" />
-                            <span className="text-[10px] sm:text-xs font-bold text-zinc-500 uppercase tracking-wider">Lucros</span>
+                            <span className="text-[10px] sm:text-xs font-bold text-zinc-500 uppercase tracking-wider">Excedentes</span>
                         </div>
                         <h3 className="text-lg sm:text-2xl font-black text-emerald-400">{formatCurrency(totalEarnings)}</h3>
                         <p className="text-[9px] sm:text-xs text-zinc-600 mt-1 font-medium">Acumulado</p>
@@ -347,6 +392,54 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                             <div>
                                 <p className="text-xs font-bold text-white">Gevernança</p>
                                 <p className="text-[10px] text-zinc-500">Vote e ganhe score</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Novo Bloco: Baú de Recompensas (LUCRO GARANTIDO) */}
+                    <div className="mt-4 pt-4 border-t border-surfaceHighlight">
+                        <div
+                            onClick={handleOpenChest}
+                            className={`relative overflow-hidden group border rounded-2xl p-4 transition-all duration-500 cursor-pointer ${chestCountdown > 0 || chestsRemaining === 0
+                                ? 'bg-zinc-900/40 border-zinc-800 grayscale cursor-not-allowed'
+                                : 'bg-gradient-to-br from-amber-500/20 via-zinc-900 to-zinc-900 border-amber-500/30 hover:border-amber-500/60 shadow-lg shadow-amber-900/10 active:scale-[0.98]'
+                                }`}
+                        >
+                            {/* Efeito de Brilho */}
+                            {!isOpeningChest && chestCountdown === 0 && chestsRemaining > 0 && (
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite] pointer-events-none"></div>
+                            )}
+
+                            <div className="flex items-center justify-between relative z-10">
+                                <div className="flex items-center gap-4">
+                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-amber-500 border transition-all duration-700 shadow-2xl ${chestCountdown > 0 ? 'bg-zinc-800 border-zinc-700' : 'bg-amber-500/10 border-amber-500/20 group-hover:scale-110 group-hover:rotate-6'}`}>
+                                        <Gift size={32} className={isOpeningChest ? 'animate-bounce' : ''} />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-white font-black text-sm uppercase tracking-tight flex items-center gap-2">
+                                            Baú de Excedentes
+                                            {chestsRemaining > 0 && chestCountdown === 0 && (
+                                                <span className="flex h-2 w-2">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                                </span>
+                                            )}
+                                        </h4>
+                                        <p className="text-xs text-zinc-500 mt-1 font-medium">
+                                            {isOpeningChest ? "Validando anúncio..." :
+                                                chestCountdown > 0 ? `Próximo baú em ${formatCountdown(chestCountdown)}` :
+                                                    chestsRemaining > 0 ? `Abra agora e ganhe bônus (${chestsRemaining}/${3})` :
+                                                        "Volte amanhã para mais prêmios!"}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className={`text-[10px] font-black px-3 py-2 rounded-xl border transition-all ${chestCountdown > 0 || chestsRemaining === 0
+                                    ? 'bg-zinc-800 text-zinc-600 border-zinc-700'
+                                    : 'bg-amber-500 text-black border-amber-400 shadow-lg shadow-amber-900/20'
+                                    }`}>
+                                    {isOpeningChest ? "PROCESSANDO..." : chestCountdown > 0 ? "BLOQUEADO" : "ABRIR AGORA"}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -469,7 +562,7 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                 </div>
 
                 {/* Banner de Adsterra na Dashboard */}
-                <AdBanner type="NATIVE" title="Oportunidades Parceiras" description="Explore benefícios de nossos parceiros." actionText="VER AGORA" hide={isPro} />
+                {/* Banner de Adsterra na Dashboard removido para limpeza de UI */}
             </div>
 
             {/* Recent Transactions (Extrato) */}
