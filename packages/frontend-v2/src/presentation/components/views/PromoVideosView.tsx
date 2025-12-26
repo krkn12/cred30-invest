@@ -9,14 +9,17 @@ interface PromoVideo {
     videoUrl: string;
     thumbnailUrl: string;
     platform: string;
+    tag: string;
     durationSeconds: number;
     pricePerView: number;
     minWatchSeconds: number;
     promoterName: string;
     totalViews: number;
+    completedViews: number;
     targetViews: number;
     viewerEarning: number;
     isOwner?: boolean;
+    ranking: number;
 }
 
 interface MyCampaign {
@@ -24,14 +27,18 @@ interface MyCampaign {
     title: string;
     videoUrl: string;
     platform: string;
+    tag: string;
     pricePerView: number;
+    minWatchSeconds: number;
     budget: number;
     spent: number;
     remaining: number;
     totalViews: number;
+    completedViews: number;
     targetViews: number;
     status: string;
     isActive: boolean;
+    ranking: number | null;
     createdAt: string;
 }
 
@@ -56,6 +63,8 @@ export const PromoVideosView: React.FC<PromoVideosViewProps> = ({
     const [watchProgress, setWatchProgress] = useState(0);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [earnings, setEarnings] = useState<{ totalEarned: number; videosWatched: number } | null>(null);
+    const [tags, setTags] = useState<string[]>([]);
+    const [selectedTag, setSelectedTag] = useState<string>('TODOS');
 
     const watchTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -66,19 +75,36 @@ export const PromoVideosView: React.FC<PromoVideosViewProps> = ({
     const loadData = async () => {
         setLoading(true);
         try {
-            const [feedRes, campaignsRes, earningsRes] = await Promise.all([
-                apiService.get<PromoVideo[]>('/promo-videos/feed'),
+            const [feedRes, campaignsRes, earningsRes, tagsRes] = await Promise.all([
+                apiService.get<PromoVideo[]>(`/promo-videos/feed${selectedTag !== 'TODOS' ? `?tag=${selectedTag}` : ''}`),
                 apiService.get<MyCampaign[]>('/promo-videos/my-campaigns'),
                 apiService.get<{ totalEarned: number; videosWatched: number }>('/promo-videos/my-earnings'),
+                apiService.get<string[]>('/promo-videos/tags'),
             ]);
 
             if (feedRes.success && feedRes.data) setVideos(feedRes.data);
             if (campaignsRes.success && campaignsRes.data) setMyCampaigns(campaignsRes.data);
             if (earningsRes.success && earningsRes.data) setEarnings(earningsRes.data);
+            if (tagsRes.success && tagsRes.data) setTags(['TODOS', ...tagsRes.data]);
         } catch (e) {
             console.error('Erro ao carregar dados:', e);
         }
         setLoading(false);
+    };
+
+    useEffect(() => {
+        if (activeTab === 'watch') {
+            loadFeed();
+        }
+    }, [selectedTag]);
+
+    const loadFeed = async () => {
+        try {
+            const feedRes = await apiService.get<PromoVideo[]>(`/promo-videos/feed${selectedTag !== 'TODOS' ? `?tag=${selectedTag}` : ''}`);
+            if (feedRes.success && feedRes.data) setVideos(feedRes.data);
+        } catch (e) {
+            console.error('Erro ao carregar feed:', e);
+        }
     };
 
     const startWatching = async (video: PromoVideo) => {
@@ -219,9 +245,24 @@ export const PromoVideosView: React.FC<PromoVideosViewProps> = ({
             {/* Conteúdo das Tabs */}
             {activeTab === 'watch' ? (
                 <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-bold text-white">Vídeos Disponíveis</h3>
-                        <span className="text-xs text-emerald-400">{videos.length} vídeos para assistir</span>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex justify-between items-center">
+                            <h3 className="text-lg font-bold text-white">Vídeos Disponíveis</h3>
+                            <span className="text-xs text-emerald-400">{videos.length} vídeos para assistir</span>
+                        </div>
+
+                        {/* Filtros por Tag */}
+                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                            {tags.map(tag => (
+                                <button
+                                    key={tag}
+                                    onClick={() => setSelectedTag(tag)}
+                                    className={`px-4 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all ${selectedTag === tag ? 'bg-primary-500 text-black shadow-lg shadow-primary-500/20' : 'bg-surface border border-surfaceHighlight text-zinc-400'}`}
+                                >
+                                    {tag}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     {videos.length === 0 ? (
@@ -248,42 +289,58 @@ export const PromoVideosView: React.FC<PromoVideosViewProps> = ({
                                             <div className="absolute bottom-1 right-1 bg-black/80 text-[10px] text-white px-1 rounded">
                                                 {Math.floor(video.durationSeconds / 60)}:{String(video.durationSeconds % 60).padStart(2, '0')}
                                             </div>
-                                            {video.isOwner && (
-                                                <div className="absolute top-1 left-1 bg-primary-500 text-black text-[8px] px-1.5 py-0.5 rounded font-bold">
-                                                    SEU VÍDEO
+                                            <div className="absolute top-1 left-1 flex flex-col gap-1">
+                                                {video.isOwner && (
+                                                    <div className="bg-primary-500 text-black text-[8px] px-1.5 py-0.5 rounded font-bold">
+                                                        SEU VÍDEO
+                                                    </div>
+                                                )}
+                                                <div className="bg-zinc-900/80 text-white text-[8px] px-1.5 py-0.5 rounded font-bold border border-white/10 uppercase">
+                                                    #{video.ranking} TOP
                                                 </div>
-                                            )}
+                                            </div>
                                         </div>
 
                                         {/* Info */}
                                         <div className="flex-1 p-3 flex flex-col justify-between">
                                             <div>
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    {getPlatformIcon(video.platform)}
-                                                    <h4 className="text-sm font-bold text-white line-clamp-1">{video.title}</h4>
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <div className="flex items-center gap-2">
+                                                        {getPlatformIcon(video.platform)}
+                                                        <h4 className="text-sm font-bold text-white line-clamp-1">{video.title}</h4>
+                                                    </div>
                                                 </div>
-                                                <p className="text-xs text-zinc-500">{video.isOwner ? 'Sua campanha' : `por ${video.promoterName}`}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[10px] bg-white/5 border border-white/10 px-1.5 py-0.2 rounded text-zinc-400 font-medium">
+                                                        {video.tag}
+                                                    </span>
+                                                    <span className="text-[10px] text-zinc-500">•</span>
+                                                    <p className="text-[10px] text-zinc-500">{video.isOwner ? 'Sua campanha' : `por ${video.promoterName}`}</p>
+                                                </div>
                                             </div>
 
                                             <div className="flex items-center justify-between mt-2">
-                                                <div className="flex items-center gap-2">
-                                                    {video.isOwner ? (
-                                                        <span className="text-zinc-500 text-xs font-bold">
-                                                            {video.totalViews} views
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider leading-none mb-1">Total Views</span>
+                                                        <span className="text-zinc-300 text-xs font-black leading-none">
+                                                            {video.totalViews.toLocaleString()}
                                                         </span>
-                                                    ) : (
-                                                        <span className="text-emerald-400 font-bold text-sm">
-                                                            +{video.viewerEarning.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                                                        </span>
+                                                    </div>
+
+                                                    {!video.isOwner && (
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider leading-none mb-1">Ganhos</span>
+                                                            <span className="text-emerald-400 font-black text-xs leading-none">
+                                                                +{video.viewerEarning.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                                            </span>
+                                                        </div>
                                                     )}
-                                                    <span className="text-[10px] text-zinc-500 flex items-center gap-1">
-                                                        <Clock size={10} />
-                                                        {video.minWatchSeconds}s
-                                                    </span>
                                                 </div>
+
                                                 <button
                                                     onClick={() => startWatching(video)}
-                                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${video.isOwner ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700' : 'bg-primary-500 hover:bg-primary-400 text-black'}`}
+                                                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition flex items-center gap-2 ${video.isOwner ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700' : 'bg-primary-500 hover:bg-primary-400 text-black shadow-lg shadow-primary-500/20'}`}
                                                 >
                                                     {video.isOwner ? 'Ver' : 'Assistir'} <ChevronRight size={14} />
                                                 </button>
@@ -316,41 +373,60 @@ export const PromoVideosView: React.FC<PromoVideosViewProps> = ({
                     ) : (
                         <div className="space-y-3">
                             {myCampaigns.map(campaign => (
-                                <div key={campaign.id} className="bg-surface border border-surfaceHighlight rounded-2xl p-4">
-                                    <div className="flex justify-between items-start mb-3">
-                                        <div>
-                                            <h4 className="font-bold text-white">{campaign.title}</h4>
-                                            <p className="text-xs text-zinc-500">{campaign.platform}</p>
+                                <div key={campaign.id} className="bg-surface border border-surfaceHighlight rounded-2xl p-4 relative overflow-hidden group">
+                                    {/* Ranking Badge */}
+                                    {campaign.ranking && (
+                                        <div className="absolute top-0 right-0 bg-primary-500 py-1 px-3 text-[10px] font-black italic transform translate-x-[15%] translate-y-[-10%] rotate-[15deg]">
+                                            RANK #{campaign.ranking}
                                         </div>
-                                        <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${campaign.isActive ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-400'}`}>
+                                    )}
+
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-[10px] bg-primary-500/10 border border-primary-500/20 text-primary-400 px-1.5 py-0.5 rounded font-bold">
+                                                    {campaign.tag}
+                                                </span>
+                                                <h4 className="font-bold text-white line-clamp-1">{campaign.title}</h4>
+                                            </div>
+                                            <p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">{campaign.platform}</p>
+                                        </div>
+                                        <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${campaign.isActive ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-zinc-800 text-zinc-400'}`}>
                                             {campaign.status}
                                         </span>
                                     </div>
 
-                                    <div className="grid grid-cols-3 gap-2 text-center mb-3">
-                                        <div className="bg-background rounded-lg p-2">
-                                            <p className="text-[10px] text-zinc-500">Views</p>
-                                            <p className="font-bold text-white">{campaign.totalViews}</p>
+                                    <div className="grid grid-cols-4 gap-2 text-center mb-4">
+                                        <div className="bg-background rounded-xl p-2 border border-surfaceHighlight">
+                                            <p className="text-[8px] text-zinc-500 font-bold uppercase tracking-tighter">Views Totais</p>
+                                            <p className="font-black text-white text-xs">{campaign.totalViews.toLocaleString()}</p>
                                         </div>
-                                        <div className="bg-background rounded-lg p-2">
-                                            <p className="text-[10px] text-zinc-500">Gasto</p>
-                                            <p className="font-bold text-white">{campaign.spent.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                                        <div className="bg-background rounded-xl p-2 border border-surfaceHighlight">
+                                            <p className="text-[8px] text-zinc-500 font-bold uppercase tracking-tighter">Completas</p>
+                                            <p className="font-black text-emerald-400 text-xs">{campaign.completedViews.toLocaleString()}</p>
                                         </div>
-                                        <div className="bg-background rounded-lg p-2">
-                                            <p className="text-[10px] text-zinc-500">Restante</p>
-                                            <p className="font-bold text-emerald-400">{campaign.remaining.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                                        <div className="bg-background rounded-xl p-2 border border-surfaceHighlight">
+                                            <p className="text-[8px] text-zinc-500 font-bold uppercase tracking-tighter">Investido</p>
+                                            <p className="font-black text-white text-xs">{campaign.spent.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                                        </div>
+                                        <div className="bg-background rounded-xl p-2 border border-primary-500/20 bg-primary-500/5">
+                                            <p className="text-[8px] text-primary-500/70 font-bold uppercase tracking-tighter">Restante</p>
+                                            <p className="font-black text-primary-500 text-xs">{campaign.remaining.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
                                         </div>
                                     </div>
 
-                                    <div className="w-full bg-background rounded-full h-2 overflow-hidden">
-                                        <div
-                                            className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
-                                            style={{ width: `${Math.min(100, (campaign.totalViews / campaign.targetViews) * 100)}%` }}
-                                        />
+                                    <div className="space-y-1.5">
+                                        <div className="flex justify-between text-[8px] font-black text-zinc-500 uppercase tracking-widest">
+                                            <span>Progresso da Campanha</span>
+                                            <span>{campaign.completedViews} / {campaign.targetViews}</span>
+                                        </div>
+                                        <div className="w-full bg-background rounded-full h-1.5 overflow-hidden border border-surfaceHighlight">
+                                            <div
+                                                className="h-full bg-gradient-to-r from-primary-600 to-primary-400"
+                                                style={{ width: `${Math.min(100, (campaign.completedViews / campaign.targetViews) * 100)}%` }}
+                                            />
+                                        </div>
                                     </div>
-                                    <p className="text-[10px] text-zinc-500 mt-1 text-center">
-                                        {campaign.totalViews} / {campaign.targetViews} views ({((campaign.totalViews / campaign.targetViews) * 100).toFixed(0)}%)
-                                    </p>
                                 </div>
                             ))}
                         </div>
@@ -500,12 +576,12 @@ const CreateCampaignModal: React.FC<{
         description: '',
         videoUrl: '',
         platform: 'YOUTUBE',
+        tag: 'OUTROS',
         durationSeconds: 60,
-        pricePerView: 0.05,
-        minWatchSeconds: 30,
+        pricePerView: 0.10,
+        minWatchSeconds: 20,
         budget: 10,
-        targetViews: 200,
-        dailyLimit: 100,
+        targetViews: 100,
     });
 
     // Taxas do Asaas (mesmas do backend)
@@ -514,9 +590,12 @@ const CreateCampaignModal: React.FC<{
     const ASAAS_CARD_FIXED_FEE = 0.49;
 
     const estimatedViews = Math.floor(form.budget / form.pricePerView);
-    const viewerEarning = form.pricePerView * 0.60; // 60% para quem assiste
-    const quotaHoldersShare = form.pricePerView * 0.25; // 25% para quem tem cotas
-    const serviceFee = form.pricePerView * 0.15; // 15% taxa de serviço
+    const viewerEarning = form.pricePerView * 0.60;
+    const quotaHoldersShare = form.pricePerView * 0.25;
+    const serviceFee = form.pricePerView * 0.15;
+
+    // Lista de tags para o formulário
+    const FORM_TAGS = ['ENTRETENIMENTO', 'MUSICA', 'EDUCACAO', 'GAMES', 'LIFESTYLE', 'TECNOLOGIA', 'NEGOCIOS', 'SAUDE', 'HUMOR', 'OUTROS'];
 
     // Valor total baseado no método de pagamento
     const gatewayFee = paymentMethod === 'PIX'
@@ -543,15 +622,15 @@ const CreateCampaignModal: React.FC<{
             const res = await apiService.post<any>('/promo-videos/create', { ...form, paymentMethod });
 
             if (res.success) {
-                // Se for PIX, precisa mostrar o QR Code
-                if (paymentMethod === 'PIX' && (res.data as any)?.pixCopiaECola) {
-                    // TODO: Abrir modal PIX
+                // Se for PIX, abrimos o modal de pagamento do Asaas ou mostramos o QR
+                if (paymentMethod === 'PIX' && res.data?.bankSlipUrl) {
+                    window.open(res.data.bankSlipUrl, '_blank');
                     onSuccess();
                 } else {
                     onSuccess();
                 }
             } else {
-                onError('Erro', res.message);
+                onError('Erro', res.message || 'Erro ao criar campanha');
             }
         } catch (e: any) {
             onError('Erro', e.message);
@@ -600,7 +679,7 @@ const CreateCampaignModal: React.FC<{
                             <select
                                 value={form.platform}
                                 onChange={e => setForm({ ...form, platform: e.target.value })}
-                                className="w-full bg-zinc-900 border border-white/5 rounded-2xl py-4 px-4 text-zinc-100 outline-none appearance-none font-bold"
+                                className="w-full bg-zinc-900 border border-white/5 rounded-2xl py-4 px-4 text-zinc-100 outline-none appearance-none font-bold text-xs"
                             >
                                 <option value="YOUTUBE">YouTube</option>
                                 <option value="TIKTOK">TikTok</option>
@@ -611,12 +690,37 @@ const CreateCampaignModal: React.FC<{
                         </div>
 
                         <div>
-                            <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest block mb-2 px-1">Retenção (s)</label>
+                            <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest block mb-2 px-1">Categoria (Tag)</label>
+                            <select
+                                value={form.tag}
+                                onChange={e => setForm({ ...form, tag: e.target.value })}
+                                className="w-full bg-zinc-900 border border-white/5 rounded-2xl py-4 px-4 text-zinc-100 outline-none appearance-none font-bold text-xs"
+                            >
+                                {FORM_TAGS.map(t => (
+                                    <option key={t} value={t}>{t}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest block mb-2 px-1">Duração (mín 60s)</label>
                             <input
                                 type="number"
+                                min="60"
+                                value={form.durationSeconds}
+                                onChange={e => setForm({ ...form, durationSeconds: Math.max(60, Number(e.target.value)) })}
+                                className="w-full bg-zinc-900 border border-white/5 rounded-2xl py-4 px-5 text-zinc-100 outline-none font-black text-xs"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest block mb-2 px-1">Retenção (mín 20s)</label>
+                            <input
+                                type="number"
+                                min="20"
                                 value={form.minWatchSeconds}
-                                onChange={e => setForm({ ...form, minWatchSeconds: Number(e.target.value) })}
-                                className="w-full bg-zinc-900 border border-white/5 rounded-2xl py-4 px-5 text-zinc-100 outline-none font-black"
+                                onChange={e => setForm({ ...form, minWatchSeconds: Math.max(20, Number(e.target.value)) })}
+                                className="w-full bg-zinc-900 border border-white/5 rounded-2xl py-4 px-5 text-zinc-100 outline-none font-black text-xs"
                             />
                         </div>
                     </div>

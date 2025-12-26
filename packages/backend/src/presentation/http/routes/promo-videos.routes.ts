@@ -26,6 +26,9 @@ const promoVideosRoutes = new Hono();
 promoVideosRoutes.use('/create', securityLockMiddleware);
 promoVideosRoutes.use('/*', authMiddleware);
 
+// Tags disponíveis para categorização
+const VIDEO_TAGS = ['ENTRETENIMENTO', 'MUSICA', 'EDUCACAO', 'GAMES', 'LIFESTYLE', 'TECNOLOGIA', 'NEGOCIOS', 'SAUDE', 'HUMOR', 'OUTROS'] as const;
+
 // Schema de validação
 const createVideoSchema = z.object({
     title: z.string().min(5).max(200),
@@ -33,7 +36,9 @@ const createVideoSchema = z.object({
     videoUrl: z.string().url(),
     thumbnailUrl: z.string().url().optional(),
     platform: z.enum(['YOUTUBE', 'TIKTOK', 'INSTAGRAM', 'KWAI', 'OTHER']).default('YOUTUBE'),
-    durationSeconds: z.number().min(10).max(3600).default(60),
+    tag: z.enum(VIDEO_TAGS).default('OUTROS'),
+    durationSeconds: z.number().min(60).max(3600).default(60), // Mínimo 1 minuto
+    minWatchSeconds: z.number().min(20).max(300).default(20), // Mínimo 20 segundos para ganhar
     budget: z.number().min(5, 'O orçamento mínimo é R$ 5,00'),
     pricePerView: z.number().min(0.05).default(0.05),
     paymentMethod: z.enum(['BALANCE', 'PIX', 'CARD']).default('BALANCE'),
@@ -47,16 +52,23 @@ const createVideoSchema = z.object({
     }).optional(),
 });
 
+// Listar tags disponíveis
+promoVideosRoutes.get('/tags', async (c) => {
+    return c.json({ success: true, data: VIDEO_TAGS });
+});
+
 // Listar vídeos disponíveis para assistir (Feed)
 promoVideosRoutes.get('/feed', async (c) => {
     try {
         const userPayload = c.get('user');
         const pool = getDbPool(c);
+        const tag = c.req.query('tag'); // Filtro opcional por tag
 
         const result = await pool.query(`
             SELECT pv.*, u.name as promoter_name,
                    (SELECT COUNT(*) FROM promo_video_views pvv WHERE pvv.video_id = pv.id AND pvv.completed = TRUE) as completed_views,
-                   (pv.user_id = $1) as is_owner
+                   (pv.user_id = $1) as is_owner,
+                   ROW_NUMBER() OVER (ORDER BY pv.total_views DESC, pv.price_per_view DESC) as ranking
             FROM promo_videos pv
             JOIN users u ON pv.user_id = u.id
             WHERE pv.is_active = TRUE 
@@ -66,30 +78,35 @@ promoVideosRoutes.get('/feed', async (c) => {
                   SELECT 1 FROM promo_video_views pvv 
                   WHERE pvv.video_id = pv.id AND pvv.viewer_id = $1
               )
-            ORDER BY pv.price_per_view DESC, pv.created_at DESC
-            LIMIT 20
-        `, [userPayload.id]);
+              ${tag ? 'AND pv.tag = $2' : ''}
+            ORDER BY pv.price_per_view DESC, pv.total_views DESC, pv.created_at DESC
+            LIMIT 50
+        `, tag ? [userPayload.id, tag] : [userPayload.id]);
 
         return c.json({
             success: true,
-            data: result.rows.map(v => ({
+            data: result.rows.map((v, index) => ({
                 id: v.id,
                 title: v.title,
                 description: v.description,
                 videoUrl: v.video_url,
                 thumbnailUrl: v.thumbnail_url,
                 platform: v.platform,
+                tag: v.tag || 'OUTROS',
                 durationSeconds: v.duration_seconds,
                 pricePerView: parseFloat(v.price_per_view),
-                minWatchSeconds: v.min_watch_seconds,
+                minWatchSeconds: v.min_watch_seconds || 20,
                 promoterName: v.promoter_name,
-                totalViews: v.total_views,
+                totalViews: parseInt(v.total_views) || 0,
+                completedViews: parseInt(v.completed_views) || 0,
                 targetViews: v.target_views,
                 viewerEarning: v.is_owner ? 0 : parseFloat(v.price_per_view) * VIEWER_SHARE,
-                isOwner: v.is_owner, // Flag para o frontend
+                isOwner: v.is_owner,
+                ranking: parseInt(v.ranking) || index + 1,
             }))
         });
     } catch (error) {
+        console.error('[PROMO-VIDEOS] Erro ao buscar feed:', error);
         return c.json({ success: false, message: 'Erro ao buscar vídeos' }, 500);
     }
 });
@@ -125,15 +142,15 @@ promoVideosRoutes.post('/create', async (c) => {
 
                 const videoResult = await client.query(`
                     INSERT INTO promo_videos (
-                        user_id, title, description, video_url, thumbnail_url, platform,
+                        user_id, title, description, video_url, thumbnail_url, platform, tag,
                         duration_seconds, price_per_view, min_watch_seconds, budget, spent, 
                         target_views, status, is_active, is_approved
-                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 0, $11, 'ACTIVE', TRUE, TRUE)
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 0, $12, 'ACTIVE', TRUE, TRUE)
                     RETURNING id
                 `, [
                     userPayload.id, data.title, data.description || null, data.videoUrl,
-                    data.thumbnailUrl || null, data.platform, data.durationSeconds,
-                    grossPPV, 30, viewerPool, targetViews
+                    data.thumbnailUrl || null, data.platform, data.tag || 'OUTROS', data.durationSeconds,
+                    grossPPV, data.minWatchSeconds || 20, viewerPool, targetViews
                 ]);
 
                 await client.query(`
@@ -164,10 +181,10 @@ promoVideosRoutes.post('/create', async (c) => {
 
             await pool.query(`
                 INSERT INTO promo_videos (
-                    user_id, title, description, video_url, thumbnail_url, platform,
+                    user_id, title, description, video_url, thumbnail_url, platform, tag,
                     duration_seconds, price_per_view, min_watch_seconds, budget, spent, target_views, status, is_active
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 30, $9, 0, $10, 'PENDING', FALSE)
-            `, [userPayload.id, data.title, data.description, data.videoUrl, data.thumbnailUrl, data.platform, data.durationSeconds, grossPPV, viewerPool, targetViews]);
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 0, $12, 'PENDING', FALSE)
+            `, [userPayload.id, data.title, data.description, data.videoUrl, data.thumbnailUrl, data.platform, data.tag || 'OUTROS', data.durationSeconds, grossPPV, data.minWatchSeconds || 20, viewerPool, targetViews]);
 
             return c.json({ success: true, message: 'PIX gerado!', data: paymentData });
         }
@@ -196,10 +213,10 @@ promoVideosRoutes.post('/create', async (c) => {
                 // Ativar imediatamente se aprovado
                 await pool.query(`
                     INSERT INTO promo_videos (
-                        user_id, title, description, video_url, thumbnail_url, platform,
+                        user_id, title, description, video_url, thumbnail_url, platform, tag,
                         duration_seconds, price_per_view, min_watch_seconds, budget, spent, target_views, status, is_active, is_approved
-                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 30, $9, 0, $10, 'ACTIVE', TRUE, TRUE)
-                `, [userPayload.id, data.title, data.description, data.videoUrl, data.thumbnailUrl, data.platform, data.durationSeconds, grossPPV, viewerPool, targetViews]);
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 0, $12, 'ACTIVE', TRUE, TRUE)
+                `, [userPayload.id, data.title, data.description, data.videoUrl, data.thumbnailUrl, data.platform, data.tag || 'OUTROS', data.durationSeconds, grossPPV, data.minWatchSeconds || 20, viewerPool, targetViews]);
 
                 return c.json({ success: true, message: 'Pago e ativado!' });
             }
@@ -315,15 +332,51 @@ promoVideosRoutes.post('/:videoId/complete-view', async (c) => {
     }
 });
 
-// Minhas campanhas
+// Minhas campanhas (com ranking global)
 promoVideosRoutes.get('/my-campaigns', async (c) => {
     try {
         const userPayload = c.get('user');
         const pool = getDbPool(c);
-        const result = await pool.query('SELECT * FROM promo_videos WHERE user_id = $1 ORDER BY created_at DESC', [userPayload.id]);
-        return c.json({ success: true, data: result.rows });
+
+        const result = await pool.query(`
+            WITH ranked AS (
+                SELECT id, ROW_NUMBER() OVER (ORDER BY total_views DESC, price_per_view DESC) as global_rank
+                FROM promo_videos WHERE is_active = TRUE AND status = 'ACTIVE'
+            )
+            SELECT pv.*, 
+                   COALESCE(r.global_rank, 0) as ranking,
+                   (SELECT COUNT(*) FROM promo_video_views pvv WHERE pvv.video_id = pv.id AND pvv.completed = TRUE) as completed_views
+            FROM promo_videos pv
+            LEFT JOIN ranked r ON pv.id = r.id
+            WHERE pv.user_id = $1 
+            ORDER BY pv.created_at DESC
+        `, [userPayload.id]);
+
+        return c.json({
+            success: true,
+            data: result.rows.map(v => ({
+                id: v.id,
+                title: v.title,
+                videoUrl: v.video_url,
+                platform: v.platform,
+                tag: v.tag || 'OUTROS',
+                pricePerView: parseFloat(v.price_per_view),
+                minWatchSeconds: v.min_watch_seconds || 20,
+                budget: parseFloat(v.budget),
+                spent: parseFloat(v.spent),
+                remaining: parseFloat(v.budget) - parseFloat(v.spent),
+                totalViews: parseInt(v.total_views) || 0,
+                completedViews: parseInt(v.completed_views) || 0,
+                targetViews: v.target_views,
+                status: v.status,
+                isActive: v.is_active,
+                ranking: parseInt(v.ranking) || null,
+                createdAt: v.created_at,
+            }))
+        });
     } catch (error) {
-        return c.json({ success: false }, 500);
+        console.error('[PROMO-VIDEOS] Erro ao buscar campanhas:', error);
+        return c.json({ success: false, message: 'Erro ao buscar campanhas' }, 500);
     }
 });
 

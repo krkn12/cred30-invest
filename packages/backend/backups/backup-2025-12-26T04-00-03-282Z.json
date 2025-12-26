@@ -1,0 +1,1729 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Super Administrador",
+      "email": "josiassm701@gmail.com",
+      "password_hash": "$2b$10$FImeZO.cbXL9l/pKZesXt.PydwPr2jPlnUi9BZGWYICRMc.N7LS2G",
+      "secret_phrase": "passeiola",
+      "pix_key": "91980177874",
+      "balance": "0.00",
+      "referral_code": "ADMIN",
+      "referred_by": null,
+      "is_admin": true,
+      "score": 980,
+      "is_email_verified": false,
+      "verification_code": null,
+      "reset_password_token": null,
+      "two_factor_secret": null,
+      "two_factor_enabled": false,
+      "accepted_terms_at": null,
+      "created_at": "2025-12-22T16:57:29.297Z",
+      "is_verified": false,
+      "membership_type": "FREE",
+      "last_reward_at": null,
+      "total_dividends_earned": "0.00",
+      "title_downloaded": false,
+      "title_downloaded_at": null,
+      "role": "MEMBER",
+      "status": "ACTIVE",
+      "last_checkin_at": null,
+      "security_lock_until": null,
+      "last_ip": "127.0.0.1",
+      "last_login_at": "2025-12-24T23:49:06.724Z",
+      "panic_phrase": null,
+      "is_under_duress": false,
+      "safe_contact_phone": null,
+      "cpf": null,
+      "address": null,
+      "phone": null,
+      "welcome_benefit_uses": 0
+    },
+    {
+      "id": 2,
+      "name": "milene monteiro",
+      "email": "milene@gmail.com",
+      "password_hash": "$2b$10$SEtGECTcn6ri8kPFmHhqruK6d0xd5ZYYGqiZ4M6H6W0JyDuWmUARG",
+      "secret_phrase": "passeiola",
+      "pix_key": "24146064287",
+      "balance": "53.68",
+      "referral_code": "0IQJ0L",
+      "referred_by": null,
+      "is_admin": false,
+      "score": 130,
+      "is_email_verified": true,
+      "verification_code": null,
+      "reset_password_token": null,
+      "two_factor_secret": "DV6RYUITPBPA6CRQ",
+      "two_factor_enabled": true,
+      "accepted_terms_at": "2025-12-23T07:49:44.643Z",
+      "created_at": "2025-11-23T23:09:42.944Z",
+      "is_verified": false,
+      "membership_type": "FREE",
+      "last_reward_at": null,
+      "total_dividends_earned": "0.00",
+      "title_downloaded": false,
+      "title_downloaded_at": null,
+      "role": "MEMBER",
+      "status": "ACTIVE",
+      "last_checkin_at": "2025-12-23T18:06:48.138Z",
+      "security_lock_until": null,
+      "last_ip": "179.63.92.21, 172.71.151.199, 10.16.205.107",
+      "last_login_at": "2025-12-26T06:28:18.696Z",
+      "panic_phrase": null,
+      "is_under_duress": false,
+      "safe_contact_phone": null,
+      "cpf": "24146064287",
+      "address": null,
+      "phone": null,
+      "welcome_benefit_uses": 0
+    },
+    {
+      "id": 3,
+      "name": "Josias teste",
+      "email": "josiasteste@gmail.com",
+      "password_hash": "$2b$10$WO1yN6HCoGbo7vbUHzmgy.2dJw4dLluIDCm4ViRrgzxv/UURMx/pW",
+      "secret_phrase": "passeiola",
+      "pix_key": "josiassm701@gmail.co",
+      "balance": "0.03",
+      "referral_code": "KD0HQ5",
+      "referred_by": null,
+      "is_admin": false,
+      "score": 0,
+      "is_email_verified": true,
+      "verification_code": null,
+      "reset_password_token": null,
+      "two_factor_secret": "EMLQSSRQJQQDUIKZ",
+      "two_factor_enabled": true,
+      "accepted_terms_at": "2025-12-26T06:36:38.487Z",
+      "created_at": "2025-12-26T06:36:38.487Z",
+      "is_verified": false,
+      "membership_type": "FREE",
+      "last_reward_at": null,
+      "total_dividends_earned": "0.00",
+      "title_downloaded": false,
+      "title_downloaded_at": null,
+      "role": "MEMBER",
+      "status": "ACTIVE",
+      "last_checkin_at": null,
+      "security_lock_until": "2025-12-28T06:38:49.132Z",
+      "last_ip": null,
+      "last_login_at": null,
+      "panic_phrase": null,
+      "is_under_duress": false,
+      "safe_contact_phone": null,
+      "cpf": "01558516247",
+      "address": null,
+      "phone": null,
+      "welcome_benefit_uses": 0
+    }
+  ],
+  "quotas": [
+    {
+      "id": 7,
+      "user_id": 2,
+      "purchase_price": "42.00",
+      "current_value": "42.00",
+      "purchase_date": "2025-12-25T07:09:59.497Z",
+      "status": "ACTIVE"
+    },
+    {
+      "id": 8,
+      "user_id": 2,
+      "purchase_price": "42.00",
+      "current_value": "42.00",
+      "purchase_date": "2025-12-25T07:09:59.564Z",
+      "status": "ACTIVE"
+    },
+    {
+      "id": 9,
+      "user_id": 2,
+      "purchase_price": "42.00",
+      "current_value": "42.00",
+      "purchase_date": "2025-12-25T07:09:59.631Z",
+      "status": "ACTIVE"
+    },
+    {
+      "id": 10,
+      "user_id": 2,
+      "purchase_price": "42.00",
+      "current_value": "42.00",
+      "purchase_date": "2025-12-25T07:09:59.698Z",
+      "status": "ACTIVE"
+    },
+    {
+      "id": 11,
+      "user_id": 2,
+      "purchase_price": "42.00",
+      "current_value": "42.00",
+      "purchase_date": "2025-12-25T07:09:59.765Z",
+      "status": "ACTIVE"
+    },
+    {
+      "id": 12,
+      "user_id": 2,
+      "purchase_price": "42.00",
+      "current_value": "42.00",
+      "purchase_date": "2025-12-25T07:09:59.833Z",
+      "status": "ACTIVE"
+    },
+    {
+      "id": 13,
+      "user_id": 2,
+      "purchase_price": "42.00",
+      "current_value": "42.00",
+      "purchase_date": "2025-12-25T07:09:59.900Z",
+      "status": "ACTIVE"
+    },
+    {
+      "id": 14,
+      "user_id": 2,
+      "purchase_price": "42.00",
+      "current_value": "42.00",
+      "purchase_date": "2025-12-25T07:09:59.967Z",
+      "status": "ACTIVE"
+    }
+  ],
+  "loans": [],
+  "transactions": [
+    {
+      "id": 1,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "50.50",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 1 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 0.5,
+        "baseCost": 50,
+        "quantity": 1,
+        "useBalance": false,
+        "paymentMethod": "pix",
+        "external_reference": "BUY_QUOTA_2_1766465481321"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-23T07:51:21.288Z",
+      "processed_at": null
+    },
+    {
+      "id": 2,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "50.50",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 1 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 0.5,
+        "baseCost": 50,
+        "quantity": 1,
+        "useBalance": false,
+        "paymentMethod": "pix",
+        "external_reference": "BUY_QUOTA_2_1766465818278"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-23T07:56:58.246Z",
+      "processed_at": null
+    },
+    {
+      "id": 3,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "50.50",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 1 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 0.5,
+        "baseCost": 50,
+        "quantity": 1,
+        "useBalance": false,
+        "paymentMethod": "pix",
+        "external_reference": "BUY_QUOTA_2_1766467325483"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-23T08:22:05.449Z",
+      "processed_at": null
+    },
+    {
+      "id": 4,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "50.50",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 1 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 0.5,
+        "baseCost": 50,
+        "quantity": 1,
+        "useBalance": false,
+        "paymentMethod": "pix",
+        "external_reference": "BUY_QUOTA_2_1766467874496"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-23T08:31:14.463Z",
+      "processed_at": null
+    },
+    {
+      "id": 5,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "50.50",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 1 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 0.5,
+        "baseCost": 50,
+        "quantity": 1,
+        "useBalance": false,
+        "paymentMethod": "pix",
+        "external_reference": "BUY_QUOTA_2_1766468247458"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-23T08:37:27.421Z",
+      "processed_at": null
+    },
+    {
+      "id": 7,
+      "user_id": 2,
+      "type": "DAILY_CHECKIN",
+      "amount": "0.01",
+      "gateway_cost": "0.00",
+      "description": "Bônus: Check-in Diário Realizado",
+      "status": "APPROVED",
+      "metadata": null,
+      "payout_status": "NONE",
+      "created_at": "2025-12-23T18:06:48.138Z",
+      "processed_at": null
+    },
+    {
+      "id": 24,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "515.92",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 10 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 15.92,
+        "baseCost": 500,
+        "quantity": 10,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766547751809"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T06:42:31.776Z",
+      "processed_at": null
+    },
+    {
+      "id": 6,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "50.50",
+      "gateway_cost": "0.50",
+      "description": "Aquisição de 1 participação(ões) - Mercado Pago",
+      "status": "APPROVED",
+      "metadata": {
+        "mp_id": "pay_6cr1pry93nuvhqya",
+        "qr_code": "00020101021226820014br.gov.bcb.pix2560qrpix-h.bradesco.com.br/9d36b84f-c70b-478f-b95c-12729b90ca25520400005303986540550.505802BR5905ASAAS6009JOINVILLE62070503***6304FA87",
+        "userFee": 0.5,
+        "baseCost": 50,
+        "quantity": 1,
+        "useBalance": false,
+        "paymentMethod": "pix",
+        "qr_code_base64": "iVBORw0KGgoAAAANSUhEUgAAAYsAAAGLCAIAAAC5gincAAAOTklEQVR42u3bUXIdIRADQN//0s4ZUmakgW39vni9D4YmVUp+fkVEtubHEogIoURECCUihBIRIZSIEEpEhFAiIoQSEUKJiBBKRAglIkIoERFCiQihREQIJSKEEhEhlIgIoUSEUCIihBIRQomIEEpEhFAiQigRkeVC/aTyX7937p3/68lzC7vkybGVbA3Sf/3sX2Yj9pKxhSUUoQhFKEIRilCEIhShCEUoQhGKUIQiFKE+LFTsyXM7OndEY0v3F5JiazW3sLEtO/gasd2/48mEIhShCEUoQhGKUIQiFKEIRShCEYpQhCLUU0LNHeC5kiVW38zt95JHvbdHB1+yJfIVVyyhCEUoQhGKUIQiFKEIRShCEYpQhCIUoQhFqLgFS5q+2H8paB3R2PTHfnZnoUwoQhGKUIQiFKEIRShCEYpQhCIUoQhFKEIR6qtCLWmCYu3k3EG6AtmYI0umrjVXhCIUoQhFKEIRilCEIhShCEUoQhGKUIQiFKHiTdDcYM0dwoOzshPZuXc++Hvnvm/snWO7cMfZJxShCEUoQhGKUIQiFKEIRShCEYpQhCIUoe4WKrbfPvWpT8NtbK6rJZRPfUooQhHKpz4lFKF86lOfEopQPvUpoS4TqpW/cBZrkeYqmNZQ7uwfY79355b9PhdCEYpQhCIUoQhFKEIRilCEIhShCEUoQhHqLaFabV3rIM0dwvcyp/nclbPkBmqtxoNdHqEIRShCEYpQhCIUoQhFKEIRilCEIhShCFUwaO4b7qyrWh1iC7vWLXLwJXfWr7F3XlIpEopQhCIUoQhFKEIRilCEIhShCEUoQhGKUJd3eXObFHvykq/Q+tmDhyHm19yI7gR6ZwFHKEIRilCEIhShCEUoQhGKUIQiFKEIRShCfViog2t38BfFWGnxvWWSdnS1c5Nz8K12Vqif+9cGhCIUoQhFKEIRilCEIhShCEUoQhGKUIQiVEGomF9zAz0n48HTPvezrWsjZsHBy2zu+7auulYPSChCEYpQhCIUoQhFKEIRilCEIhShCEUoQt0mVKw1qy3W2EseLEpiqsb26IoKdc6+1lrFnkwoQhGKUIQiFKEIRShCEYpQhCIUoQhFKEK9JdTcBs+d2NZgtcrKnVDOLezcJbrTviVjRihCEYpQhCIUoQhFKEIRilCEIhShCEUoQn1YqKXfMFUptnqTVivaOioxv1pXbIukpR0ioQhFKEIRilCEIhShCEUoQhGKUIQiFKEI9SGhYl3PFQcpZtCSDnHunedoaMExV1a2xptQhCIUoQhFKEIRilCEIhShCEUoQhGKUIR6S6hWF3Bjm3PwybHFiX2FJWdyyTrHpq511RGKUIQiFKEIRShCEYpQhCIUoQhFKEIRilBfEipWSLXAihU0S0qlWA0am8lYpdjawVgBRyhCEYpQhCIUoQhFKEIRilCEIhShCEUoQhFq947GDGoNR6zNiRVDS+6nmOZLdnDJDUQoQhGKUIQiFKEIRShCEYpQhCIUoQhFKEK9JdRcf5FbrNRAx1rRK1ajtXRL7qcYOq2/BxCKUIQiFKEIRShCEYpQhCIUoQhFKEIRilBvCXVQmZZfsYot5vUVnVqL0dbNt9Pr2AATilCEIhShCEUoQhGKUIQiFKEIRShCEYpQXxJq7mz8ZVfmmqDYnrWGstVAxYrOuYvwCgt2hlCEIhShCEUoQhGKUIQiFKEIRShCEYpQhLpNqJ0nNvaHX+hNxkq0BwrHudurdVvHyllCEYpQhCIUoQhFKEIRilCEIhShCEUoQhHqS0K1KrbYui9pGFszeiOUWtFT3eULXR6hCEUoQhGKUIQiFKEIRShCEYpQhCIUoQi1TqjY2i0p0eZqstipm3vU3DrPjcrcvRj7CrHLjFCEIhShCEUoQhGKUIQiFKEIRShCEYpQhCLU/GFYosySImzuKyzB7mCuQGduB6+o9ghFKEIRilCEIhShCEUoQhGKUIQiFKEIRajLhZqDY+5RVwz0kiMa0/zGlrB1XV0xV4QiFKEIRShCEYpQhCIUoQhFKEIRilCEItSXhLrxxMZ0ixVDO82NHdErFjb294AbQyhCEYpQhCIUoQhFKEIRilCEIhShCEUoQt0mVOt4zw30kp9tHYa5TYlt943l7FzNvWT4CUUoQhGKUIQiFKEIRShCEYpQhCIUoQhFqKeFmqtvlmx/rOiMrUbrxLbqudaILrk2lvSthCIUoQhFKEIRilCEIhShCEUoQhGKUIQi1NNCtSY4Ng1zByk2DXMjO4ds7FE7py62Czv9IhShCEUoQhGKUIQiFKEIRShCEYpQhCIUoW4TqqVb7DwfPCqxQzhX/M1t2dfqudZJaf2lgVCEIhShCEUoQhGKUIQiFKEIRShCEYpQhPqwUHNdQGwb5nqTWOHYOoTPl3dLVuOKDpFQhCIUoQhFKEIRilCEIhShCEUoQhGKUIQiVLugaZF0EKyDo9Mq4Hb2nq2bb8nX31ntEYpQhCIUoQhFKEIRilCEIhShCEUoQhGKULcJ9XMusUJqyWlvDUdsZGOLc8VV19rQJcNAKEIRilCEIhShCEUoQhGKUIQiFKEIRShCfVioJRMcs++93vMnld8die3+zmty7rATilCEIhShCEUoQhGKUIQiFKEIRShCEYpQhGoXUnOHcEkR1jqTcwfp4Hlu1VWxDrFVRxKKUIQiFKEIRShCEYpQhCIUoQhFKEIRilCEGmgo5gbritJw7iDFNiW2R0suhtgu/KaypGAlFKEIRShCEYpQhCIUoQhFKEIRilCEIhShnhbq4ATPfRp7VGvsDh7gJfO988o5eDRiN9/XuzxCEYpQhCIUoQhFKEIRilCEIhShCEUoQhGqPxyxFmlJD3hFHdlqGJcQ3Go2Y1IsvVMJRShCEYpQhCIUoQhFKEIRilCEIhShCEWoy4TaWUjNHZVau7HDoCvHvXRttCq22Hhf+a8NCEUoQhGKUIQiFKEIRShCEYpQhCIUoQhFqIJQV7RXc6+xE+hW1XVF5bRkGK4Ys0E3CEUoQhGKUIQiFKEIRShCEYpQhCIUoQhFqMuEOtj1tE5ODNmWFAffaq7ai9kXq0FjWzZ3FghFKEIRilCEIhShCEUoQhGKUIQiFKEIRShCxf1aUqLFGN1Zkx1855h9rS6vVYK3+tbc1ycUoQhFKEIRilCEIhShCEUoQhGKUIQiFKFeFmrOkdgGt6Z/ScU2dwMtISlWse28RZZ4TShCEYpQhCIUoQhFKEIRilCEIhShCEUoQl0uVKyumtuznZxdgezca8xt2RxYS9Zq7gwOMkIoQhGKUIQiFKEIRShCEYpQhCIUoQhFKELdLdTOGd1ZSM2txsGVnLMgVjhe8eQ5CmOjQihCEYpQhCIUoQhFKEIRilCEIhShCEUoQhHqxPTHtqFFUmthY0flilK45VdrzOb8urLLIxShCEUoQhGKUIQiFKEIRShCEYpQhCIUofpdXmxkl7Q5rU/nSLrC69iyt+q52Ih+7l8bEIpQhCIUoQhFKEIRilCEIhShCEUoQhGKUP1ZiY1OrNo7uKNLurxWo9o67XNHtIX7HLKEIhShCEUoQhGKUIQiFKEIRShCEYpQhCLUh4WKVXsHT87vjswdhlbxN7e/MVVjvWeL0bmLgVCEIhShCEUoQhGKUIQiFKEIRShCEYpQhPqwUFecnCWO3AhH646JrWRsrlo0xNaKUIQiFKEIRShCEYpQhCIUoQhFKEIRilCEItSJc3VwoWMkxQ5wrGSJHYbWmXygjW394Vi1RyhCEYpQhCIUoQhFKEIRilCEIhShCEUoQt0mVGxGD9JwxSTNFTRzndqNxW5scZZUe3O3JqEIRShCEYpQhCIUoQhFKEIRilCEIhShCEWouAWxKVyyGjF0dhoU66fmbqAll3cLWUIRilCEIhShCEUoQhGKUIQiFKEIRShCEeppoVrnKjbfrbG7ovlqXVdznWms6IzZN+c1oQhFKEIRilCEIhShCEUoQhGKUIQiFKEIRahlU9hqgmKPmpukJUK1SuGdOzjHaOzrE4pQhCIUoQhFKEIRilCEIhShCEUoQhGKUF8Saq6BWlIqtY73XNPXqo1aBdzOK7a1g609IhShCEUoQhGKUIQiFKEIRShCEYpQhCIUoT4sVOsXzZUdscGaa77mXuPG6nYJ7rHbawl2hCIUoQhFKEIRilCEIhShCEUoQhGKUIQi1IeFOriysRM7d66WjM7PyrSuyVihvGTMdn5fQhGKUIQiFKEIRShCEYpQhCIUoQhFKEIR6jahluzKEqF2ntjWWsVqsthq/OXT1h8++AVz54hQhCIUoQhFKEIRilCEIhShCEUoQhGKUIS6TKgl5U6rzYlNQwz3g+VOqzN9b3HmCridZSWhCEUoQhGKUIQiFKEIRShCEYpQhCIUoQh1uVBXPDlG8JKzMTffrZ4odrxjd9sVXR6hCEUoQhGKUIQiFKEIRShCEYpQhCIUoQhFqGVT2DrPrQN88IjOiTx3cpYo05qruQsp1iATilCEIhShCEUoQhGKUIQiFKEIRShCEYpQhNotVKxii9U3rXWeK2djlXEM2SU1N6EIRShCEYpQhCIUoQhFKEIRilCEIhShCEWoh4TaWcC1WGl1PUu+4M56LvYFY8tOKEIRilCEIhShCEUoQhGKUIQiFKEIRShCESpessQamVjl1Dr8sSLs40/+WjdNKEIRilCEIhShCEUoQhGKUIQiFKEIRShCEWo+Vwx0q487eBhiN8HB1YgtXex6jh261rEiFKEIRShCEYpQhCIUoQhFKEIRilCEIhSh3hJKRIRQIkIoERFCiYgQSkQIJSJCKBEhlIgIoURECCUihBIRIZSIEEpEhFAiIoQSEUKJiBBKRAglIkIoERFCiQihREQIJSKEEhEhlIgIoURkf/4B/WXr1e4Da+kAAAAASUVORK5CYII=",
+        "external_reference": "BUY_QUOTA_2_1766468773831"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-23T08:46:13.797Z",
+      "processed_at": "2025-12-23T22:54:37.323Z"
+    },
+    {
+      "id": 8,
+      "user_id": 2,
+      "type": "SELL_QUOTA",
+      "amount": "25.20",
+      "gateway_cost": "0.00",
+      "description": "Resgate total de licenças",
+      "status": "APPROVED",
+      "metadata": {
+        "note": "Multas aplicadas (penalidade, não lucro)",
+        "quotasSold": 1,
+        "totalProfit": 0,
+        "hasEarlyExit": true,
+        "totalPenalty": 16.8
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-23T22:58:14.065Z",
+      "processed_at": null
+    },
+    {
+      "id": 9,
+      "user_id": 2,
+      "type": "WITHDRAWAL",
+      "amount": "25.21",
+      "gateway_cost": "0.00",
+      "description": "Solicitação de Saque - R$ 18.21 (Taxa: R$ 7.00)",
+      "status": "PENDING_CONFIRMATION",
+      "metadata": {
+        "type": "CREDIT_WITHDRAWAL",
+        "pixKey": "32588589",
+        "feeAmount": 7,
+        "netAmount": 18.21,
+        "availableCredit": 0,
+        "balanceDeducted": true,
+        "totalLoanAmount": 0
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-23T23:28:21.933Z",
+      "processed_at": null
+    },
+    {
+      "id": 10,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "155.13",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 3 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 5.13,
+        "baseCost": 150,
+        "quantity": 3,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766543700679"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T05:35:00.646Z",
+      "processed_at": null
+    },
+    {
+      "id": 11,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "52.05",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 1 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 2.05,
+        "baseCost": 50,
+        "quantity": 1,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766544356755"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T05:45:56.724Z",
+      "processed_at": null
+    },
+    {
+      "id": 12,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "52.05",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 1 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 2.05,
+        "baseCost": 50,
+        "quantity": 1,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766544488440"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T05:48:08.408Z",
+      "processed_at": null
+    },
+    {
+      "id": 13,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "52.05",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 1 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 2.05,
+        "baseCost": 50,
+        "quantity": 1,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766545178966"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T05:59:38.935Z",
+      "processed_at": null
+    },
+    {
+      "id": 14,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "155.13",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 3 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 5.13,
+        "baseCost": 150,
+        "quantity": 3,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766545408924"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T06:03:28.891Z",
+      "processed_at": null
+    },
+    {
+      "id": 15,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "52.05",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 1 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 2.05,
+        "baseCost": 50,
+        "quantity": 1,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766545822255"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T06:10:22.222Z",
+      "processed_at": null
+    },
+    {
+      "id": 16,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "52.05",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 1 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 2.05,
+        "baseCost": 50,
+        "quantity": 1,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766545936898"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T06:12:16.866Z",
+      "processed_at": null
+    },
+    {
+      "id": 17,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "258.21",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 5 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 8.21,
+        "baseCost": 250,
+        "quantity": 5,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766546518039"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T06:21:58.008Z",
+      "processed_at": null
+    },
+    {
+      "id": 18,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "258.21",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 5 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 8.21,
+        "baseCost": 250,
+        "quantity": 5,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766546818865"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T06:26:58.833Z",
+      "processed_at": null
+    },
+    {
+      "id": 19,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "258.21",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 5 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 8.21,
+        "baseCost": 250,
+        "quantity": 5,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766546991343"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T06:29:51.309Z",
+      "processed_at": null
+    },
+    {
+      "id": 20,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "258.21",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 5 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 8.21,
+        "baseCost": 250,
+        "quantity": 5,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766547141067"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T06:32:21.035Z",
+      "processed_at": null
+    },
+    {
+      "id": 21,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "258.21",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 5 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 8.21,
+        "baseCost": 250,
+        "quantity": 5,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766547222730"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T06:33:42.698Z",
+      "processed_at": null
+    },
+    {
+      "id": 22,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "52.05",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 1 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 2.05,
+        "baseCost": 50,
+        "quantity": 1,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766547471857"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T06:37:51.825Z",
+      "processed_at": null
+    },
+    {
+      "id": 23,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "52.05",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 1 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 2.05,
+        "baseCost": 50,
+        "quantity": 1,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766547615522"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T06:40:15.489Z",
+      "processed_at": null
+    },
+    {
+      "id": 25,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "258.21",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 5 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 8.21,
+        "baseCost": 250,
+        "quantity": 5,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766548050430"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T06:47:30.398Z",
+      "processed_at": null
+    },
+    {
+      "id": 26,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "258.21",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 5 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 8.21,
+        "baseCost": 250,
+        "quantity": 5,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766548356074"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T06:52:36.042Z",
+      "processed_at": null
+    },
+    {
+      "id": 27,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "155.13",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 3 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 5.13,
+        "baseCost": 150,
+        "quantity": 3,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766549051359"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T07:04:11.327Z",
+      "processed_at": null
+    },
+    {
+      "id": 28,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "52.05",
+      "gateway_cost": "0.00",
+      "description": "Aquisição de 1 participação(ões) - Aguardando Aprovação",
+      "status": "PENDING",
+      "metadata": {
+        "userFee": 2.05,
+        "baseCost": 50,
+        "quantity": 1,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766549217676"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T07:06:57.644Z",
+      "processed_at": null
+    },
+    {
+      "id": 29,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "155.13",
+      "gateway_cost": "4.98",
+      "description": "Aquisição de 3 participação(ões) - Asaas",
+      "status": "APPROVED",
+      "metadata": {
+        "mp_id": "pay_vcejm8pxdh0b67qo",
+        "userFee": 5.13,
+        "baseCost": 150,
+        "quantity": 3,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766549641818"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T07:14:00.499Z",
+      "processed_at": "2025-12-24T07:14:07.396Z"
+    },
+    {
+      "id": 30,
+      "user_id": 2,
+      "type": "SELL_QUOTA",
+      "amount": "25.20",
+      "gateway_cost": "0.00",
+      "description": "Cessão de participação (Multa 40%)",
+      "status": "APPROVED",
+      "metadata": {
+        "note": "Multa de 40% aplicada (direcionada para lucro de juros)",
+        "isEarlyExit": true,
+        "profitAmount": 16.8,
+        "penaltyAmount": 16.8,
+        "originalAmount": 42
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T07:27:12.822Z",
+      "processed_at": null
+    },
+    {
+      "id": 33,
+      "user_id": 2,
+      "type": "SELL_QUOTA",
+      "amount": "50.40",
+      "gateway_cost": "0.00",
+      "description": "Resgate total de licenças",
+      "status": "APPROVED",
+      "metadata": {
+        "note": "Multas aplicadas (penalidade, não lucro)",
+        "quotasSold": 2,
+        "totalProfit": 0,
+        "hasEarlyExit": true,
+        "totalPenalty": 33.6
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T23:41:33.277Z",
+      "processed_at": null
+    },
+    {
+      "id": 34,
+      "user_id": 2,
+      "type": "WITHDRAWAL",
+      "amount": "20.00",
+      "gateway_cost": "0.00",
+      "description": "Solicitação de Saque - R$ 13.00 (Taxa: R$ 7.00)",
+      "status": "PENDING_CONFIRMATION",
+      "metadata": {
+        "type": "CREDIT_WITHDRAWAL",
+        "pixKey": "32588589",
+        "feeAmount": 7,
+        "netAmount": 13,
+        "availableCredit": -50.4,
+        "balanceDeducted": true,
+        "totalLoanAmount": 0
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T23:42:09.128Z",
+      "processed_at": null
+    },
+    {
+      "id": 35,
+      "user_id": 2,
+      "type": "WITHDRAWAL",
+      "amount": "20.00",
+      "gateway_cost": "0.00",
+      "description": "Solicitação de Saque - R$ 13.00 (Taxa: R$ 7.00)",
+      "status": "PENDING_CONFIRMATION",
+      "metadata": {
+        "type": "CREDIT_WITHDRAWAL",
+        "pixKey": "32588589",
+        "feeAmount": 7,
+        "netAmount": 13,
+        "availableCredit": -50.4,
+        "balanceDeducted": true,
+        "totalLoanAmount": 0
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-24T23:42:22.927Z",
+      "processed_at": null
+    },
+    {
+      "id": 31,
+      "user_id": 2,
+      "type": "WITHDRAWAL",
+      "amount": "25.20",
+      "gateway_cost": "0.00",
+      "description": "Solicitação de Saque - R$ 23.20 (Taxa: R$ 2.00)",
+      "status": "APPROVED",
+      "metadata": {
+        "type": "CREDIT_WITHDRAWAL",
+        "pixKey": "24146064287",
+        "feeAmount": 2,
+        "netAmount": 23.2,
+        "confirmed_at": "2025-12-25T03:53:43.935Z",
+        "payout_method": "MANUAL_TEST",
+        "availableCredit": 0,
+        "balanceDeducted": true,
+        "totalLoanAmount": 0
+      },
+      "payout_status": "PAID",
+      "created_at": "2025-12-24T07:27:47.776Z",
+      "processed_at": "2025-12-25T06:53:41.043Z"
+    },
+    {
+      "id": 32,
+      "user_id": 2,
+      "type": "WITHDRAWAL",
+      "amount": "25.20",
+      "gateway_cost": "0.00",
+      "description": "Solicitação de Saque - R$ 23.20 (Taxa: R$ 2.00)",
+      "status": "APPROVED",
+      "metadata": {
+        "type": "CREDIT_WITHDRAWAL",
+        "pixKey": "24146064287",
+        "feeAmount": 2,
+        "netAmount": 23.2,
+        "confirmed_at": "2025-12-25T03:53:56.404Z",
+        "payout_method": "MANUAL_TEST",
+        "availableCredit": -25.2,
+        "balanceDeducted": true,
+        "totalLoanAmount": 0
+      },
+      "payout_status": "PAID",
+      "created_at": "2025-12-24T07:47:43.829Z",
+      "processed_at": "2025-12-25T06:53:53.508Z"
+    },
+    {
+      "id": 36,
+      "user_id": 2,
+      "type": "WITHDRAWAL",
+      "amount": "10.40",
+      "gateway_cost": "0.00",
+      "description": "Solicitação de Saque - R$ 3.40 (Taxa: R$ 7.00)",
+      "status": "APPROVED",
+      "metadata": {
+        "type": "CREDIT_WITHDRAWAL",
+        "pixKey": "24146064287",
+        "feeAmount": 7,
+        "netAmount": 3.4000000000000004,
+        "confirmed_at": "2025-12-25T04:04:52.049Z",
+        "payout_method": "MANUAL",
+        "availableCredit": -50.4,
+        "balanceDeducted": true,
+        "totalLoanAmount": 0
+      },
+      "payout_status": "PAID",
+      "created_at": "2025-12-25T06:56:55.412Z",
+      "processed_at": "2025-12-25T07:04:50.310Z"
+    },
+    {
+      "id": 37,
+      "user_id": 2,
+      "type": "BUY_QUOTA",
+      "amount": "515.92",
+      "gateway_cost": "15.44",
+      "description": "Aquisição de 10 participação(ões) - Asaas",
+      "status": "APPROVED",
+      "metadata": {
+        "mp_id": "pay_eaj01204hm1qqgu9",
+        "userFee": 15.92,
+        "baseCost": 500,
+        "quantity": 10,
+        "useBalance": false,
+        "paymentMethod": "card",
+        "external_reference": "BUY_QUOTA_2_1766635742269"
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-25T07:08:59.154Z",
+      "processed_at": "2025-12-25T07:10:00.308Z"
+    },
+    {
+      "id": 38,
+      "user_id": 2,
+      "type": "SELL_QUOTA",
+      "amount": "25.20",
+      "gateway_cost": "0.00",
+      "description": "Cessão de participação (Multa 40%)",
+      "status": "APPROVED",
+      "metadata": {
+        "note": "Multa de 40% aplicada (direcionada para lucro de juros)",
+        "isEarlyExit": true,
+        "profitAmount": 16.8,
+        "penaltyAmount": 16.8,
+        "originalAmount": 42
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-25T07:10:36.228Z",
+      "processed_at": null
+    },
+    {
+      "id": 39,
+      "user_id": 2,
+      "type": "WITHDRAWAL",
+      "amount": "25.20",
+      "gateway_cost": "0.00",
+      "description": "Solicitação de Saque - R$ 23.20 (Taxa: R$ 2.00)",
+      "status": "APPROVED",
+      "metadata": {
+        "type": "CREDIT_WITHDRAWAL",
+        "pixKey": "24146064287",
+        "feeAmount": 2,
+        "netAmount": 23.2,
+        "payout_error": null,
+        "payout_method": "AUTOMATIC",
+        "availableCredit": -60.8,
+        "balanceDeducted": true,
+        "totalLoanAmount": 0,
+        "asaas_transfer_id": "transfer_sandbox_1766635971465",
+        "asaas_transfer_status": "DONE"
+      },
+      "payout_status": "PAID",
+      "created_at": "2025-12-25T07:10:56.240Z",
+      "processed_at": "2025-12-25T04:12:51.466Z"
+    },
+    {
+      "id": 40,
+      "user_id": 2,
+      "type": "SELL_QUOTA",
+      "amount": "25.20",
+      "gateway_cost": "0.00",
+      "description": "Cessão de participação (Multa 40%)",
+      "status": "APPROVED",
+      "metadata": {
+        "note": "Multa de 40% aplicada (direcionada para lucro de juros)",
+        "isEarlyExit": true,
+        "profitAmount": 16.8,
+        "penaltyAmount": 16.8,
+        "originalAmount": 42
+      },
+      "payout_status": "NONE",
+      "created_at": "2025-12-25T07:39:22.545Z",
+      "processed_at": null
+    },
+    {
+      "id": 41,
+      "user_id": 2,
+      "type": "WITHDRAWAL",
+      "amount": "25.20",
+      "gateway_cost": "0.00",
+      "description": "Solicitação de Saque - R$ 23.20 (Taxa: R$ 2.00)",
+      "status": "APPROVED",
+      "metadata": {
+        "type": "CREDIT_WITHDRAWAL",
+        "pixKey": "24146064287",
+        "feeAmount": 2,
+        "netAmount": 23.2,
+        "payout_error": null,
+        "payout_method": "AUTOMATIC",
+        "availableCredit": -86,
+        "balanceDeducted": true,
+        "totalLoanAmount": 0,
+        "asaas_transfer_id": "transfer_sandbox_1766637683134",
+        "asaas_transfer_status": "DONE"
+      },
+      "payout_status": "PAID",
+      "created_at": "2025-12-25T07:39:48.996Z",
+      "processed_at": "2025-12-25T04:41:23.135Z"
+    },
+    {
+      "id": 42,
+      "user_id": 2,
+      "type": "DEPOSIT",
+      "amount": "53.68",
+      "gateway_cost": "0.00",
+      "description": "Bônus Disponível (85% do Resultado): R$ 6.7097/licença (8 licenças) - Elegível",
+      "status": "APPROVED",
+      "metadata": null,
+      "payout_status": "NONE",
+      "created_at": "2025-12-26T06:00:03.244Z",
+      "processed_at": null
+    }
+  ],
+  "system_config": [
+    {
+      "id": 1,
+      "system_balance": "511.40",
+      "profit_pool": "0.00",
+      "total_gateway_costs": "20.92",
+      "total_tax_reserve": "3.79",
+      "total_operational_reserve": "2.53",
+      "total_owner_profit": "3.16",
+      "quota_price": "50.00",
+      "loan_interest_rate": "0.20",
+      "penalty_rate": "0.40",
+      "vesting_period_ms": "31536000000",
+      "total_manual_costs": "0.00",
+      "updated_at": "2025-12-22T16:57:33.687Z"
+    }
+  ],
+  "admin_logs": [
+    {
+      "id": 1,
+      "admin_id": 1,
+      "action": "FORCE_LIQUIDATION",
+      "entity_type": "LOAN",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {},
+      "ip_address": "179.63.92.45, 172.71.147.87, 10.16.226.106",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0",
+      "created_at": "2025-12-22T20:14:56.421Z"
+    },
+    {
+      "id": 2,
+      "admin_id": 1,
+      "action": "ADD_COST",
+      "entity_type": "SYSTEM",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "amount": 71,
+        "description": "mei",
+        "isRecurring": true
+      },
+      "ip_address": "179.63.92.45, 172.71.146.185, 10.16.226.106",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-22T23:33:29.636Z"
+    },
+    {
+      "id": 3,
+      "admin_id": 1,
+      "action": "FORCE_LIQUIDATION",
+      "entity_type": "LOAN",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {},
+      "ip_address": "179.63.92.45, 172.71.151.97, 10.16.226.106",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-22T23:37:52.230Z"
+    },
+    {
+      "id": 4,
+      "admin_id": 1,
+      "action": "MANUAL_PROFIT_ADD",
+      "entity_type": "SYSTEM_CONFIG",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "addedAmount": 20
+      },
+      "ip_address": null,
+      "user_agent": null,
+      "created_at": "2025-12-22T23:38:02.437Z"
+    },
+    {
+      "id": 5,
+      "admin_id": 1,
+      "action": "ADD_PROFIT",
+      "entity_type": "SYSTEM_CONFIG",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "amountToAdd": 20
+      },
+      "ip_address": "179.63.92.45, 172.71.147.73, 10.16.205.107",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-22T23:38:02.602Z"
+    },
+    {
+      "id": 6,
+      "admin_id": 1,
+      "action": "MANUAL_PROFIT_ADD",
+      "entity_type": "SYSTEM_CONFIG",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "addedAmount": 0
+      },
+      "ip_address": null,
+      "user_agent": null,
+      "created_at": "2025-12-22T23:38:42.162Z"
+    },
+    {
+      "id": 7,
+      "admin_id": 1,
+      "action": "ADD_PROFIT",
+      "entity_type": "SYSTEM_CONFIG",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "amountToAdd": 0
+      },
+      "ip_address": "179.63.92.45, 172.71.147.161, 10.17.243.79",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-22T23:38:42.326Z"
+    },
+    {
+      "id": 8,
+      "admin_id": 1,
+      "action": "MANUAL_PROFIT_ADD",
+      "entity_type": "SYSTEM_CONFIG",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "addedAmount": 20
+      },
+      "ip_address": null,
+      "user_agent": null,
+      "created_at": "2025-12-23T03:11:57.972Z"
+    },
+    {
+      "id": 9,
+      "admin_id": 1,
+      "action": "MANUAL_PROFIT_ADD",
+      "entity_type": "SYSTEM_CONFIG",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "amountToAdd": 20
+      },
+      "ip_address": "179.63.92.45, 172.64.222.43, 10.17.243.79",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-23T03:11:58.148Z"
+    },
+    {
+      "id": 10,
+      "admin_id": 1,
+      "action": "PAY_COST",
+      "entity_type": "SYSTEM",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {},
+      "ip_address": "179.63.92.45, 172.64.222.43, 10.17.243.79",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-23T03:12:21.485Z"
+    },
+    {
+      "id": 11,
+      "admin_id": 1,
+      "action": "MANUAL_PROFIT_ADD",
+      "entity_type": "SYSTEM_CONFIG",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "addedAmount": 20
+      },
+      "ip_address": null,
+      "user_agent": null,
+      "created_at": "2025-12-23T03:25:09.645Z"
+    },
+    {
+      "id": 12,
+      "admin_id": 1,
+      "action": "MANUAL_PROFIT_ADD",
+      "entity_type": "SYSTEM_CONFIG",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "amountToAdd": 20
+      },
+      "ip_address": "179.63.92.45, 172.64.222.42, 10.17.243.79",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-23T03:25:09.818Z"
+    },
+    {
+      "id": 13,
+      "admin_id": 1,
+      "action": "MANUAL_PROFIT_ADD",
+      "entity_type": "SYSTEM_CONFIG",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "addedAmount": 11
+      },
+      "ip_address": null,
+      "user_agent": null,
+      "created_at": "2025-12-23T03:25:32.736Z"
+    },
+    {
+      "id": 14,
+      "admin_id": 1,
+      "action": "MANUAL_PROFIT_ADD",
+      "entity_type": "SYSTEM_CONFIG",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "amountToAdd": 11
+      },
+      "ip_address": "179.63.92.45, 172.71.151.222, 10.17.179.192",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-23T03:25:32.902Z"
+    },
+    {
+      "id": 15,
+      "admin_id": 1,
+      "action": "MANUAL_PROFIT_ADD",
+      "entity_type": "SYSTEM_CONFIG",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "addedAmount": 71
+      },
+      "ip_address": null,
+      "user_agent": null,
+      "created_at": "2025-12-23T03:25:53.061Z"
+    },
+    {
+      "id": 16,
+      "admin_id": 1,
+      "action": "MANUAL_PROFIT_ADD",
+      "entity_type": "SYSTEM_CONFIG",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "amountToAdd": 71
+      },
+      "ip_address": "179.63.92.45, 172.71.151.191, 10.16.226.106",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-23T03:25:53.223Z"
+    },
+    {
+      "id": 17,
+      "admin_id": 1,
+      "action": "PAY_COST",
+      "entity_type": "SYSTEM",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {},
+      "ip_address": "179.63.92.45, 172.71.150.244, 10.16.205.107",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-23T03:26:01.833Z"
+    },
+    {
+      "id": 18,
+      "admin_id": 1,
+      "action": "CREATE_REFERRAL_CODE",
+      "entity_type": "REFERRAL_CODE",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "code": "CD2025",
+        "maxUses": 1
+      },
+      "ip_address": "179.63.92.45, 172.69.90.79, 10.17.243.79",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-23T07:47:41.602Z"
+    },
+    {
+      "id": 19,
+      "admin_id": 1,
+      "action": "MANUAL_PROFIT_ADD",
+      "entity_type": "SYSTEM_CONFIG",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "addedAmount": 1000
+      },
+      "ip_address": null,
+      "user_agent": null,
+      "created_at": "2025-12-23T23:13:12.925Z"
+    },
+    {
+      "id": 20,
+      "admin_id": 1,
+      "action": "MANUAL_PROFIT_ADD",
+      "entity_type": "SYSTEM_CONFIG",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "amountToAdd": 1000
+      },
+      "ip_address": "179.63.92.45, 172.71.146.165, 10.17.179.192",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-23T23:13:13.092Z"
+    },
+    {
+      "id": 21,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "31",
+      "old_values": null,
+      "new_values": {
+        "id": "31",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-24T23:49:22.467Z"
+    },
+    {
+      "id": 22,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "31",
+      "old_values": null,
+      "new_values": {
+        "id": "31",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0",
+      "created_at": "2025-12-24T23:49:36.675Z"
+    },
+    {
+      "id": 23,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "31",
+      "old_values": null,
+      "new_values": {
+        "id": "31",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0",
+      "created_at": "2025-12-24T23:49:47.752Z"
+    },
+    {
+      "id": 24,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "31",
+      "old_values": null,
+      "new_values": {
+        "id": "31",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0",
+      "created_at": "2025-12-24T23:49:53.642Z"
+    },
+    {
+      "id": 25,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "31",
+      "old_values": null,
+      "new_values": {
+        "id": "31",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0",
+      "created_at": "2025-12-24T23:50:04.882Z"
+    },
+    {
+      "id": 26,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "31",
+      "old_values": null,
+      "new_values": {
+        "id": "31",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-24T23:54:20.737Z"
+    },
+    {
+      "id": 27,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "31",
+      "old_values": null,
+      "new_values": {
+        "id": "31",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-24T23:55:59.674Z"
+    },
+    {
+      "id": 28,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "31",
+      "old_values": null,
+      "new_values": {
+        "id": "31",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0",
+      "created_at": "2025-12-24T23:56:23.922Z"
+    },
+    {
+      "id": 29,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "36",
+      "old_values": null,
+      "new_values": {
+        "id": "36",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-25T06:57:31.590Z"
+    },
+    {
+      "id": 30,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "36",
+      "old_values": null,
+      "new_values": {
+        "id": "36",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-25T06:58:03.082Z"
+    },
+    {
+      "id": 31,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "36",
+      "old_values": null,
+      "new_values": {
+        "id": "36",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-25T06:58:05.469Z"
+    },
+    {
+      "id": 32,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "36",
+      "old_values": null,
+      "new_values": {
+        "id": "36",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-25T06:58:06.187Z"
+    },
+    {
+      "id": 33,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "36",
+      "old_values": null,
+      "new_values": {
+        "id": "36",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-25T06:58:06.369Z"
+    },
+    {
+      "id": 34,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "36",
+      "old_values": null,
+      "new_values": {
+        "id": "36",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-25T06:58:06.759Z"
+    },
+    {
+      "id": 35,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "36",
+      "old_values": null,
+      "new_values": {
+        "id": "36",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-25T06:58:07.626Z"
+    },
+    {
+      "id": 36,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "36",
+      "old_values": null,
+      "new_values": {
+        "id": "36",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0",
+      "created_at": "2025-12-25T06:58:18.361Z"
+    },
+    {
+      "id": 37,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "36",
+      "old_values": null,
+      "new_values": {
+        "id": "36",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0",
+      "created_at": "2025-12-25T06:58:20.218Z"
+    },
+    {
+      "id": 38,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "36",
+      "old_values": null,
+      "new_values": {
+        "id": "36",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0",
+      "created_at": "2025-12-25T06:58:22.482Z"
+    },
+    {
+      "id": 39,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "36",
+      "old_values": null,
+      "new_values": {
+        "id": "36",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0",
+      "created_at": "2025-12-25T07:02:01.509Z"
+    },
+    {
+      "id": 40,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "36",
+      "old_values": null,
+      "new_values": {
+        "id": "36",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0",
+      "created_at": "2025-12-25T07:02:19.050Z"
+    },
+    {
+      "id": 41,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "36",
+      "old_values": null,
+      "new_values": {
+        "id": "36",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0",
+      "created_at": "2025-12-25T07:02:37.590Z"
+    },
+    {
+      "id": 42,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "39",
+      "old_values": null,
+      "new_values": {
+        "id": "39",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0",
+      "created_at": "2025-12-25T07:11:36.881Z"
+    },
+    {
+      "id": 43,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "39",
+      "old_values": null,
+      "new_values": {
+        "id": "39",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0",
+      "created_at": "2025-12-25T07:12:49.035Z"
+    },
+    {
+      "id": 44,
+      "admin_id": 1,
+      "action": "CONFIRM_PAYOUT",
+      "entity_type": "TRANSACTION_LOAN",
+      "entity_id": "41",
+      "old_values": null,
+      "new_values": {
+        "id": "41",
+        "type": "TRANSACTION"
+      },
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-25T07:41:20.974Z"
+    },
+    {
+      "id": 45,
+      "admin_id": 1,
+      "action": "CREATE_REFERRAL_CODE",
+      "entity_type": "REFERRAL_CODE",
+      "entity_id": null,
+      "old_values": null,
+      "new_values": {
+        "code": "BROZ2025",
+        "maxUses": null
+      },
+      "ip_address": "179.63.92.21, 172.68.174.47, 10.16.205.107",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "created_at": "2025-12-26T06:33:21.705Z"
+    }
+  ],
+  "referral_codes": [
+    {
+      "id": 1,
+      "code": "CD2025",
+      "created_by": 1,
+      "max_uses": 1,
+      "current_uses": 1,
+      "is_active": true,
+      "is_verified": false,
+      "created_at": "2025-12-23T07:47:41.473Z"
+    },
+    {
+      "id": 2,
+      "code": "BROZ2025",
+      "created_by": 1,
+      "max_uses": null,
+      "current_uses": 1,
+      "is_active": true,
+      "is_verified": false,
+      "created_at": "2025-12-26T06:33:21.625Z"
+    }
+  ]
+}

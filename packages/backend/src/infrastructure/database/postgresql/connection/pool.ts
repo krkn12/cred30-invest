@@ -901,6 +901,14 @@ export const initializeDatabase = async () => {
       CREATE INDEX IF NOT EXISTS idx_reviews_approved ON transaction_reviews(is_approved, is_public);
     `);
 
+    // Adicionar coluna tag na tabela promo_videos
+    await client.query(`
+      ALTER TABLE promo_videos ADD COLUMN IF NOT EXISTS tag VARCHAR(30) DEFAULT 'OUTROS';
+      CREATE INDEX IF NOT EXISTS idx_promo_videos_tag ON promo_videos(tag);
+      CREATE INDEX IF NOT EXISTS idx_promo_videos_active ON promo_videos(is_active, status);
+    `);
+    console.log('Coluna tag adicionada em promo_videos!');
+
     console.log('Audit logs and performance indexes updated successfully!');
 
     // Inicializar tabelas de auditoria e rate limiting
