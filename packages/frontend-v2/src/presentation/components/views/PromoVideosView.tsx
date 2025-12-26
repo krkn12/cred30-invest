@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { Play, Pause, DollarSign, Clock, Eye, ChevronRight, Plus, X as XIcon, CheckCircle2, AlertTriangle, Youtube, Film, ExternalLink, Loader2, Wallet, Smartphone, CreditCard } from 'lucide-react';
 import { apiService } from '../../../application/services/api.service';
 
@@ -167,34 +167,12 @@ export const PromoVideosView: React.FC<PromoVideosViewProps> = ({
     };
 
     const getVideoId = (url: string) => {
-        // YouTube
         const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
         if (ytMatch) return ytMatch[1];
         return null;
     };
 
-    const getThumbnail = (video: PromoVideo) => {
-        if (video.thumbnailUrl) return video.thumbnailUrl;
-        const ytId = getVideoId(video.videoUrl);
-        if (ytId) return `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
-        return '/placeholder-video.png';
-    };
 
-    const getPlatformIcon = (platform: string) => {
-        switch (platform) {
-            case 'YOUTUBE': return <Youtube size={14} className="text-red-500" />;
-            case 'TIKTOK': return <Film size={14} className="text-pink-500" />;
-            default: return <Film size={14} className="text-zinc-400" />;
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="animate-spin text-primary-500" size={32} />
-            </div>
-        );
-    }
 
     return (
         <div className="space-y-6 pb-32">
@@ -265,7 +243,11 @@ export const PromoVideosView: React.FC<PromoVideosViewProps> = ({
                         </div>
                     </div>
 
-                    {videos.length === 0 ? (
+                    {loading ? (
+                        <div className="space-y-3">
+                            {[1, 2, 3].map(i => <VideoCardSkeleton key={i} />)}
+                        </div>
+                    ) : videos.length === 0 ? (
                         <div className="bg-surface border border-surfaceHighlight rounded-2xl p-8 text-center">
                             <Eye size={48} className="mx-auto text-zinc-600 mb-4" />
                             <p className="text-zinc-400">Nenhum vídeo disponível no momento</p>
@@ -274,80 +256,7 @@ export const PromoVideosView: React.FC<PromoVideosViewProps> = ({
                     ) : (
                         <div className="space-y-3">
                             {videos.map(video => (
-                                <div key={video.id} className={`bg-surface border rounded-2xl overflow-hidden transition ${video.isOwner ? 'border-primary-500/30 bg-primary-500/5' : 'border-surfaceHighlight hover:border-primary-500/50'}`}>
-                                    <div className="flex">
-                                        {/* Thumbnail */}
-                                        <div className="relative w-32 h-24 flex-shrink-0">
-                                            <img
-                                                src={getThumbnail(video)}
-                                                alt={video.title}
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                                <Play size={24} className="text-white" />
-                                            </div>
-                                            <div className="absolute bottom-1 right-1 bg-black/80 text-[10px] text-white px-1 rounded">
-                                                {Math.floor(video.durationSeconds / 60)}:{String(video.durationSeconds % 60).padStart(2, '0')}
-                                            </div>
-                                            <div className="absolute top-1 left-1 flex flex-col gap-1">
-                                                {video.isOwner && (
-                                                    <div className="bg-primary-500 text-black text-[8px] px-1.5 py-0.5 rounded font-bold">
-                                                        SEU VÍDEO
-                                                    </div>
-                                                )}
-                                                <div className="bg-zinc-900/80 text-white text-[8px] px-1.5 py-0.5 rounded font-bold border border-white/10 uppercase">
-                                                    #{video.ranking} TOP
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Info */}
-                                        <div className="flex-1 p-3 flex flex-col justify-between">
-                                            <div>
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <div className="flex items-center gap-2">
-                                                        {getPlatformIcon(video.platform)}
-                                                        <h4 className="text-sm font-bold text-white line-clamp-1">{video.title}</h4>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] bg-white/5 border border-white/10 px-1.5 py-0.2 rounded text-zinc-400 font-medium">
-                                                        {video.tag}
-                                                    </span>
-                                                    <span className="text-[10px] text-zinc-500">•</span>
-                                                    <p className="text-[10px] text-zinc-500">{video.isOwner ? 'Sua campanha' : `por ${video.promoterName}`}</p>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center justify-between mt-2">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider leading-none mb-1">Total Views</span>
-                                                        <span className="text-zinc-300 text-xs font-black leading-none">
-                                                            {video.totalViews.toLocaleString()}
-                                                        </span>
-                                                    </div>
-
-                                                    {!video.isOwner && (
-                                                        <div className="flex flex-col">
-                                                            <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider leading-none mb-1">Ganhos</span>
-                                                            <span className="text-emerald-400 font-black text-xs leading-none">
-                                                                +{video.viewerEarning.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                <button
-                                                    onClick={() => startWatching(video)}
-                                                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition flex items-center gap-2 ${video.isOwner ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700' : 'bg-primary-500 hover:bg-primary-400 text-black shadow-lg shadow-primary-500/20'}`}
-                                                >
-                                                    {video.isOwner ? 'Ver' : 'Assistir'} <ChevronRight size={14} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <VideoCard key={video.id} video={video} onWatch={startWatching} />
                             ))}
                         </div>
                     )}
@@ -812,3 +721,91 @@ const CreateCampaignModal: React.FC<{
 };
 
 export default PromoVideosView;
+// Componente de Card Memoizado para Performance
+const VideoCard = memo(({ video, onWatch }: { video: PromoVideo; onWatch: (v: PromoVideo) => void }) => {
+    // Funções auxiliares movidas para dentro ou fora conforme necessário
+    const getPlatformIcon = (platform: string) => {
+        switch (platform) {
+            case 'YOUTUBE': return <Youtube size={14} className="text-red-500" />;
+            case 'TIKTOK': return <Film size={14} className="text-pink-500" />;
+            default: return <Film size={14} className="text-zinc-500" />;
+        }
+    };
+
+    const getThumbnail = (video: PromoVideo) => {
+        if (video.thumbnailUrl) return video.thumbnailUrl;
+        if (video.platform === 'YOUTUBE') {
+            const id = video.videoUrl.split('v=')[1]?.split('&')[0] || video.videoUrl.split('/').pop();
+            return `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
+        }
+        return 'https://placehold.co/400x225/111/444?text=PREVIEW';
+    };
+
+    return (
+        <div className={`bg-surface border rounded-2xl overflow-hidden transition ${video.isOwner ? 'border-primary-500/30 bg-primary-500/5' : 'border-surfaceHighlight hover:border-primary-500/50'}`}>
+            <div className="flex">
+                <div className="relative w-32 h-24 flex-shrink-0">
+                    <img src={getThumbnail(video)} alt={video.title} className="w-full h-full object-cover" loading="lazy" />
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center"><Play size={24} className="text-white" /></div>
+                    <div className="absolute bottom-1 right-1 bg-black/80 text-[10px] text-white px-1 rounded">
+                        {Math.floor(video.durationSeconds / 60)}:{String(video.durationSeconds % 60).padStart(2, '0')}
+                    </div>
+                    <div className="absolute top-1 left-1 flex flex-col gap-1">
+                        {video.isOwner && <div className="bg-primary-500 text-black text-[8px] px-1.5 py-0.5 rounded font-bold">SEU VÍDEO</div>}
+                        <div className="bg-zinc-900/80 text-white text-[8px] px-1.5 py-0.5 rounded font-bold border border-white/10 uppercase">#{video.ranking} TOP</div>
+                    </div>
+                </div>
+
+                <div className="flex-1 p-3 flex flex-col justify-between">
+                    <div>
+                        <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                                {getPlatformIcon(video.platform)}
+                                <h4 className="text-sm font-bold text-white line-clamp-1">{video.title}</h4>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] bg-white/5 border border-white/10 px-1.5 py-0.2 rounded text-zinc-400 font-medium">{video.tag}</span>
+                            <span className="text-[10px] text-zinc-500">•</span>
+                            <p className="text-[10px] text-zinc-500">{video.isOwner ? 'Sua campanha' : `por ${video.promoterName}`}</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center gap-3">
+                            <div className="flex flex-col">
+                                <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider leading-none mb-1">Total Views</span>
+                                <span className="text-zinc-300 text-xs font-black leading-none">{video.totalViews.toLocaleString()}</span>
+                            </div>
+                            {!video.isOwner && (
+                                <div className="flex flex-col">
+                                    <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider leading-none mb-1">Ganhos</span>
+                                    <span className="text-emerald-400 font-black text-xs leading-none">+{video.viewerEarning.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                </div>
+                            )}
+                        </div>
+                        <button onClick={() => onWatch(video)} className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition flex items-center gap-2 ${video.isOwner ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700' : 'bg-primary-500 hover:bg-primary-400 text-black shadow-lg shadow-primary-500/20'}`}>
+                            {video.isOwner ? 'Ver' : 'Assistir'} <ChevronRight size={14} />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+});
+
+// Componente de Skeleton para Carregamento Suave
+const VideoCardSkeleton = () => (
+    <div className="bg-surface border border-surfaceHighlight rounded-2xl overflow-hidden animate-pulse">
+        <div className="flex">
+            <div className="w-32 h-24 bg-zinc-900" />
+            <div className="flex-1 p-3 space-y-3">
+                <div className="h-4 bg-zinc-900 rounded w-3/4" />
+                <div className="h-3 bg-zinc-900 rounded w-1/2" />
+                <div className="flex justify-between items-center mt-2">
+                    <div className="h-8 bg-zinc-900 rounded w-20" />
+                    <div className="h-8 bg-zinc-900 rounded w-24" />
+                </div>
+            </div>
+        </div>
+    </div>
+);

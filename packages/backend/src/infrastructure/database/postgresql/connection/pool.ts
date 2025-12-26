@@ -901,13 +901,22 @@ export const initializeDatabase = async () => {
       CREATE INDEX IF NOT EXISTS idx_reviews_approved ON transaction_reviews(is_approved, is_public);
     `);
 
-    // Adicionar coluna tag na tabela promo_videos
+    // Adicionar coluna tag na tabela promo_videos e índices
     await client.query(`
       ALTER TABLE promo_videos ADD COLUMN IF NOT EXISTS tag VARCHAR(30) DEFAULT 'OUTROS';
       CREATE INDEX IF NOT EXISTS idx_promo_videos_tag ON promo_videos(tag);
       CREATE INDEX IF NOT EXISTS idx_promo_videos_active ON promo_videos(is_active, status);
+      CREATE INDEX IF NOT EXISTS idx_promo_videos_views ON promo_videos(total_views DESC);
+      
+      -- Otimização para o Feed de Vídeos
+      CREATE INDEX IF NOT EXISTS idx_promo_video_views_viewer_video ON promo_video_views(viewer_id, video_id, completed);
+      CREATE INDEX IF NOT EXISTS idx_promo_video_views_video_completed ON promo_video_views(video_id) WHERE completed = TRUE;
+      
+      -- Otimização geral de transações
+      CREATE INDEX IF NOT EXISTS idx_transactions_user_type ON transactions(user_id, type);
+      CREATE INDEX IF NOT EXISTS idx_users_balance ON users(balance DESC);
     `);
-    console.log('Coluna tag adicionada em promo_videos!');
+    console.log('Índices de otimização aplicados!');
 
     console.log('Audit logs and performance indexes updated successfully!');
 

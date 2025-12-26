@@ -66,11 +66,17 @@ promoVideosRoutes.get('/feed', async (c) => {
 
         const result = await pool.query(`
             SELECT pv.*, u.name as promoter_name,
-                   (SELECT COUNT(*) FROM promo_video_views pvv WHERE pvv.video_id = pv.id AND pvv.completed = TRUE) as completed_views,
+                   COALESCE(stats.completed_count, 0) as completed_views,
                    (pv.user_id = $1) as is_owner,
                    ROW_NUMBER() OVER (ORDER BY pv.total_views DESC, pv.price_per_view DESC) as ranking
             FROM promo_videos pv
             JOIN users u ON pv.user_id = u.id
+            LEFT JOIN (
+                SELECT video_id, COUNT(*) as completed_count 
+                FROM promo_video_views 
+                WHERE completed = TRUE 
+                GROUP BY video_id
+            ) stats ON stats.video_id = pv.id
             WHERE pv.is_active = TRUE 
               AND pv.status = 'ACTIVE'
               AND pv.budget > pv.spent
