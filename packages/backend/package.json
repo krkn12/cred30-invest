@@ -1,6 +1,6 @@
 {
   "name": "cred30-backend",
-  "version": "1.0.191",
+  "version": "1.0.192",
   "description": "Backend para Plataforma Associativa Cred30",
   "main": "src/index.ts",
   "scripts": {
@@ -20,7 +20,7 @@
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
-    "hono": "^3.12.12",
+    "hono": "^4.11.2",
     "jsonwebtoken": "^9.0.3",
     "mercadopago": "^2.1.1",
     "node-cron": "^4.2.1",
