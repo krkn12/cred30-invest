@@ -202,45 +202,18 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
 
         // ... (resto do código de saldo) ...
 
-        // 5. Pagamento de Bônus de Indicação (Sustentável: Sai da Receita da Cota)
+        // 5. Sistema de Indicação - NOVO: Benefício de Boas-Vindas
+        // Ao invés de pagar R$ 5,00 ao indicador, o indicado ganha desconto nas taxas
+        // O benefício já foi configurado no momento do cadastro (referred_by)
+        // Aqui apenas logamos para auditoria
         const currentUserRes = await client.query('SELECT referred_by FROM users WHERE id = $1', [user.id]);
         const referredByCode = currentUserRes.rows[0]?.referred_by;
 
         if (referredByCode) {
-          const referrerRes = await client.query('SELECT id, name FROM users WHERE referral_code = $1', [referredByCode]);
-
-          if (referrerRes.rows.length > 0) {
-            const referrerId = referrerRes.rows[0].id;
-            const bonusAmount = 5.00;
-
-            const sysRes = await client.query('SELECT profit_pool FROM system_config LIMIT 1');
-            const profitPool = parseFloat(sysRes.rows[0].profit_pool);
-
-            if (profitPool >= bonusAmount) {
-              await client.query('UPDATE users SET balance = balance + $1 WHERE id = $2', [bonusAmount, referrerId]);
-              await client.query(
-                'UPDATE system_config SET profit_pool = profit_pool - $1',
-                [bonusAmount]
-              );
-              await createTransaction(
-                client,
-                referrerId,
-                'REFERRAL_BONUS',
-                bonusAmount,
-                `Bônus por indicação: ${user.name} comprou licença`,
-                'APPROVED'
-              );
-            } else {
-              await createTransaction(
-                client,
-                referrerId,
-                'REFERRAL_BONUS',
-                bonusAmount,
-                `Bônus por indicação: ${user.name} comprou licença (AGUARDANDO RESULTADOS)`,
-                'PENDING'
-              );
-            }
-          }
+          console.log(`[REFERRAL] Usuário ${user.id} foi indicado pelo código ${referredByCode}. Sistema de Benefício de Boas-Vindas ativo (3 usos com desconto).`);
+          // NOTA: O bônus de R$ 5,00 foi substituído pelo sistema de desconto nas taxas
+          // O indicado ganha: taxa de empréstimo 3.5% (ao invés de 20%) + 50% off em outras taxas
+          // por até 3 usos de qualquer serviço (empréstimo, saque, marketplace)
         }
 
         // 6. Atualizar Score por participação

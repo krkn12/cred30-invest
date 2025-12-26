@@ -668,6 +668,29 @@ class ApiService {
     return response.data;
   }
 
+  // --- Benefício de Boas-Vindas (Indicação) ---
+  async getWelcomeBenefit(): Promise<{
+    hasDiscount: boolean;
+    usesRemaining: number;
+    maxUses: number;
+    description: string;
+    discountedRates: {
+      loanInterestRate: string;
+      loanOriginationFeeRate: string;
+      withdrawalFee: string;
+      marketplaceEscrowFeeRate: string;
+    } | null;
+    normalRates: {
+      loanInterestRate: string;
+      loanOriginationFeeRate: string;
+      withdrawalFee: string;
+      marketplaceEscrowFeeRate: string;
+    };
+  }> {
+    const response = await this.request<any>('/users/welcome-benefit');
+    return response.data;
+  }
+
   // --- Gestão de Equipe e Usuários (Admin) ---
   async adminGetUsers(options?: { search?: string, role?: string, status?: string }): Promise<any> {
     const query = new URLSearchParams();

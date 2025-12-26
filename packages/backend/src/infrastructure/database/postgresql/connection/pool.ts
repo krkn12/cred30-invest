@@ -776,6 +776,7 @@ export const initializeDatabase = async () => {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS panic_phrase VARCHAR(255);
       ALTER TABLE users ADD COLUMN IF NOT EXISTS is_under_duress BOOLEAN DEFAULT FALSE;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS safe_contact_phone VARCHAR(20);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS welcome_benefit_uses INTEGER DEFAULT 0; -- Contador de usos do benefício de boas-vindas
     `);
 
     // Criar tabelas de auditoria e webhooks

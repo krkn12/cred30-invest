@@ -9,6 +9,7 @@ import { calculateTotalToPay, PaymentMethod } from '../../../shared/utils/financ
 import { executeInTransaction, processLoanApproval } from '../../../domain/services/transaction.service';
 import { calculateUserLoanLimit } from '../../../application/services/credit-analysis.service';
 import { PoolClient } from 'pg';
+import { getWelcomeBenefit, consumeWelcomeBenefitUse, getWelcomeBenefitDescription } from '../../../application/services/welcome-benefit.service';
 
 const loanRoutes = new Hono();
 
@@ -209,12 +210,18 @@ loanRoutes.post('/request', authMiddleware, async (c) => {
       }, 400);
     }
 
+    // ===== SISTEMA DE BENEFÍCIO DE BOAS-VINDAS =====
+    // Verificar se o usuário tem desconto por indicação
+    const welcomeBenefit = await getWelcomeBenefit(pool, user.id);
+    const effectiveInterestRate = welcomeBenefit.loanInterestRate;
+    const effectiveOriginationRate = welcomeBenefit.loanOriginationFeeRate;
 
+    console.log(`[LOAN] Usuário ${user.id} - Benefício: ${welcomeBenefit.hasDiscount ? 'ATIVO' : 'INATIVO'}, Taxa de juros: ${(effectiveInterestRate * 100).toFixed(1)}%, Taxa de originação: ${(effectiveOriginationRate * 100).toFixed(1)}%`);
 
-    // Calcular taxas e juros
-    const originationFee = amount * LOAN_ORIGINATION_FEE_RATE; // Ganho imediato pro caixa
+    // Calcular taxas e juros (usando taxas do benefício se aplicável)
+    const originationFee = amount * effectiveOriginationRate; // Ganho imediato pro caixa
     const amountToDisburse = amount - originationFee; // O que o usuário recebe de fato
-    const totalWithInterest = amount * (1 + LOAN_INTEREST_RATE);
+    const totalWithInterest = amount * (1 + effectiveInterestRate);
 
     const result = await executeInTransaction(pool, async (client: PoolClient) => {
       const loanResult = await client.query(
@@ -226,11 +233,17 @@ loanRoutes.post('/request', authMiddleware, async (c) => {
           amount,
           totalWithInterest,
           installments,
-          LOAN_INTEREST_RATE,
+          effectiveInterestRate,
           PENALTY_RATE,
           new Date(Date.now() + (installments * ONE_MONTH_MS)),
           installments * 30,
-          JSON.stringify({ originationFee, disbursedAmount: amountToDisburse })
+          JSON.stringify({
+            originationFee,
+            disbursedAmount: amountToDisburse,
+            welcomeBenefitApplied: welcomeBenefit.hasDiscount,
+            originalInterestRate: LOAN_INTEREST_RATE,
+            appliedInterestRate: effectiveInterestRate
+          })
         ]
       );
 
@@ -245,6 +258,11 @@ loanRoutes.post('/request', authMiddleware, async (c) => {
         [feeForOperational, feeForProfit]
       );
 
+      // Se usou benefício, consumir um uso
+      if (welcomeBenefit.hasDiscount) {
+        await consumeWelcomeBenefitUse(client, user.id, 'LOAN');
+      }
+
       // Tentar aprovação imediata se houver liquidez
       // Se não houver, o disbursement-queue.service.ts aprovará sozinho depois
       try {
@@ -257,28 +275,39 @@ loanRoutes.post('/request', authMiddleware, async (c) => {
 
         if (amount <= realLiquidity) {
           await processLoanApproval(client, newLoanId.toString(), 'APPROVE');
-          return { loanId: newLoanId, autoApproved: true };
+          return { loanId: newLoanId, autoApproved: true, welcomeBenefitApplied: welcomeBenefit.hasDiscount };
         }
       } catch (e) {
         console.error('Erro na tentativa de auto-aprovação imediata:', e);
       }
 
-      return { loanId: newLoanId, autoApproved: false };
+      return { loanId: newLoanId, autoApproved: false, welcomeBenefitApplied: welcomeBenefit.hasDiscount };
     });
 
     const isAutoApproved = result.data?.autoApproved;
+    const benefitApplied = result.data?.welcomeBenefitApplied;
+
+    // Montar mensagem com info do benefício
+    let baseMessage = isAutoApproved
+      ? `Apoio Mútuo aprovado e creditado com sucesso! O valor de R$ ${amountToDisburse.toFixed(2)} já está disponível no seu saldo interno.`
+      : `Solicitação enviada para a fila automática! Como o caixa está com muita demanda, seu pedido será processado assim que houver novos recursos, priorizando membros com mais participações e maior score.`;
+
+    if (benefitApplied) {
+      baseMessage += ` 🎁 Taxa especial de ${(effectiveInterestRate * 100).toFixed(1)}% aplicada (Benefício de Boas-Vindas). Usos restantes: ${welcomeBenefit.usesRemaining - 1}/3`;
+    }
 
     return c.json({
       success: true,
-      message: isAutoApproved
-        ? `Apoio Mútuo aprovado e creditado com sucesso! O valor de R$ ${amountToDisburse.toFixed(2)} já está disponível no seu saldo interno.`
-        : `Solicitação enviada para a fila automática! Como o caixa está com muita demanda, seu pedido será processado assim que houver novos recursos, priorizando membros com mais participações e maior score.`,
+      message: baseMessage,
       data: {
         loanId: result.data?.loanId,
         totalRepayment: totalWithInterest,
+        interestRate: effectiveInterestRate,
         originationFee,
         disbursedAmount: amountToDisburse,
-        autoApproved: isAutoApproved
+        autoApproved: isAutoApproved,
+        welcomeBenefitApplied: benefitApplied,
+        welcomeBenefitUsesRemaining: benefitApplied ? welcomeBenefit.usesRemaining - 1 : 0
       },
     });
   } catch (error) {

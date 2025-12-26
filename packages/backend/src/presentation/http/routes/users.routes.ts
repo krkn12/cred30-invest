@@ -6,6 +6,8 @@ import { User, UpdateUserRequest } from '../../../domain/entities/user.entity';
 import { UserContext } from '../../../shared/types/hono.types';
 import bcrypt from 'bcrypt';
 import { twoFactorService } from '../../../application/services/two-factor.service';
+import { getWelcomeBenefit, getWelcomeBenefitDescription } from '../../../application/services/welcome-benefit.service';
+import { WELCOME_BENEFIT_MAX_USES } from '../../../shared/constants/business.constants';
 
 const userRoutes = new Hono();
 
@@ -613,6 +615,44 @@ userRoutes.post('/title-download', authMiddleware, async (c) => {
   } catch (error) {
     console.error('Erro ao registrar download de título:', error);
     return c.json({ success: false, message: 'Erro ao processar emissão.' }, 500);
+  }
+});
+
+/**
+ * Consultar status do Benefício de Boas-Vindas (Indicação)
+ * Retorna se o usuário tem desconto ativo e quantos usos restam
+ */
+userRoutes.get('/welcome-benefit', authMiddleware, async (c) => {
+  try {
+    const user = c.get('user') as UserContext;
+    const pool = getDbPool(c);
+
+    const benefit = await getWelcomeBenefit(pool, user.id);
+
+    return c.json({
+      success: true,
+      data: {
+        hasDiscount: benefit.hasDiscount,
+        usesRemaining: benefit.usesRemaining,
+        maxUses: WELCOME_BENEFIT_MAX_USES,
+        description: getWelcomeBenefitDescription(benefit),
+        discountedRates: benefit.hasDiscount ? {
+          loanInterestRate: `${(benefit.loanInterestRate * 100).toFixed(1)}%`,
+          loanOriginationFeeRate: `${(benefit.loanOriginationFeeRate * 100).toFixed(1)}%`,
+          withdrawalFee: `R$ ${benefit.withdrawalFee.toFixed(2)}`,
+          marketplaceEscrowFeeRate: `${(benefit.marketplaceEscrowFeeRate * 100).toFixed(1)}%`
+        } : null,
+        normalRates: {
+          loanInterestRate: '20%',
+          loanOriginationFeeRate: '3%',
+          withdrawalFee: 'R$ 2,00',
+          marketplaceEscrowFeeRate: '5%'
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao consultar benefício:', error);
+    return c.json({ success: false, message: 'Erro ao consultar benefício' }, 500);
   }
 });
 

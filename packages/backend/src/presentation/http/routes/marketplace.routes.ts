@@ -9,6 +9,7 @@ import { calculateUserLoanLimit } from '../../../application/services/credit-ana
 import { updateScore } from '../../../application/services/score.service';
 import { calculateTotalToPay, PaymentMethod } from '../../../shared/utils/financial.utils';
 import { createPixPayment, createCardPayment } from '../../../infrastructure/gateways/asaas.service';
+import { getWelcomeBenefit, consumeWelcomeBenefitUse } from '../../../application/services/welcome-benefit.service';
 
 const marketplaceRoutes = new Hono();
 
@@ -196,6 +197,12 @@ marketplaceRoutes.post('/buy-on-credit', authMiddleware, async (c) => {
         const sellerRes = await pool.query('SELECT address FROM users WHERE id = $1', [listing.seller_id]);
         const finalPickupAddress = body.pickupAddress || sellerRes.rows[0]?.address || 'A combinar com o vendedor';
 
+        // ===== SISTEMA DE BENEFÍCIO DE BOAS-VINDAS =====
+        const welcomeBenefit = await getWelcomeBenefit(pool, user.id);
+        const effectiveEscrowRate = welcomeBenefit.marketplaceEscrowFeeRate;
+
+        console.log(`[MARKETPLACE CREDIT] Usuário ${user.id} - Benefício: ${welcomeBenefit.hasDiscount ? 'ATIVO' : 'INATIVO'}, Taxa Escrow: ${(effectiveEscrowRate * 100).toFixed(1)}%`);
+
         const totalInterestRate = MARKET_CREDIT_INTEREST_RATE * installments;
         const totalAmountWithInterest = price * (1 + totalInterestRate);
 
@@ -216,26 +223,41 @@ marketplaceRoutes.post('/buy-on-credit', authMiddleware, async (c) => {
             const totalWithFee = price + fee;
             const totalAmountWithInterest = totalWithFee * (1 + totalInterestRate);
 
+            // Calcular taxa de escrow com desconto de benefício
+            const escrowFee = price * effectiveEscrowRate;
+            const sellerAmount = price - escrowFee;
+
             const orderResult = await client.query(
                 `INSERT INTO marketplace_orders (listing_id, buyer_id, seller_id, amount, fee_amount, seller_amount, status, payment_method, delivery_address, pickup_address, contact_phone, delivery_status, delivery_fee, pickup_code)
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id`,
-                [listingId, user.id, listing.seller_id, totalWithFee, price * MARKETPLACE_ESCROW_FEE_RATE, price * (1 - MARKETPLACE_ESCROW_FEE_RATE), 'WAITING_SHIPPING', 'CRED30_CREDIT', deliveryAddress, finalPickupAddress, contactPhone, deliveryStatus, fee, pickupCode]
+                [listingId, user.id, listing.seller_id, totalWithFee, escrowFee, sellerAmount, 'WAITING_SHIPPING', 'CRED30_CREDIT', deliveryAddress, finalPickupAddress, contactPhone, deliveryStatus, fee, pickupCode]
             );
             const orderId = orderResult.rows[0].id;
 
             await client.query(
                 `INSERT INTO loans (user_id, amount, installments, interest_rate, total_repayment, status, description, metadata)
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-                [user.id, price, installments, MARKET_CREDIT_INTEREST_RATE, totalAmountWithInterest, 'APPROVED', `Compra: ${listing.title}`, JSON.stringify({ orderId, listingId, type: 'MARKET_FINANCING' })]
+                [user.id, price, installments, MARKET_CREDIT_INTEREST_RATE, totalAmountWithInterest, 'APPROVED', `Compra: ${listing.title}`, JSON.stringify({ orderId, listingId, type: 'MARKET_FINANCING', welcomeBenefitApplied: welcomeBenefit.hasDiscount })]
             );
 
-            await createTransaction(client, user.id, 'MARKET_PURCHASE_CREDIT', totalAmountWithInterest, `Compra Parcelada: ${listing.title}`, 'APPROVED', { orderId, listingId });
+            // Se usou benefício, consumir um uso
+            if (welcomeBenefit.hasDiscount) {
+                await consumeWelcomeBenefitUse(client, user.id, 'MARKETPLACE');
+            }
 
-            return { orderId };
+            await createTransaction(client, user.id, 'MARKET_PURCHASE_CREDIT', totalAmountWithInterest, `Compra Parcelada: ${listing.title}${welcomeBenefit.hasDiscount ? ' (🎁 Taxa reduzida)' : ''}`, 'APPROVED', { orderId, listingId, welcomeBenefitApplied: welcomeBenefit.hasDiscount });
+
+            return { orderId, welcomeBenefitApplied: welcomeBenefit.hasDiscount, usesRemaining: welcomeBenefit.hasDiscount ? welcomeBenefit.usesRemaining - 1 : 0 };
         });
 
         if (!result.success) return c.json({ success: false, message: result.error }, 400);
-        return c.json({ success: true, message: 'Financiamento Aprovado!', data: { orderId: result.data?.orderId } });
+
+        let successMessage = 'Financiamento Aprovado!';
+        if (result.data?.welcomeBenefitApplied) {
+            successMessage += ` 🎁 Taxa de ${(effectiveEscrowRate * 100).toFixed(1)}% aplicada (Benefício de Boas-Vindas). Usos restantes: ${result.data.usesRemaining}/3`;
+        }
+
+        return c.json({ success: true, message: successMessage, data: { orderId: result.data?.orderId, welcomeBenefitApplied: result.data?.welcomeBenefitApplied } });
 
     } catch (error) {
         console.error('Buy Credit Error:', error);
@@ -265,7 +287,13 @@ marketplaceRoutes.post('/buy', authMiddleware, async (c) => {
 
         // Se o pagamento for via saldo
         if (paymentMethod === 'BALANCE') {
-            const fee = price * MARKETPLACE_ESCROW_FEE_RATE;
+            // ===== SISTEMA DE BENEFÍCIO DE BOAS-VINDAS =====
+            const welcomeBenefit = await getWelcomeBenefit(pool, user.id);
+            const effectiveEscrowRate = welcomeBenefit.marketplaceEscrowFeeRate;
+
+            console.log(`[MARKETPLACE] Usuário ${user.id} - Benefício: ${welcomeBenefit.hasDiscount ? 'ATIVO' : 'INATIVO'}, Taxa Escrow: ${(effectiveEscrowRate * 100).toFixed(1)}%`);
+
+            const fee = price * effectiveEscrowRate;
             const sellerAmount = price - fee;
 
             const result = await executeInTransaction(pool, async (client) => {
@@ -285,12 +313,23 @@ marketplaceRoutes.post('/buy', authMiddleware, async (c) => {
                 );
                 const orderId = orderResult.rows[0].id;
 
-                await createTransaction(client, user.id, 'MARKET_PURCHASE', price, `Compra: ${listing.title}`, 'APPROVED', { orderId, listingId });
-                return { orderId };
+                // Se usou benefício, consumir um uso
+                if (welcomeBenefit.hasDiscount) {
+                    await consumeWelcomeBenefitUse(client, user.id, 'MARKETPLACE');
+                }
+
+                await createTransaction(client, user.id, 'MARKET_PURCHASE', price, `Compra: ${listing.title}${welcomeBenefit.hasDiscount ? ' (🎁 Taxa reduzida)' : ''}`, 'APPROVED', { orderId, listingId, welcomeBenefitApplied: welcomeBenefit.hasDiscount });
+                return { orderId, welcomeBenefitApplied: welcomeBenefit.hasDiscount, usesRemaining: welcomeBenefit.hasDiscount ? welcomeBenefit.usesRemaining - 1 : 0 };
             });
 
             if (!result.success) return c.json({ success: false, message: result.error }, 400);
-            return c.json({ success: true, message: 'Compra realizada!', orderId: result.data?.orderId });
+
+            let successMessage = 'Compra realizada!';
+            if (result.data?.welcomeBenefitApplied) {
+                successMessage += ` 🎁 Taxa de ${(effectiveEscrowRate * 100).toFixed(1)}% aplicada (Benefício de Boas-Vindas). Usos restantes: ${result.data.usesRemaining}/3`;
+            }
+
+            return c.json({ success: true, message: successMessage, orderId: result.data?.orderId, welcomeBenefitApplied: result.data?.welcomeBenefitApplied });
         }
 
         // Pagamento Externo (PIX ou CARTÃO) com repasse de taxa

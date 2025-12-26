@@ -7,6 +7,7 @@ import { WITHDRAWAL_FIXED_FEE, PRIORITY_WITHDRAWAL_FEE } from '../../../shared/c
 import { twoFactorService } from '../../../application/services/two-factor.service';
 import { notificationService } from '../../../application/services/notification.service';
 import { calculateUserLoanLimit } from '../../../application/services/credit-analysis.service';
+import { getWelcomeBenefit, consumeWelcomeBenefitUse } from '../../../application/services/welcome-benefit.service';
 
 const withdrawalRoutes = new Hono();
 
@@ -49,11 +50,18 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
     );
     const totalQuotaValue = parseFloat(quotasResult.rows[0].total_quota_value);
 
-    // Calcular taxa de saque (Caixa da Cooperativa)
-    // Todos pagam a taxa fixa de R$ 2.00 para manutenção
+    // ===== SISTEMA DE BENEFÍCIO DE BOAS-VINDAS =====
+    // Verificar se o usuário tem desconto por indicação
+    const welcomeBenefit = await getWelcomeBenefit(pool, user.id);
+    const effectiveFixedFee = welcomeBenefit.withdrawalFee;
+
+    console.log(`[WITHDRAWAL] Usuário ${user.id} - Benefício: ${welcomeBenefit.hasDiscount ? 'ATIVO' : 'INATIVO'}, Taxa fixa: R$ ${effectiveFixedFee.toFixed(2)}`);
+
+    // Calcular taxa de saque (Caixa da Cooperativa) usando taxa do benefício se aplicável
+    // Todos pagam a taxa fixa (R$ 2.00 normal ou R$ 1.00 com benefício) para manutenção
     // Quem NÃO tem cotas paga +2% ou R$ 5.00 (o que for maior)
     const { isPriority } = withdrawalSchema.extend({ isPriority: z.boolean().optional().default(false) }).parse(body);
-    let feeAmount = WITHDRAWAL_FIXED_FEE;
+    let feeAmount = effectiveFixedFee;
 
     if (isPriority) {
       // Saque Prioritário: R$ 5,00 ou 2% (o que for maior)
@@ -170,7 +178,7 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
         user.id,
         'WITHDRAWAL',
         amount,
-        `Solicitação de Saque - R$ ${netAmount.toFixed(2)} (Taxa: R$ ${feeAmount.toFixed(2)})`,
+        `Solicitação de Saque - R$ ${netAmount.toFixed(2)} (Taxa: R$ ${feeAmount.toFixed(2)}${welcomeBenefit.hasDiscount ? ' - Benefício aplicado' : ''})`,
         'PENDING_CONFIRMATION',
         {
           pixKey,
@@ -179,7 +187,10 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
           totalLoanAmount,
           availableCredit,
           type: 'CREDIT_WITHDRAWAL',
-          balanceDeducted: true
+          balanceDeducted: true,
+          welcomeBenefitApplied: welcomeBenefit.hasDiscount,
+          originalFee: WITHDRAWAL_FIXED_FEE,
+          discountedFee: effectiveFixedFee
         }
       );
 
@@ -187,18 +198,31 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
         throw new Error(transactionResult.error);
       }
 
+      // 3. Se usou benefício, consumir um uso
+      if (welcomeBenefit.hasDiscount) {
+        await consumeWelcomeBenefitUse(client, user.id, 'WITHDRAWAL');
+      }
+
       return {
         transactionId: transactionResult.transactionId,
         amount,
         feeAmount,
         netAmount,
-        availableCredit
+        availableCredit,
+        welcomeBenefitApplied: welcomeBenefit.hasDiscount,
+        welcomeBenefitUsesRemaining: welcomeBenefit.hasDiscount ? welcomeBenefit.usesRemaining - 1 : 0
       };
     });
 
+    // Montar mensagem com info do benefício
+    let successMessage = 'Solicitação criada! Use seu autenticador para confirmar o saque.';
+    if (welcomeBenefit.hasDiscount) {
+      successMessage += ` 🎁 Taxa reduzida de R$ ${feeAmount.toFixed(2)} aplicada (Benefício de Boas-Vindas). Usos restantes: ${welcomeBenefit.usesRemaining - 1}/3`;
+    }
+
     return c.json({
       success: true,
-      message: 'Solicitação criada! Use seu autenticador para confirmar o saque.',
+      message: successMessage,
       data: {
         transactionId: result.data?.transactionId,
         amount: result.data?.amount,
@@ -206,7 +230,9 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
         netAmount: result.data?.netAmount,
         availableCredit: result.data?.availableCredit,
         pixKey,
-        requiresConfirmation: true
+        requiresConfirmation: true,
+        welcomeBenefitApplied: result.data?.welcomeBenefitApplied,
+        welcomeBenefitUsesRemaining: result.data?.welcomeBenefitUsesRemaining
       },
     });
   } catch (error) {

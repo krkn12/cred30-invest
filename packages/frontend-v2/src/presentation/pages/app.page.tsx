@@ -681,11 +681,31 @@ export default function App() {
                         <Copy size={20} /> COPIAR LINK
                       </button>
 
+                      {/* Benefício de Boas-Vindas para Indicados */}
+                      <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                            🎁
+                          </div>
+                          <div>
+                            <p className="text-xs text-emerald-400 font-bold mb-1">Benefício de Boas-Vindas!</p>
+                            <p className="text-[10px] sm:text-xs text-zinc-400 leading-relaxed">
+                              Quem você indicar ganha <span className="text-emerald-400 font-bold">taxas especiais</span> por até <span className="text-emerald-400 font-bold">3 usos</span>:
+                            </p>
+                            <ul className="text-[10px] text-zinc-500 mt-2 space-y-1">
+                              <li>• Juros de <span className="text-emerald-400">3,5%</span> (ao invés de 20%)</li>
+                              <li>• Taxa de saque de <span className="text-emerald-400">R$ 1,00</span> (50% off)</li>
+                              <li>• Marketplace com <span className="text-emerald-400">2,5%</span> de taxa (50% off)</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+
                       <div className="bg-primary-500/5 border border-primary-500/10 rounded-xl p-3 flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-primary-500/20 flex items-center justify-center text-primary-400 shrink-0">
                           <TrendingUp size={16} />
                         </div>
-                        <p className="text-[10px] sm:text-xs text-zinc-400 leading-tight">Você acumula <span className="text-primary-400 font-black">R$ 5,00</span> e <span className="text-primary-400 font-black">Score</span> por cada novo membro ativo que indicar.</p>
+                        <p className="text-[10px] sm:text-xs text-zinc-400 leading-tight">Você ganha <span className="text-primary-400 font-black">+50 Score</span> por cada novo membro ativo que indicar.</p>
                       </div>
                     </div>
                   </div>

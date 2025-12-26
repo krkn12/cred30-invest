@@ -1,16 +1,17 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import packageJson from '../../../../package.json';
 import {
     Users, Gamepad2, TrendingUp, DollarSign, ArrowUpFromLine, BookOpen,
     Repeat, Crown, Clock, ArrowDownLeft, ArrowUpRight,
     PieChart, AlertTriangle, LogOut, Star, Zap,
-    ShoppingBag, Tag, PlusCircle, ShieldCheck, ChevronRight, Wallet, Coins, Settings, BarChart3
+    ShoppingBag, Tag, PlusCircle, ShieldCheck, ChevronRight, Wallet, Coins, Settings, BarChart3, Gift, Sparkles
 } from 'lucide-react';
 import { AppState, User } from '../../../domain/types/common.types';
 import { QUOTA_PRICE } from '../../../shared/constants/app.constants';
 import { AdBanner } from '../ui/AdBanner';
 import { fastForwardTime, deleteUserAccount } from '../../../application/services/storage.service';
+import { apiService } from '../../../application/services/api.service';
 
 interface DashboardProps {
     state: AppState;
@@ -54,6 +55,28 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
     }, [state.loans, user.id]);
 
     const navigate = useNavigate();
+
+    // Estado para o benefício de boas-vindas
+    const [welcomeBenefit, setWelcomeBenefit] = useState<{
+        hasDiscount: boolean;
+        usesRemaining: number;
+        maxUses: number;
+        description: string;
+        discountedRates: any;
+    } | null>(null);
+
+    // Buscar benefício de boas-vindas ao carregar
+    useEffect(() => {
+        const fetchWelcomeBenefit = async () => {
+            try {
+                const benefit = await apiService.getWelcomeBenefit();
+                setWelcomeBenefit(benefit);
+            } catch (error) {
+                console.error('Erro ao buscar benefício:', error);
+            }
+        };
+        fetchWelcomeBenefit();
+    }, []);
 
     const handleDeleteAccount = async () => {
         const res = await deleteUserAccount();
@@ -104,6 +127,47 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                             Sua conta está em modo "Apenas Visualização" por mais <strong>{lockTimeRemaining} horas</strong> devido a uma alteração recente de segurança.
                             Transações, saques e empréstimos serão liberados após este período por sua proteção.
                         </p>
+                    </div>
+                </div>
+            )}
+
+            {/* Card de Benefício de Boas-Vindas */}
+            {welcomeBenefit?.hasDiscount && (
+                <div className="bg-gradient-to-r from-emerald-900/40 via-emerald-800/30 to-primary-900/40 border border-emerald-500/30 rounded-2xl p-4 flex items-start gap-4 animate-in fade-in slide-in-from-top-4 duration-500 relative overflow-hidden">
+                    <div className="absolute -top-4 -right-4 opacity-10">
+                        <Sparkles size={100} className="text-emerald-400" />
+                    </div>
+                    <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/10">
+                        <Gift className="w-6 h-6 text-emerald-400" />
+                    </div>
+                    <div className="flex-1 relative z-10">
+                        <h3 className="text-emerald-400 font-bold text-sm flex items-center gap-2">
+                            🎁 Benefício de Boas-Vindas Ativo!
+                        </h3>
+                        <p className="text-zinc-300 text-xs mt-1 leading-relaxed">
+                            Você tem <strong className="text-emerald-400">{welcomeBenefit.usesRemaining} {welcomeBenefit.usesRemaining === 1 ? 'uso' : 'usos'}</strong> restantes com taxas especiais!
+                        </p>
+                        <div className="flex flex-wrap gap-2 mt-3">
+                            <span className="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-1 rounded-full font-bold">
+                                Juros {welcomeBenefit.discountedRates?.loanInterestRate}
+                            </span>
+                            <span className="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-1 rounded-full font-bold">
+                                Saque {welcomeBenefit.discountedRates?.withdrawalFee}
+                            </span>
+                            <span className="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-1 rounded-full font-bold">
+                                Marketplace {welcomeBenefit.discountedRates?.marketplaceEscrowFeeRate}
+                            </span>
+                        </div>
+                        {/* Progress bar */}
+                        <div className="mt-3">
+                            <div className="w-full bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+                                <div
+                                    className="h-full bg-gradient-to-r from-emerald-400 to-primary-400 transition-all duration-500"
+                                    style={{ width: `${(welcomeBenefit.usesRemaining / welcomeBenefit.maxUses) * 100}%` }}
+                                ></div>
+                            </div>
+                            <p className="text-[10px] text-zinc-500 mt-1">{welcomeBenefit.usesRemaining}/{welcomeBenefit.maxUses} usos restantes</p>
+                        </div>
                     </div>
                 </div>
             )}
