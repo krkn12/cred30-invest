@@ -327,4 +327,33 @@ promoVideosRoutes.get('/my-campaigns', async (c) => {
     }
 });
 
+// Meus ganhos assistindo vídeos
+promoVideosRoutes.get('/my-earnings', async (c) => {
+    try {
+        const userPayload = c.get('user');
+        const pool = getDbPool(c);
+
+        const result = await pool.query(`
+            SELECT 
+                COALESCE(SUM(earned), 0) as total_earned,
+                COUNT(*) FILTER (WHERE completed = TRUE) as videos_watched
+            FROM promo_video_views
+            WHERE viewer_id = $1
+        `, [userPayload.id]);
+
+        const { total_earned, videos_watched } = result.rows[0];
+
+        return c.json({
+            success: true,
+            data: {
+                totalEarned: parseFloat(total_earned) || 0,
+                videosWatched: parseInt(videos_watched) || 0
+            }
+        });
+    } catch (error) {
+        console.error('[PROMO-VIDEOS] Erro ao buscar ganhos:', error);
+        return c.json({ success: false, message: 'Erro ao buscar ganhos' }, 500);
+    }
+});
+
 export { promoVideosRoutes };
