@@ -5,9 +5,9 @@ import {
     Users, Gamepad2, TrendingUp, DollarSign, ArrowUpFromLine, BookOpen,
     Repeat, Crown, Clock, ArrowDownLeft, ArrowUpRight,
     PieChart, AlertTriangle, LogOut, Star, Zap,
-    ShoppingBag, Tag, PlusCircle, ShieldCheck, ChevronRight, Wallet, Coins, Settings, BarChart3, Gift, Sparkles
+    ShoppingBag, Tag, PlusCircle, ShieldCheck, ChevronRight, Wallet, Coins, Settings, BarChart3, Gift, Sparkles, Bell
 } from 'lucide-react';
-import { AppState, User } from '../../../domain/types/common.types';
+import { AppState, User, Transaction } from '../../../domain/types/common.types';
 import { QUOTA_PRICE } from '../../../shared/constants/app.constants';
 import { AdBanner } from '../ui/AdBanner';
 import { fastForwardTime, deleteUserAccount } from '../../../application/services/storage.service';
@@ -82,6 +82,29 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
     const [chestCountdown, setChestCountdown] = useState(0);
     const [chestsRemaining, setChestsRemaining] = useState(3);
     const [isOpeningChest, setIsOpeningChest] = useState(false);
+    const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
+    const [isLoadingTransactions, setIsLoadingTransactions] = useState(true);
+
+    // Buscar transações reais
+    useEffect(() => {
+        const fetchTransactions = async () => {
+            try {
+                const res = await apiService.getUserTransactions();
+                if (res && Array.isArray(res.transactions)) {
+                    // Pegar as 5 mais recentes (o backend já deve ordenar desc, mas garantimos aqui)
+                    const sorted = [...res.transactions].sort((a: any, b: any) =>
+                        new Date(b.created_at || b.date).getTime() - new Date(a.created_at || a.date).getTime()
+                    );
+                    setRecentTransactions(sorted.slice(0, 5));
+                }
+            } catch (error) {
+                console.error('Erro ao buscar transações:', error);
+            } finally {
+                setIsLoadingTransactions(false);
+            }
+        };
+        fetchTransactions();
+    }, []);
 
     const handleOpenChest = async () => {
         if (chestsRemaining <= 0 || chestCountdown > 0) return;
@@ -235,6 +258,14 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
                 </div>
                 <div className="flex flex-col items-end gap-2">
                     <div className="flex gap-2">
+                        <div className="relative">
+                            <button onClick={() => navigate('/app/history')} className="text-zinc-400 hover:text-white p-2 bg-surfaceHighlight rounded-lg transition-colors relative">
+                                <Bell size={20} />
+                                {recentTransactions.filter(t => t.status === 'PENDING').length > 0 && (
+                                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-500 rounded-full border-2 border-surface animate-pulse"></span>
+                                )}
+                            </button>
+                        </div>
                         <button onClick={onLogout} className="text-zinc-400 hover:text-white p-2 bg-surfaceHighlight rounded-lg transition-colors" aria-label="Sair do sistema">
                             <LogOut size={20} />
                         </button>
@@ -567,46 +598,74 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
 
             {/* Recent Transactions (Extrato) */}
             <div className="bg-surface border border-surfaceHighlight rounded-3xl p-6">
-                <h3 className="text-lg font-bold text-white mb-4">Últimas Transações</h3>
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-lg font-bold text-white">Atividade Recente</h3>
+                </div>
+
                 <div className="space-y-4">
-                    {state.transactions.slice(-5).reverse().map((t: any) => (
-                        <div key={t.id} className="flex justify-between items-center border-b border-surfaceHighlight pb-3 last:border-0 last:pb-0">
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-full ${isPositive(t.type)
-                                    ? 'bg-emerald-500/10 text-emerald-400'
-                                    : t.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400'
-                                    }`}>
-                                    {t.status === 'PENDING' ? <Clock size={18} /> : isPositive(t.type) ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
+                    {isLoadingTransactions ? (
+                        Array(3).fill(0).map((_, i) => (
+                            <div key={i} className="flex justify-between items-center animate-pulse">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-zinc-800 rounded-full"></div>
+                                    <div className="space-y-2">
+                                        <div className="h-4 w-32 bg-zinc-800 rounded"></div>
+                                        <div className="h-3 w-16 bg-zinc-800 rounded"></div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-sm font-medium text-white">{t.description}</p>
-                                    <p className="text-xs text-zinc-400">{t.date ? new Date(t.date).toLocaleDateString('pt-BR') : 'Data não disponível'}</p>
+                                <div className="h-4 w-16 bg-zinc-800 rounded"></div>
+                            </div>
+                        ))
+                    ) : recentTransactions.length > 0 ? (
+                        recentTransactions.map((t: any) => (
+                            <div key={t.id} className="flex justify-between items-center border-b border-surfaceHighlight pb-4 last:border-0 last:pb-0 group hover:bg-white/5 transition-colors p-2 -mx-2 rounded-xl">
+                                <div className="flex items-center gap-3">
+                                    <div className={`p-2.5 rounded-2xl transition-all ${isPositive(t.type)
+                                        ? 'bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500/20'
+                                        : t.status === 'PENDING' ? 'bg-amber-500/10 text-amber-400' : 'bg-red-500/10 text-red-400'
+                                        }`}>
+                                        {t.status === 'PENDING' ? <Clock size={18} /> : isPositive(t.type) ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-bold text-white truncate">{t.description}</p>
+                                        <p className="text-[10px] text-zinc-500 font-medium">
+                                            {t.created_at || t.date ? new Date(t.created_at || t.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Recentemente'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="text-right shrink-0">
+                                    <p className={`font-black text-sm ${t.status === 'PENDING' ? 'text-amber-400' :
+                                        isPositive(t.type)
+                                            ? 'text-emerald-400'
+                                            : 'text-red-400'
+                                        }`}>
+                                        {isPositive(t.type) ? '+' : '-'}
+                                        {t.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                    </p>
+                                    {t.status === 'PENDING' ? (
+                                        <p className="text-[9px] text-amber-500 font-black uppercase tracking-tighter animate-pulse">Pendente</p>
+                                    ) : (
+                                        <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-tighter">Concluído</p>
+                                    )}
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <p className={`font-bold ${t.status === 'PENDING' ? 'text-yellow-400' :
-                                    isPositive(t.type)
-                                        ? 'text-emerald-400'
-                                        : 'text-red-400'
-                                    }`}>
-                                    {isPositive(t.type) ? '+' : '-'}
-                                    {t.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                                </p>
-                                {t.status === 'PENDING' && <p className="text-[10px] text-yellow-500">Em Análise</p>}
+                        ))
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                            <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center text-zinc-600 mb-3">
+                                <Clock size={24} />
                             </div>
+                            <p className="text-zinc-500 text-sm">Nenhuma movimentação ainda.</p>
                         </div>
-                    ))}
-                    {state.transactions.length === 0 && (
-                        <p className="text-zinc-500 text-center text-sm py-4">Nenhuma movimentação recente.</p>
                     )}
                 </div>
-                {state.transactions.length > 0 && (
+                {recentTransactions.length > 0 && (
                     <button
                         onClick={() => navigate('/app/history')}
-                        className="w-full mt-4 py-3 text-sm font-medium text-primary-400 hover:text-primary-300 transition-colors flex items-center justify-center gap-2"
+                        className="w-full mt-6 py-4 bg-surfaceHighlight hover:bg-zinc-800 text-xs font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-primary-400 transition-all rounded-2xl flex items-center justify-center gap-2 border border-white/5 active:scale-95"
                     >
-                        Ver Extrato Completo
-                        <ArrowUpRight size={16} />
+                        Extrato Detalhado
+                        <ArrowUpRight size={14} />
                     </button>
                 )}
             </div>
