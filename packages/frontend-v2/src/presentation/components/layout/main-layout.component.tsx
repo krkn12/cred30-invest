@@ -14,69 +14,11 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children, user, currentView, onChangeView, onLogout }) => {
   const navigate = useNavigate();
-  const [installPrompt, setInstallPrompt] = React.useState<any>(null);
-
-  // Usuários PRO não veem anúncios
-  const isPro = user?.membership_type === 'PRO';
-
-  useEffect(() => {
-    const handler = (e: any) => {
-      e.preventDefault();
-      setInstallPrompt(e);
-    };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
-
-  // Timer de Logout Automático (5 minutos de inatividade)
-  useEffect(() => {
-    if (!user) return;
-
-    let logoutTimer: NodeJS.Timeout;
-
-    const resetTimer = () => {
-      if (logoutTimer) clearTimeout(logoutTimer);
-      logoutTimer = setTimeout(() => {
-        console.log('Sessão expirada por inatividade (5 minutos)');
-        onLogout();
-      }, 5 * 60 * 1000); // 5 minutos
-    };
-
-    // Eventos que indicam atividade do usuário
-    const activityEvents = [
-      'mousedown', 'mousemove', 'keypress',
-      'scroll', 'touchstart', 'click'
-    ];
-
-    // Inicializar timer
-    resetTimer();
-
-    // Adicionar ouvintes
-    activityEvents.forEach(event => {
-      window.addEventListener(event, resetTimer);
-    });
-
-    return () => {
-      if (logoutTimer) clearTimeout(logoutTimer);
-      activityEvents.forEach(event => {
-        window.removeEventListener(event, resetTimer);
-      });
-    };
-  }, [user, onLogout]);
-
-  const handleInstallClick = () => {
-    if (installPrompt) {
-      installPrompt.prompt();
-      setInstallPrompt(null);
-    }
-  };
 
   const handleNavigation = (view: string) => {
     onChangeView(view);
     navigate(`/app/${view}`);
   }
-
-  // Sincronizar URL inicial com estado removido para evitar loops e permitindo navegação direta via URL
 
   if (!user) return <div className="min-h-screen bg-background text-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">{children}</div>;
 
@@ -94,7 +36,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, currentView, onC
 
   return (
     <div className="min-h-screen bg-background text-zinc-100 flex flex-col md:flex-row font-sans">
-      {/* Mobile Header com Saldo e Install Btn */}
+      {/* Mobile Header com Saldo */}
       <div className="md:hidden bg-surface border-b border-surfaceHighlight p-4 flex justify-between items-center sticky top-0 z-20 shadow-md">
         <h1 className="text-xl font-bold flex items-center gap-3">
           <img src="/pwa-192x192.png" alt="Cred30 Logo" className="w-8 h-8 rounded-lg shadow-[0_0_15px_rgba(6,182,212,0.4)]" />
@@ -103,11 +45,6 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, currentView, onC
 
         {user && (
           <div className="flex items-center gap-2">
-            {installPrompt && (
-              <button onClick={handleInstallClick} className="bg-primary-600 text-white text-[10px] font-bold px-2 py-1 rounded animate-pulse">
-                INSTALAR APP
-              </button>
-            )}
             <div className="bg-zinc-800 px-3 py-1.5 rounded-full border border-zinc-700 flex items-center gap-2">
               <span className="text-xs text-zinc-400">Saldo</span>
               <span className="text-sm font-bold text-emerald-400">

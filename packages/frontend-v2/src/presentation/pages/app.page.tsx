@@ -16,7 +16,6 @@ import { ReviewModal } from '../components/ui/ReviewModal';
 import { AIAssistant } from '../components/AIAssistant';
 import { OfflineNotice } from '../components/ui/offline-notice.component';
 import { useOnlineStatus } from '../hooks/use-online-status';
-import { PWAEnforcer, isPWAInstalled, usePWAInstall } from '../components/ui/pwa-enforcer.component';
 
 // Helper para lidar com erro de carregamento de chunks (comum após deploys)
 const lazyWithRetry = (componentImport: () => Promise<any>) =>
@@ -58,103 +57,6 @@ const EducationView = lazyWithRetry(() => import('../components/views/EducationV
 const FaqView = lazyWithRetry(() => import('../components/views/FaqView').then(m => ({ default: m.FaqView })));
 const VotingView = lazyWithRetry(() => import('../components/views/VotingView').then(m => ({ default: m.VotingView })));
 const PromoVideosView = lazyWithRetry(() => import('../components/views/PromoVideosView').then(m => ({ default: m.PromoVideosView })));
-
-// Componente de bloqueio para clientes tentando acessar via web (desktop E mobile)
-const PWABlocker = () => {
-  const { isInstallable, promptInstall } = usePWAInstall();
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-  return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
-      <div className="max-w-lg w-full">
-        {/* Card principal de bloqueio */}
-        <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-primary-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-primary-900/20 text-center">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 border border-primary-500/20">
-            <Download className="text-primary-400" size={isMobile ? 32 : 40} />
-          </div>
-
-          <h1 className="text-xl sm:text-2xl font-black text-white mb-3 tracking-tight">
-            Baixe o App Cred30
-          </h1>
-
-          <p className="text-zinc-400 text-sm leading-relaxed mb-6">
-            Para sua segurança, o acesso ao Cred30 via navegador web não é permitido.
-            <br /><br />
-            <strong className="text-white">Instale o aplicativo oficial</strong> para continuar.
-          </p>
-
-          {/* Alerta de segurança */}
-          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 mb-6 text-left">
-            <div className="flex items-start gap-3">
-              <Lock className="text-emerald-400 shrink-0 mt-0.5" size={18} />
-              <p className="text-emerald-200/80 text-xs leading-relaxed">
-                O aplicativo instalado oferece proteção adicional contra phishing,
-                mantém suas sessões mais seguras e garante que você está no sistema oficial.
-              </p>
-            </div>
-          </div>
-
-          {/* Botão de instalação */}
-          {isInstallable ? (
-            <button
-              onClick={promptInstall}
-              className="w-full bg-primary-500 hover:bg-primary-400 text-black font-black py-4 rounded-2xl text-sm flex items-center justify-center gap-3 transition shadow-lg shadow-primary-500/20 mb-4 active:scale-95"
-            >
-              <Download size={20} />
-              INSTALAR APP CRED30
-            </button>
-          ) : (
-            <div className="space-y-4">
-              <p className="text-zinc-500 text-xs">
-                Siga os passos abaixo para instalar:
-              </p>
-
-              {isIOS ? (
-                // Instruções para iOS (Safari)
-                <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-left">
-                  <p className="text-xs text-zinc-400 mb-2 font-bold uppercase tracking-widest">📱 iPhone/iPad:</p>
-                  <ol className="text-xs text-zinc-300 space-y-2 list-decimal list-inside">
-                    <li>Toque no botão <strong>Compartilhar</strong> (ícone de quadrado com seta ↑)</li>
-                    <li>Role para baixo e toque em <strong>"Adicionar à Tela de Início"</strong></li>
-                    <li>Toque em <strong>"Adicionar"</strong> no canto superior direito</li>
-                    <li>Abra o app <strong>Cred30</strong> na sua tela inicial</li>
-                  </ol>
-                </div>
-              ) : isMobile ? (
-                // Instruções para Android
-                <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-left">
-                  <p className="text-xs text-zinc-400 mb-2 font-bold uppercase tracking-widest">📱 Android:</p>
-                  <ol className="text-xs text-zinc-300 space-y-2 list-decimal list-inside">
-                    <li>Toque nos <strong>3 pontos (⋮)</strong> no canto superior direito</li>
-                    <li>Toque em <strong>"Instalar aplicativo"</strong> ou <strong>"Adicionar à tela inicial"</strong></li>
-                    <li>Confirme tocando em <strong>"Instalar"</strong></li>
-                    <li>Abra o app <strong>Cred30</strong> na sua tela inicial</li>
-                  </ol>
-                </div>
-              ) : (
-                // Instruções para Desktop
-                <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-left">
-                  <p className="text-xs text-zinc-400 mb-2 font-bold uppercase tracking-widest">💻 Computador:</p>
-                  <ol className="text-xs text-zinc-300 space-y-2 list-decimal list-inside">
-                    <li>Clique nos <strong>3 pontos (⋮)</strong> no canto superior direito do navegador</li>
-                    <li>Selecione <strong>"Instalar Cred30"</strong> ou <strong>"Adicionar à área de trabalho"</strong></li>
-                    <li>Confirme a instalação</li>
-                    <li>Abra o app instalado</li>
-                  </ol>
-                </div>
-              )}
-            </div>
-          )}
-
-          <p className="text-[10px] text-zinc-600 mt-6 uppercase tracking-widest">
-            Proteção contra fraudes • Cred30 Seguro
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default function App() {
   const [state, setState] = useState<AppState>({
@@ -235,7 +137,6 @@ export default function App() {
     const handleAuthExpired = () => setState(prev => ({ ...prev, currentUser: null }));
     window.addEventListener('auth-expired', handleAuthExpired);
 
-    // Sync Offline Actions logic
     const handleActionQueued = (e: any) => {
       setShowSuccess({
         isOpen: true,
@@ -263,7 +164,6 @@ export default function App() {
     let cleanupNotifications: (() => void) | undefined;
     if (state.currentUser && isOnline) {
       cleanupNotifications = apiService.listenToNotifications((notif) => {
-        // Verificar se é notificação de saque processado solicitando avaliação
         if (notif.type === 'PAYOUT_COMPLETED' && notif.metadata?.requiresReview) {
           setReviewModalData({
             isOpen: true,
@@ -288,7 +188,7 @@ export default function App() {
       window.removeEventListener('offline-sync-completed', handleSyncCompleted);
       if (cleanupNotifications) cleanupNotifications();
     };
-  }, [state.currentUser?.id, isOnline, state.currentUser?.isAdmin, state.currentUser?.role]); // Added missing dependencies
+  }, [state.currentUser?.id, isOnline, state.currentUser?.isAdmin, state.currentUser?.role]);
 
   useEffect(() => {
     if (isOnline) {
@@ -508,20 +408,7 @@ export default function App() {
     return <div className="min-h-screen bg-black flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary-500"></div></div>;
   }
 
-  // Verificação de acesso: Clientes SÓ podem acessar via PWA instalado (desktop E mobile)
-  const isInstalled = isPWAInstalled();
-  const currentPath = window.location.pathname;
-
-  // EXCEÇÃO: Rotas legais são acessíveis sem PWA (usuário precisa ler termos antes de instalar)
-  const legalRoutes = ['/terms', '/privacy', '/security'];
-  const isLegalRoute = legalRoutes.some(route => currentPath.startsWith(route));
-
   if (!state.currentUser) {
-    // BLOQUEIA clientes tentando acessar via web (não PWA) - EXCETO rotas legais
-    if (!isInstalled && !isLegalRoute) {
-      return <PWABlocker />;
-    }
-
     return (
       <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center"><RefreshCw className="animate-spin text-primary-500" /></div>}>
         <Routes>
@@ -538,20 +425,17 @@ export default function App() {
 
   if (isStaff) {
     return (
-      <PWAEnforcer isAdmin={true}>
-        <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center"><RefreshCw className="animate-spin text-primary-500" /></div>}>
-          <Routes>
-            <Route path="/admin" element={<AdminView state={state} onRefresh={refreshState} onLogout={handleLogout} onSuccess={(title, msg) => { setShowSuccess({ isOpen: true, title, message: msg }); }} onError={(title, msg) => { setShowError({ isOpen: true, title, message: msg }); }} />} />
-            <Route path="*" element={<Navigate to="/admin" replace />} />
-          </Routes>
-        </Suspense>
-      </PWAEnforcer>
+      <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center"><RefreshCw className="animate-spin text-primary-500" /></div>}>
+        <Routes>
+          <Route path="/admin" element={<AdminView state={state} onRefresh={refreshState} onLogout={handleLogout} onSuccess={(title, msg) => { setShowSuccess({ isOpen: true, title, message: msg }); }} onError={(title, msg) => { setShowError({ isOpen: true, title, message: msg }); }} />} />
+          <Route path="*" element={<Navigate to="/admin" replace />} />
+        </Routes>
+      </Suspense>
     )
   }
 
-
   return (
-    <PWAEnforcer isAdmin={false}>
+    <>
       <OfflineNotice isOnline={isOnline} />
       <UpdateNotification />
       <Routes>
@@ -591,7 +475,6 @@ export default function App() {
                   <Suspense fallback={null}>
                     <SettingsView
                       user={state.currentUser!}
-
                       onLogout={handleLogout}
                       onDeleteAccount={() => { }}
                       onChangePassword={changePassword}
@@ -681,7 +564,6 @@ export default function App() {
                         <Copy size={20} /> COPIAR LINK
                       </button>
 
-                      {/* Benefício de Boas-Vindas para Indicados */}
                       <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-4">
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
@@ -807,6 +689,6 @@ export default function App() {
           </>
         } />
       </Routes>
-    </PWAEnforcer>
+    </>
   );
 }
