@@ -147,6 +147,14 @@ class ApiService {
     });
   }
 
+  // Método genérico para PATCH
+  async patch<T>(endpoint: string, body: any): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
+  }
+
   // Método para login
   async login(email: string, password: string, secretPhrase?: string, twoFactorCode?: string): Promise<AuthResponse & { requires2FA?: boolean }> {
     const response = await this.request<AuthResponse & { requires2FA?: boolean }>('/auth/login', {

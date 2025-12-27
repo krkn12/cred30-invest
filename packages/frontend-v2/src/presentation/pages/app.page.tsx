@@ -13,6 +13,7 @@ import { CardModal } from '../components/ui/card-modal.component';
 import { AuthScreen } from '../components/views/AuthScreen';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { ReviewModal } from '../components/ui/ReviewModal';
+import { BugReportModal } from '../components/ui/BugReportModal';
 import { AIAssistant } from '../components/AIAssistant';
 import { OfflineNotice } from '../components/ui/offline-notice.component';
 import { useOnlineStatus } from '../hooks/use-online-status';
@@ -114,6 +115,8 @@ export default function App() {
     amount: number;
   }>({ isOpen: false, transactionId: 0, amount: 0 });
 
+  const [showBugReport, setShowBugReport] = useState(false);
+
   const isStaff = React.useMemo(() => {
     if (!state.currentUser) return false;
     return state.currentUser.isAdmin || state.currentUser.role === 'ADMIN' || state.currentUser.role === 'ATTENDANT';
@@ -161,6 +164,9 @@ export default function App() {
     window.addEventListener('offline-action-queued', handleActionQueued);
     window.addEventListener('offline-sync-completed', handleSyncCompleted);
 
+    const handleOpenBugReport = () => setShowBugReport(true);
+    window.addEventListener('open-bug-report', handleOpenBugReport);
+
     let cleanupNotifications: (() => void) | undefined;
     if (state.currentUser && isOnline) {
       cleanupNotifications = apiService.listenToNotifications((notif) => {
@@ -186,6 +192,7 @@ export default function App() {
       window.removeEventListener('auth-expired', handleAuthExpired);
       window.removeEventListener('offline-action-queued', handleActionQueued);
       window.removeEventListener('offline-sync-completed', handleSyncCompleted);
+      window.removeEventListener('open-bug-report', handleOpenBugReport);
       if (cleanupNotifications) cleanupNotifications();
     };
   }, [state.currentUser?.id, isOnline, state.currentUser?.isAdmin, state.currentUser?.role]);
@@ -700,6 +707,14 @@ export default function App() {
                 amount={reviewModalData.amount}
               />
             </Layout>
+            {state.currentUser && (
+              <BugReportModal
+                isOpen={showBugReport}
+                onClose={() => setShowBugReport(false)}
+                onSuccess={(t, m) => { setShowBugReport(false); setShowSuccess({ isOpen: true, title: t, message: m }); }}
+                onError={(t, m) => setShowError({ isOpen: true, title: t, message: m })}
+              />
+            )}
             <AIAssistant appState={state} />
           </>
         } />

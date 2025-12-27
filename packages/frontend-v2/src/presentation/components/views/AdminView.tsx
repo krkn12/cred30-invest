@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import packageJson from '../../../../package.json';
 import {
-    ShieldCheck, RefreshCw, LogOut, ArrowUpRight, Send, MessageSquare, PieChart, Activity, Settings as SettingsIcon, UserPlus, ShoppingBag as ShoppingBagIcon, Vote
+    ShieldCheck, RefreshCw, LogOut, ArrowUpRight, Send, MessageSquare, PieChart, Activity, Settings as SettingsIcon, UserPlus, ShoppingBag as ShoppingBagIcon, Vote, Bug
 } from 'lucide-react';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { AppState } from '../../../domain/types/common.types';
@@ -17,6 +17,7 @@ import { AdminReferrals } from '../features/admin/tabs/AdminReferrals';
 import { AdminUsers } from '../features/admin/tabs/AdminUsers';
 import { AdminGovernance } from '../features/admin/tabs/AdminGovernance';
 import { AdminReviews } from '../features/admin/tabs/AdminReviews';
+import { AdminBugs } from '../features/admin/tabs/AdminBugs';
 
 // Existing Shared Components
 import { AdminStoreManager } from '../features/store/admin-store.component';
@@ -30,7 +31,7 @@ interface AdminViewProps {
     onError: (title: string, message: string) => void;
 }
 
-type TabType = 'overview' | 'payouts' | 'system' | 'store' | 'referrals' | 'support' | 'users' | 'metrics' | 'governance' | 'reviews';
+type TabType = 'overview' | 'payouts' | 'system' | 'store' | 'referrals' | 'support' | 'users' | 'metrics' | 'governance' | 'reviews' | 'bugs';
 
 export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: AdminViewProps) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -44,19 +45,21 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
     const [pendingChatsCount, setPendingChatsCount] = useState(0);
     const [pendingPayoutsCount, setPendingPayoutsCount] = useState(0);
     const [pendingReviewsCount, setPendingReviewsCount] = useState(0);
+    const [pendingBugsCount, setPendingBugsCount] = useState(0);
 
     const fetchCounts = useCallback(async () => {
         try {
-            // Fetch multiple counts in parallel
-            const [supportRes, payoutRes, reviewsRes] = await Promise.all([
+            const [supportRes, payoutRes, reviewsRes, bugsRes] = await Promise.all([
                 apiService.getPendingSupportChats(),
                 apiService.getPayoutQueue(),
-                apiService.getAdminReviews()
+                apiService.getAdminReviews(),
+                apiService.get<any>('/bugs/admin?status=open')
             ]);
 
             setPendingChatsCount(supportRes.chats?.filter((c: any) => c.status === 'PENDING_HUMAN').length || 0);
             setPendingPayoutsCount(payoutRes.transactions?.length || 0);
             setPendingReviewsCount(reviewsRes.data?.filter((r: any) => r.is_public && !r.is_approved).length || 0);
+            setPendingBugsCount(bugsRes.data?.length || 0);
         } catch (e) {
             console.error('Error fetching admin counts:', e);
         }
@@ -103,6 +106,7 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
         { id: 'store', name: 'Loja', icon: ShoppingBagIcon, roles: ['ADMIN'] },
         { id: 'governance', name: 'Governança', icon: Vote, roles: ['ADMIN'] },
         { id: 'reviews', name: 'Depoimentos', icon: MessageSquare, count: pendingReviewsCount, roles: ['ADMIN'] },
+        { id: 'bugs', name: 'Bugs', icon: Bug, count: pendingBugsCount, roles: ['ADMIN'] },
         { id: 'support', name: 'Suporte', icon: MessageSquare, count: pendingChatsCount, roles: ['ADMIN', 'ATTENDANT'] },
     ].filter(tab => tab.roles.includes(userRole));
 
@@ -182,6 +186,7 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                 {activeTab === 'store' && <AdminStoreManager onSuccess={onSuccess} onError={onError} />}
                 {activeTab === 'governance' && <AdminGovernance onSuccess={onSuccess} onError={onError} />}
                 {activeTab === 'reviews' && <AdminReviews onSuccess={onSuccess} onError={onError} />}
+                {activeTab === 'bugs' && <AdminBugs onSuccess={onSuccess} onError={onError} />}
                 {activeTab === 'support' && <SupportAdminView />}
             </div>
 

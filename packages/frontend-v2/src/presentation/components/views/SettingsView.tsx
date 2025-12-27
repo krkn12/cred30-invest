@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Copy, Lock, ChevronRight, LogOut, Trash2, X as XIcon, ShieldCheck, QrCode, Repeat, AlertCircle, Check } from 'lucide-react';
+import { Star, Copy, Lock, ChevronRight, LogOut, Trash2, X as XIcon, ShieldCheck, QrCode, Repeat, AlertCircle, Check, Bug } from 'lucide-react';
 import { User } from '../../../domain/types/common.types';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { get2FASetup, verify2FA } from '../../../application/services/storage.service';
@@ -250,6 +250,14 @@ export const SettingsView = ({ user, onLogout, onDeleteAccount, onChangePassword
             <div className="pt-8">
                 <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1 mb-4">Conta</h3>
                 <div className="space-y-3">
+
+                    <button onClick={() => window.dispatchEvent(new CustomEvent('open-bug-report'))} className="w-full bg-surfaceHighlight hover:bg-zinc-800 text-white border border-white/5 py-4 rounded-xl font-bold transition flex items-center justify-between px-4 group">
+                        <span className="flex items-center gap-3">
+                            <Bug size={18} className="text-zinc-400 group-hover:text-red-400 transition-colors" />
+                            Reportar Problema
+                        </span>
+                        <ChevronRight size={16} className="text-zinc-600 group-hover:text-white transition-colors" />
+                    </button>
 
                     <button onClick={onLogout} className="w-full bg-surfaceHighlight hover:bg-zinc-800 text-white border border-white/5 py-4 rounded-xl font-bold transition flex items-center justify-between px-4 group">
                         <span className="flex items-center gap-3">
