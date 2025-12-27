@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Bug, Send, X as XIcon } from 'lucide-react';
-import { apiService } from '../../../../application/services/api.service';
+import { apiService } from '../../../application/services/api.service';
 
 interface BugReportModalProps {
     isOpen: boolean;
@@ -140,8 +140,8 @@ export const BugReportModal: React.FC<BugReportModalProps> = ({ isOpen, onClose,
                                         type="button"
                                         onClick={() => setSeverity(opt.value as any)}
                                         className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${severity === opt.value
-                                                ? `${opt.color} text-black`
-                                                : 'bg-zinc-800 text-zinc-500 hover:text-zinc-300'
+                                            ? `${opt.color} text-black`
+                                            : 'bg-zinc-800 text-zinc-500 hover:text-zinc-300'
                                             }`}
                                     >
                                         {opt.label}
