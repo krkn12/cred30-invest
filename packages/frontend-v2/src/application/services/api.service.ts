@@ -415,8 +415,8 @@ class ApiService {
     return response.data;
   }
 
-  async addProfitToPool(amountToAdd: number): Promise<void> {
-    await this.request<void>('/admin/profit-pool', {
+  async addProfitToPool(amountToAdd: number): Promise<ApiResponse<void>> {
+    return await this.request<void>('/admin/profit-pool', {
       method: 'POST',
       body: JSON.stringify({ amountToAdd }),
     });

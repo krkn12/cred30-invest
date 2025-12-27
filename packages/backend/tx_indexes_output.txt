@@ -1,0 +1,35 @@
+[dotenv@17.2.3] injecting env (15) from .env -- tip: ÔÜÖ´©Å  override existing env vars with { override: true }
+[
+  {
+    "indexname": "transactions_pkey",
+    "indexdef": "CREATE UNIQUE INDEX transactions_pkey ON public.transactions USING btree (id)"
+  },
+  {
+    "indexname": "idx_transactions_user_id",
+    "indexdef": "CREATE INDEX idx_transactions_user_id ON public.transactions USING btree (user_id)"
+  },
+  {
+    "indexname": "idx_transactions_status",
+    "indexdef": "CREATE INDEX idx_transactions_status ON public.transactions USING btree (status)"
+  },
+  {
+    "indexname": "idx_transactions_created_at",
+    "indexdef": "CREATE INDEX idx_transactions_created_at ON public.transactions USING btree (created_at)"
+  },
+  {
+    "indexname": "idx_transactions_payout_pending",
+    "indexdef": "CREATE INDEX idx_transactions_payout_pending ON public.transactions USING btree (payout_status) WHERE ((payout_status)::text = 'PENDING_PAYMENT'::text)"
+  },
+  {
+    "indexname": "idx_transactions_user_type_idx",
+    "indexdef": "CREATE INDEX idx_transactions_user_type_idx ON public.transactions USING btree (user_id, type)"
+  },
+  {
+    "indexname": "idx_transactions_user_created_desc",
+    "indexdef": "CREATE INDEX idx_transactions_user_created_desc ON public.transactions USING btree (user_id, created_at DESC)"
+  },
+  {
+    "indexname": "idx_transactions_user_type",
+    "indexdef": "CREATE INDEX idx_transactions_user_type ON public.transactions USING btree (user_id, type)"
+  }
+]

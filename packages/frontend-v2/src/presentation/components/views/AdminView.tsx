@@ -1,19 +1,26 @@
-import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import packageJson from '../../../../package.json';
 import {
-    ShieldCheck, RefreshCw, LogOut, Users, PieChart, DollarSign, PiggyBank, Coins, ArrowUpFromLine, ArrowDownLeft, TrendingUp, Clock, ArrowUpRight, Check, X as XIcon, AlertTriangle, Settings as SettingsIcon, ShoppingBag as ShoppingBagIcon, UserPlus, Trash2, MessageSquare, ExternalLink, Send, Clipboard, Gift, Activity, Cpu, Database, HardDrive, Zap, Search, Vote, Gavel, BarChart3, Plus
+    ShieldCheck, RefreshCw, LogOut, ArrowUpRight, Send, MessageSquare, PieChart, Activity, Settings as SettingsIcon, UserPlus, ShoppingBag as ShoppingBagIcon, Vote
 } from 'lucide-react';
 import { ConfirmModal } from '../ui/ConfirmModal';
-import { PromptModal } from '../ui/PromptModal';
 import { AppState } from '../../../domain/types/common.types';
-import {
-    updateProfitPool, clearAllCache, distributeMonthlyDividends
-} from '../../../application/services/storage.service';
+import { clearAllCache } from '../../../application/services/storage.service';
 import { apiService } from '../../../application/services/api.service';
+
+// Tab Components
+import { AdminOverview } from '../features/admin/tabs/AdminOverview';
+import { AdminPayouts } from '../features/admin/tabs/AdminPayouts';
+import { AdminMetrics } from '../features/admin/tabs/AdminMetrics';
+import { AdminSystem } from '../features/admin/tabs/AdminSystem';
+import { AdminReferrals } from '../features/admin/tabs/AdminReferrals';
+import { AdminUsers } from '../features/admin/tabs/AdminUsers';
+import { AdminGovernance } from '../features/admin/tabs/AdminGovernance';
+import { AdminReviews } from '../features/admin/tabs/AdminReviews';
+
+// Existing Shared Components
 import { AdminStoreManager } from '../features/store/admin-store.component';
 import { SupportAdminView } from './SupportAdminView';
-import { AdminUserManagement } from '../features/admin/AdminUserManagement';
-import { useDebounce } from '../../hooks/use-performance';
 
 interface AdminViewProps {
     state: AppState;
@@ -23,360 +30,51 @@ interface AdminViewProps {
     onError: (title: string, message: string) => void;
 }
 
-// Componente memoizado para evitar re-renders desnecessários
-const MetricCard = memo(({ title, value, subtitle, icon: Icon, color }: any) => {
-    const colorClasses: any = {
-        blue: "from-blue-600 to-blue-700 border-blue-500/30 shadow-blue-500/10",
-        cyan: "from-primary-600 to-primary-700 border-primary-500/30 shadow-primary-500/10",
-        emerald: "from-emerald-600 to-emerald-700 border-emerald-500/30 shadow-emerald-500/10",
-        yellow: "from-amber-600 to-amber-700 border-amber-500/30 shadow-amber-500/10",
-        red: "from-red-600 to-red-700 border-red-500/30 shadow-red-500/10",
-        orange: "from-orange-600 to-orange-700 border-orange-500/30 shadow-orange-500/10",
-        purple: "from-purple-600 to-purple-700 border-purple-500/30 shadow-purple-500/10",
-    };
-
-    return (
-        <div className={`bg-gradient-to-br ${colorClasses[color]} rounded-2xl p-6 text-white border shadow-lg transition-transform hover:scale-[1.02] duration-300`}>
-            <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <Icon size={20} className="text-white" />
-                </div>
-                <span className="text-xs font-bold uppercase tracking-wider opacity-80">{title}</span>
-            </div>
-            <p className="text-3xl font-bold tracking-tight">{value}</p>
-            <p className="text-[10px] opacity-90 mt-1 font-medium uppercase">{subtitle}</p>
-        </div>
-    );
-});
-
-MetricCard.displayName = 'MetricCard';
+type TabType = 'overview' | 'payouts' | 'system' | 'store' | 'referrals' | 'support' | 'users' | 'metrics' | 'governance' | 'reviews';
 
 export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: AdminViewProps) => {
-
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [confirmMP, setConfirmMP] = useState<{ id: string, tid: string } | null>(null);
 
     const userRole = state.currentUser?.role || (state.currentUser?.isAdmin ? 'ADMIN' : 'MEMBER');
-    const [activeTab, setActiveTab] = useState<'overview' | 'payouts' | 'system' | 'store' | 'referrals' | 'support' | 'users' | 'metrics' | 'governance' | 'reviews'>(
+    const [activeTab, setActiveTab] = useState<TabType>(
         userRole === 'ATTENDANT' ? 'support' : 'overview'
     );
-    const [payoutQueue, setPayoutQueue] = useState<{ transactions: any[], loans: any[] }>({ transactions: [], loans: [] });
+
     const [pendingChatsCount, setPendingChatsCount] = useState(0);
-    const [referralCodes, setReferralCodes] = useState<any[]>([]);
-    const [newReferralCode, setNewReferralCode] = useState('');
-    const [referralMaxUses, setReferralMaxUses] = useState('');
-    const [giftEmail, setGiftEmail] = useState('');
-    const [giftQuantity, setGiftQuantity] = useState('');
-    const [giftReason, setGiftReason] = useState('');
-    const [healthMetrics, setHealthMetrics] = useState<any>(null);
-    const [isMetricsLoading, setIsMetricsLoading] = useState(false);
-    const [metricsSearch, setMetricsSearch] = useState('');
-    const debouncedMetricsSearch = useDebounce(metricsSearch, 300); // Debounce de 300ms
+    const [pendingPayoutsCount, setPendingPayoutsCount] = useState(0);
+    const [pendingReviewsCount, setPendingReviewsCount] = useState(0);
 
-    const [systemCosts, setSystemCosts] = useState<any[]>([]);
-    const [newCostDescription, setNewCostDescription] = useState('');
-    const [newCostAmount, setNewCostAmount] = useState('');
+    const fetchCounts = useCallback(async () => {
+        try {
+            // Fetch multiple counts in parallel
+            const [supportRes, payoutRes, reviewsRes] = await Promise.all([
+                apiService.getPendingSupportChats(),
+                apiService.getPayoutQueue(),
+                apiService.getAdminReviews()
+            ]);
 
-    const [financeHistory, setFinanceHistory] = useState<any[]>([]);
-    const [isHistoryLoading, setIsHistoryLoading] = useState(false);
-
-    const [proposals, setProposals] = useState<any[]>([]);
-    const [newPropTitle, setNewPropTitle] = useState('');
-    const [newPropDesc, setNewPropDesc] = useState('');
-
-    const [reviews, setReviews] = useState<any[]>([]);
+            setPendingChatsCount(supportRes.chats?.filter((c: any) => c.status === 'PENDING_HUMAN').length || 0);
+            setPendingPayoutsCount(payoutRes.transactions?.length || 0);
+            setPendingReviewsCount(reviewsRes.data?.filter((r: any) => r.is_public && !r.is_approved).length || 0);
+        } catch (e) {
+            console.error('Error fetching admin counts:', e);
+        }
+    }, []);
 
     useEffect(() => {
-        setIsLoading(false);
-        fetchPendingChatsCount();
-        const interval = setInterval(fetchPendingChatsCount, 15000);
+        fetchCounts();
+        const interval = setInterval(fetchCounts, 30000);
         return () => clearInterval(interval);
-    }, []); // Só no mount
+    }, [fetchCounts]);
 
-    useEffect(() => {
-        if (activeTab === 'payouts') {
-            fetchPayoutQueue();
-        }
-
-        if (activeTab === 'referrals') {
-            fetchReferralCodes();
-        }
-
-        if (activeTab === 'metrics') {
-            fetchHealthMetrics();
-            const metricsInterval = setInterval(fetchHealthMetrics, 10000);
-            return () => clearInterval(metricsInterval);
-        }
-        if (activeTab === 'system') {
-            fetchSystemCosts();
-            fetchFinanceHistory();
-        }
-        if (activeTab === 'governance') {
-            fetchProposals();
-        }
-        if (activeTab === 'reviews') {
-            fetchReviews();
-        }
-    }, [activeTab]); // Só quando a aba muda
-
-    const fetchReviews = async () => {
-        try {
-            const res = await apiService.getAdminReviews();
-            if (res.success) {
-                setReviews(res.data || []);
-            }
-        } catch (e) {
-            console.error('Erro ao buscar avaliações:', e);
-        }
-    };
-
-    const fetchFinanceHistory = async () => {
-        setIsHistoryLoading(true);
-        try {
-            const res = await apiService.get<any>('/admin/finance-history');
-            if (res.success) {
-                setFinanceHistory(res.data || []);
-            }
-        } catch (e) {
-            console.error('Erro ao buscar histórico financeiro:', e);
-        } finally {
-            setIsHistoryLoading(false);
-        }
-    };
-
-    const fetchSystemCosts = async () => {
-        try {
-            const res = await apiService.get<any>('/admin/costs');
-            if (res.success) {
-                setSystemCosts(res.data || []);
-            }
-        } catch (e) {
-            console.error('Erro ao buscar custos:', e);
-        }
-    };
-
-    const fetchHealthMetrics = async () => {
-        if (!healthMetrics) setIsMetricsLoading(true);
-        try {
-            const data = await apiService.getHealthMetrics();
-            if (data) setHealthMetrics(data);
-        } catch (e) {
-            console.error('Erro ao buscar métricas:', e);
-        } finally {
-            setIsMetricsLoading(false);
-        }
-    };
-
-    const fetchProposals = async () => {
-        console.log('AdminView: Iniciando busca de propostas...');
-        try {
-            const res = await apiService.getProposals();
-            console.log('AdminView: Resposta de propostas:', res);
-            if (res.success) {
-                setProposals(res.data || []);
-                console.log('AdminView: Propostas definidas no estado:', res.data?.length || 0);
-            }
-        } catch (e) {
-            console.error('Erro ao buscar propostas:', e);
-        }
-    };
-
-    const handleCreateProposal = async () => {
-        if (!newPropTitle || !newPropDesc) return;
-        try {
-            const res = await apiService.createProposal(newPropTitle, newPropDesc);
-            if (res.success) {
-                onSuccess('Sucesso', 'Proposta criada e enviada para votação!');
-                setNewPropTitle('');
-                setNewPropDesc('');
-                fetchProposals();
-            } else {
-                onError('Erro', res.message);
-            }
-        } catch (e: any) {
-            onError('Erro', e.message);
-        }
-    };
-
-    const handleCloseProposal = async (id: number) => {
-        if (!window.confirm('Encerrar esta votação definitivamente?')) return;
-        try {
-            const res = await apiService.closeProposal(id);
-            if (res.success) {
-                onSuccess('Sucesso', 'Votação encerrada!');
-                fetchProposals();
-            }
-        } catch (e: any) {
-            onError('Erro', e.message);
-        }
-    };
-
-    const fetchPayoutQueue = async () => {
-        try {
-            const data = await apiService.getPayoutQueue();
-            setPayoutQueue(data || { transactions: [], loans: [] });
-        } catch (e) {
-            console.error('Erro ao buscar fila de pagamentos:', e);
-        }
-    };
-
-    const handleConfirmPayout = async (id: any, type: 'TRANSACTION' | 'LOAN') => {
-        console.log('[DEBUG] handleConfirmPayout chamado:', { id, type });
-        try {
-            console.log('[DEBUG] Chamando API confirmPayout...');
-            await apiService.confirmPayout(id.toString(), type);
-            console.log('[DEBUG] API retornou sucesso!');
-            onSuccess('Sucesso', 'Pagamento registrado com sucesso!');
-            fetchPayoutQueue();
-        } catch (e: any) {
-            console.error('[DEBUG] Erro no confirmPayout:', e);
-            onError('Erro', e.message || 'Falha ao confirmar pagamento.');
-        }
-    };
-
-    const fetchPendingChatsCount = async () => {
-        try {
-            const data = await apiService.getPendingSupportChats();
-            setPendingChatsCount(data.chats?.filter((c: any) => c.status === 'PENDING_HUMAN').length || 0);
-        } catch (e) {
-            console.error('Erro ao contar chats pendentes:', e);
-        }
-    };
-
-    const fetchReferralCodes = async () => {
-        try {
-            const response = await apiService.get<any[]>('/admin/referral-codes');
-            if (response.success) {
-                setReferralCodes(response.data || []);
-            }
-        } catch (error) {
-            console.error('Erro ao buscar códigos:', error);
-        }
-    };
-
-    const handleCreateReferralCode = async () => {
-        if (!newReferralCode) return;
-        try {
-            const response = await apiService.post<any>('/admin/referral-codes', {
-                code: newReferralCode,
-                maxUses: referralMaxUses ? parseInt(referralMaxUses) : null
-            });
-            if (response.success) {
-                onSuccess('Sucesso', 'Código criado!');
-                setNewReferralCode('');
-                setReferralMaxUses('');
-                fetchReferralCodes();
-            } else {
-                onError('Erro', response.message);
-            }
-        } catch (e: any) {
-            onError('Erro', e.message);
-        }
-    };
-
-    const handleToggleReferralCode = async (id: number) => {
-        try {
-            const response = await apiService.post<any>(`/admin/referral-codes/${id}/toggle`, {});
-            if (response.success) {
-                fetchReferralCodes();
-            }
-        } catch (e: any) {
-            onError('Erro', e.message);
-        }
-    };
-
-    const handleDeleteReferralCode = async (id: number) => {
-        if (!window.confirm('Excluir este código definitivamente?')) return;
-        try {
-            const response = await apiService.delete<any>(`/admin/referral-codes/${id}`);
-            if (response.success) {
-                onSuccess('Removido', 'Código excluído com sucesso');
-                fetchReferralCodes();
-            }
-        } catch (e: any) {
-            onError('Erro', e.message);
-        }
-    };
-
-    const [newProfit, setNewProfit] = useState('');
-    const [newManualCost, setNewManualCost] = useState('');
-    const [manualCostDescription, setManualCostDescription] = useState('');
-
-    const parseCurrencyInput = (val: string) => {
-        const clean = val.replace(/[^0-9,.]/g, '');
-        const standard = clean.replace(',', '.');
-        return parseFloat(standard);
-    }
-
-    const handleUpdateProfit = async () => {
-        try {
-            const val = parseCurrencyInput(newProfit);
-            if (isNaN(val)) throw new Error("Valor inválido");
-            await updateProfitPool(val);
-            clearAllCache();
-            onRefresh();
-            setNewProfit('');
-            onSuccess('Excedente Adicionado', `R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} adicionado com sucesso!`);
-        } catch (e: any) {
-            onError('Erro ao Atualizar Excedente', e.message);
-        }
-    };
-
-    const handleAddCost = async () => {
-        try {
-            const amount = parseCurrencyInput(newCostAmount);
-            if (isNaN(amount) || amount <= 0) throw new Error("Valor inválido");
-            if (!newCostDescription) throw new Error("Descrição necessária");
-
-            const response = await apiService.post<any>('/admin/costs', {
-                description: newCostDescription,
-                amount: amount,
-                isRecurring: true
-            });
-
-            if (response.success) {
-                onSuccess('Custo Adicionado', 'Despesa registrada com sucesso.');
-                setNewCostAmount('');
-                setNewCostDescription('');
-                fetchSystemCosts();
-                onRefresh();
-            } else {
-                onError('Erro', response.message);
-            }
-        } catch (e: any) {
-            onError('Erro', e.message);
-        }
-    };
-
-    const handlePayCost = async (id: number, description: string) => {
-        if (!window.confirm(`Confirmar o pagamento de "${description}"? O valor será debitado do saldo do sistema.`)) return;
-        try {
-            const response = await apiService.post<any>(`/admin/costs/${id}/pay`, {});
-            if (response.success) {
-                onSuccess('Pagamento Realizado', response.message);
-                fetchSystemCosts();
-                fetchFinanceHistory();
-                onRefresh();
-            } else {
-                onError('Erro no Pagamento', response.message);
-            }
-        } catch (e: any) {
-            onError('Erro', e.message);
-        }
-    };
-
-    const handleDeleteCost = async (id: number) => {
-        if (!window.confirm('Remover este custo do sistema?')) return;
-        try {
-            const response = await apiService.delete<any>(`/admin/costs/${id}`);
-            if (response.success) {
-                onSuccess('Removido', 'Custo excluído.');
-                fetchSystemCosts();
-                onRefresh();
-            }
-        } catch (e: any) {
-            onError('Erro', e.message);
-        }
+    const handleRefresh = async () => {
+        setIsLoading(true);
+        clearAllCache();
+        await onRefresh();
+        await fetchCounts();
+        setIsLoading(false);
+        onSuccess("Atualizado", "Dados sincronizados com o servidor.");
     };
 
     const confirmSimulateMpPayment = async () => {
@@ -395,52 +93,21 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
         }
     };
 
-    const handleGiftQuota = async () => {
-        if (!giftEmail || !giftQuantity) return;
-        if (!window.confirm(`CONFIRMAÇÃO: Enviar ${giftQuantity} participações para ${giftEmail}? Esta ação criará as participações e não cobrará do usuário.`)) return;
-
-        try {
-            const response = await apiService.post<any>('/admin/users/add-quota', {
-                email: giftEmail,
-                quantity: parseInt(giftQuantity),
-                reason: giftReason
-            });
-            if (response.success) {
-                onSuccess('Envio Realizado!', response.message);
-                setGiftEmail('');
-                setGiftQuantity('');
-                setGiftReason('');
-            } else {
-                onError('Erro', response.message);
-            }
-        } catch (e: any) {
-            onError('Erro', e.message);
-        }
-    };
-
-    const handleRunLiquidation = async () => {
-        if (!window.confirm('Iniciar varredura de garantias agora? O sistema executará o lastro de todos os apoios em atraso há mais de 5 dias.')) return;
-        try {
-            const res = await apiService.post<any>('/admin/run-liquidation', {});
-            if (res.success) {
-                onSuccess('Varredura Concluída', res.message);
-                onRefresh();
-            } else {
-                onError('Erro na Liquidação', res.message);
-            }
-        } catch (e: any) {
-            onError('Erro', e.message);
-        }
-    };
-
-    const formatCurrency = (val: number | string) => {
-        const numVal = typeof val === 'string' ? parseFloat(val) : val;
-        if (typeof numVal !== 'number' || isNaN(numVal)) return 'R$ 0,00';
-        return numVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    };
+    const tabs = [
+        { id: 'overview', name: 'Resumo', icon: PieChart, roles: ['ADMIN'] },
+        { id: 'payouts', name: 'Resgates', icon: Send, count: pendingPayoutsCount, roles: ['ADMIN'] },
+        { id: 'metrics', name: 'Monitoramento', icon: Activity, roles: ['ADMIN', 'ATTENDANT'] },
+        { id: 'system', name: 'Financeiro', icon: SettingsIcon, roles: ['ADMIN'] },
+        { id: 'referrals', name: 'Indicações', icon: UserPlus, roles: ['ADMIN'] },
+        { id: 'users', name: 'Usuários', icon: ShieldCheck, roles: ['ADMIN'] },
+        { id: 'store', name: 'Loja', icon: ShoppingBagIcon, roles: ['ADMIN'] },
+        { id: 'governance', name: 'Governança', icon: Vote, roles: ['ADMIN'] },
+        { id: 'reviews', name: 'Depoimentos', icon: MessageSquare, count: pendingReviewsCount, roles: ['ADMIN'] },
+        { id: 'support', name: 'Suporte', icon: MessageSquare, count: pendingChatsCount, roles: ['ADMIN', 'ATTENDANT'] },
+    ].filter(tab => tab.roles.includes(userRole));
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8 pb-20 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             {/* Header Modernizado */}
             <div className="bg-gradient-to-br from-zinc-900 to-black rounded-3xl p-8 border border-zinc-800 shadow-2xl relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
@@ -464,7 +131,7 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
 
                     <div className="flex flex-wrap items-center justify-center gap-4">
                         <button
-                            onClick={() => { clearAllCache(); onRefresh(); onSuccess("Atualizado", "Dados sincronizados."); }}
+                            onClick={handleRefresh}
                             className="group bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 hover:border-primary-500/50 px-6 py-3.5 rounded-2xl flex items-center gap-3 transition-all duration-300 text-sm font-bold text-zinc-300 shadow-lg"
                         >
                             <RefreshCw size={18} className={isLoading ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-500"} />
@@ -482,24 +149,10 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
 
             {/* Abas */}
             <div className="flex items-center gap-1.5 p-1.5 bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-[2rem] overflow-x-auto no-scrollbar shadow-xl sticky top-4 z-50">
-                {[
-                    { id: 'overview', name: 'Resumo', icon: PieChart, roles: ['ADMIN'] },
-                    { id: 'payouts', name: 'Resgates', icon: Send, count: (payoutQueue.transactions?.length || 0), roles: ['ADMIN'] },
-                    { id: 'metrics', name: 'Monitoramento', icon: Activity, roles: ['ADMIN', 'ATTENDANT'] },
-                    { id: 'system', name: 'Financeiro', icon: SettingsIcon, roles: ['ADMIN'] },
-                    { id: 'referrals', name: 'Indicações', icon: UserPlus, roles: ['ADMIN'] },
-                    { id: 'users', name: 'Usuários', icon: ShieldCheck, roles: ['ADMIN'] },
-                    { id: 'store', name: 'Loja', icon: ShoppingBagIcon, roles: ['ADMIN'] },
-                    { id: 'governance', name: 'Governança', icon: Vote, roles: ['ADMIN'] },
-                    { id: 'reviews', name: 'Depoimentos', icon: MessageSquare, count: reviews.filter(r => r.is_public && !r.is_approved).length, roles: ['ADMIN'] },
-                    { id: 'support', name: 'Suporte', icon: MessageSquare, count: pendingChatsCount, roles: ['ADMIN', 'ATTENDANT'] },
-                ].filter((tab: any) => {
-                    const userRole = state.currentUser?.role || (state.currentUser?.isAdmin ? 'ADMIN' : 'MEMBER');
-                    return tab.roles.includes(userRole as any);
-                }).map((tab: any) => (
+                {tabs.map((tab) => (
                     <button
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
+                        onClick={() => setActiveTab(tab.id as TabType)}
                         className={`
                             relative flex items-center gap-3 px-8 py-4 rounded-[1.5rem] text-sm font-bold transition-all duration-500 whitespace-nowrap
                             ${activeTab === tab.id
@@ -518,654 +171,19 @@ export const AdminView = ({ state, onRefresh, onLogout, onSuccess, onError }: Ad
                 ))}
             </div>
 
-            {activeTab === 'overview' && (
-                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <MetricCard title="Membros" value={state.users.length} subtitle="Usuários Totais" icon={Users} color="blue" />
-                        <MetricCard title="Participações" value={state.stats?.quotasCount ?? 0} subtitle="Licenças em Operação" icon={PieChart} color="cyan" />
-                        <MetricCard title="Custo Fixo Mensal" value={formatCurrency(state.stats?.systemConfig?.monthly_fixed_costs || 0)} subtitle="Despesas Recorrentes" icon={TrendingUp} color="orange" />
-                        <MetricCard title="Liquidez Real" value={formatCurrency(state.stats?.systemConfig?.real_liquidity ?? state.systemBalance)} subtitle="Disponível p/ Saque/Apoio" icon={DollarSign} color="emerald" />
-                        <MetricCard title="Votações Ativas" value={state.stats?.activeProposalsCount ?? 0} subtitle="Governança em Aberto" icon={Vote} color="purple" />
-                    </div>
-                </div>
-            )}
-
-            {activeTab === 'metrics' && (
-                <div className="space-y-8 animate-in fade-in duration-500">
-                    {!healthMetrics && isMetricsLoading ? (
-                        <div className="py-20 text-center">
-                            <div className="w-16 h-16 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin mx-auto mb-4"></div>
-                            <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs">Coletando dados do servidor...</p>
-                        </div>
-                    ) : healthMetrics && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Status do Servidor */}
-                            <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
-                                <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
-                                    <div className="p-2 bg-primary-500/10 rounded-lg"><Cpu className="text-primary-400" size={20} /></div>
-                                    Recursos do Sistema
-                                </h3>
-                                <div className="space-y-4 mb-6">
-                                    <div className="relative group">
-                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-primary-400 transition-colors" size={16} />
-                                        <input
-                                            type="text"
-                                            placeholder="Filtrar métricas..."
-                                            value={metricsSearch}
-                                            onChange={(e) => setMetricsSearch(e.target.value)}
-                                            className="w-full bg-black/40 border border-zinc-800 rounded-2xl pl-10 pr-4 py-3 text-xs text-white focus:outline-none focus:border-primary-500/50 transition-all"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="space-y-6">
-                                    <div className="flex justify-between items-center p-4 bg-black/20 rounded-2xl border border-zinc-800">
-                                        <div className="flex items-center gap-3">
-                                            <Activity size={18} className="text-emerald-400" />
-                                            <span className="text-sm font-bold text-zinc-300">Latência do Banco</span>
-                                        </div>
-                                        <span className="text-xl font-black text-white">{healthMetrics.health.dbLatency}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center p-4 bg-black/20 rounded-2xl border border-zinc-800">
-                                        <div className="flex items-center gap-3">
-                                            <Clock size={18} className="text-primary-400" />
-                                            <span className="text-sm font-bold text-zinc-300">Uptime do Servidor</span>
-                                        </div>
-                                        <span className="text-xl font-black text-white">{healthMetrics.health.uptime}</span>
-                                    </div>
-                                    <div className="p-6 bg-black/20 rounded-2xl border border-zinc-800">
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <HardDrive size={18} className="text-orange-400" />
-                                            <span className="text-sm font-bold text-zinc-300">Uso de Memória RAM</span>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Heap Usado</p>
-                                                <p className="text-lg font-bold text-white">{healthMetrics.health.memory.heapUsed}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Total RSS</p>
-                                                <p className="text-lg font-bold text-white">{healthMetrics.health.memory.rss}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Carga de Dados */}
-                            <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
-                                <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
-                                    <div className="p-2 bg-emerald-500/10 rounded-lg"><Database className="text-emerald-400" size={20} /></div>
-                                    Volume de Dados
-                                </h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 bg-black/20 rounded-2xl border border-zinc-800">
-                                        <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Transações</p>
-                                        <p className="text-xl font-bold text-white">{healthMetrics.database.total_transactions}</p>
-                                    </div>
-                                    <div className="p-4 bg-black/20 rounded-2xl border border-zinc-800">
-                                        <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Audit Logs</p>
-                                        <p className="text-xl font-bold text-white">{healthMetrics.database.total_audit_logs}</p>
-                                    </div>
-                                    <div className="p-4 bg-black/20 rounded-2xl border border-zinc-800 col-span-2">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Atividade 24h</p>
-                                                <p className="text-xl font-bold text-white">+{healthMetrics.activity.trans_24h} Transações</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Volume 24h</p>
-                                                <p className="text-xl font-bold text-emerald-400">{formatCurrency(parseFloat(healthMetrics.activity.volume_24h))}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="p-4 bg-emerald-500/5 rounded-2xl border border-emerald-500/10 col-span-2">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <Zap size={18} className="text-emerald-400" />
-                                                <span className="text-sm font-bold text-zinc-300">Novos Membros 24h</span>
-                                            </div>
-                                            <span className="text-lg font-black text-white">+{healthMetrics.activity.new_users_24h}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {activeTab === 'payouts' && (
-                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <div className="max-w-4xl mx-auto">
-                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
-                            <div className="flex items-center justify-between mb-8">
-                                <h3 className="text-xl font-bold text-white flex items-center gap-3">
-                                    <div className="p-2 bg-emerald-500/10 rounded-lg"><ArrowUpRight className="text-emerald-400" size={20} /></div>
-                                    Fila de Resgates (PIX)
-                                </h3>
-                                <span className="bg-zinc-800 text-zinc-400 px-3 py-1 rounded-full text-[10px] font-black uppercase">Pendentes: {payoutQueue.transactions?.length || 0}</span>
-                            </div>
-
-                            <div className="space-y-4 max-h-[700px] overflow-y-auto pr-3 custom-scrollbar">
-                                {!payoutQueue.transactions || payoutQueue.transactions.length === 0 ? (
-                                    <div className="py-24 text-center">
-                                        <div className="bg-zinc-800/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <Check className="text-zinc-500" size={32} />
-                                        </div>
-                                        <p className="text-zinc-500 font-bold uppercase text-xs tracking-widest">Tudo em dia!</p>
-                                    </div>
-                                ) : (
-                                    payoutQueue.transactions.map((t) => (
-                                        <div key={t.id} className="bg-black/30 border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-zinc-700 hover:bg-black/40 group">
-                                            <div className="flex justify-between items-start gap-4">
-                                                <div className="space-y-3 flex-1">
-                                                    <div>
-                                                        <p className="text-sm font-bold text-white mb-0.5">{t.user_name}</p>
-                                                        <div className="flex items-center gap-2 bg-zinc-800/50 p-2 rounded-lg" onClick={() => {
-                                                            navigator.clipboard.writeText(t.user_pix);
-                                                            onSuccess('Copiado', 'Chave PIX copiada!');
-                                                        }}>
-                                                            <p className="text-[11px] text-primary-400 font-mono break-all">{t.user_pix}</p>
-                                                            <Clipboard size={12} className="text-zinc-500" />
-                                                        </div>
-                                                    </div>
-                                                    <p className="text-2xl font-black text-white">{formatCurrency(t.amount)}</p>
-                                                </div>
-                                                <button
-                                                    onClick={() => handleConfirmPayout(t.id, 'TRANSACTION')}
-                                                    className="p-4 bg-primary-500/10 text-primary-400 rounded-2xl hover:bg-primary-500 hover:text-black transition-all flex flex-col items-center justify-center gap-2 min-w-[120px]"
-                                                >
-                                                    <Check size={20} />
-                                                    <span className="text-[10px] font-black uppercase">Confirmar</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {activeTab === 'system' && (
-                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Gestão de Custos Fixos */}
-                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
-                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
-                                <div className="p-2 bg-primary-500/10 rounded-lg"><TrendingUp className="text-primary-400" size={20} /></div>
-                                Custos Fixos Mensais
-                            </h3>
-                            <div className="space-y-6">
-                                <div className="bg-black/20 p-6 rounded-2xl border border-zinc-800">
-                                    <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Total de Despesas/Mês</p>
-                                    <p className="text-4xl font-black text-red-400 tracking-tighter">
-                                        -{formatCurrency(state.stats?.systemConfig?.monthly_fixed_costs || 0)}
-                                    </p>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">Adicionar Nova Despesa</p>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            placeholder="Descrição (ex: MEI)"
-                                            value={newCostDescription}
-                                            onChange={(e) => setNewCostDescription(e.target.value)}
-                                            className="flex-1 bg-zinc-800/50 border border-zinc-700/50 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-primary-500/50"
-                                        />
-                                        <input
-                                            type="text"
-                                            placeholder="Valor"
-                                            value={newCostAmount}
-                                            onChange={(e) => setNewCostAmount(e.target.value)}
-                                            className="w-24 bg-zinc-800/50 border border-zinc-700/50 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-primary-500/50"
-                                        />
-                                        <button
-                                            onClick={handleAddCost}
-                                            className="bg-primary-500 hover:bg-primary-400 p-3 rounded-xl text-black transition-all"
-                                        >
-                                            <Check size={20} />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
-                                    {systemCosts.map((cost) => (
-                                        <div key={cost.id} className="group bg-black/40 border border-zinc-800/50 p-4 rounded-2xl flex justify-between items-center transition-all hover:border-zinc-700">
-                                            <div className="flex-1">
-                                                <p className="text-xs font-bold text-zinc-300">{cost.description}</p>
-                                                <p className="text-sm font-black text-white">{formatCurrency(parseFloat(cost.amount))}</p>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <button
-                                                    onClick={() => handlePayCost(cost.id, cost.description)}
-                                                    className="bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-black px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all"
-                                                    aria-label="Pagar custo"
-                                                    title="Pagar custo"
-                                                >
-                                                    PAGAR
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteCost(cost.id)}
-                                                    className="p-2 text-zinc-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                                                    aria-label="Excluir custo"
-                                                    title="Excluir custo"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {systemCosts.length === 0 && (
-                                        <p className="text-center py-4 text-xs text-zinc-600 font-bold uppercase">Nenhum custo fixo lançado.</p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Fundo de Recompensas */}
-                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
-                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
-                                <div className="p-2 bg-emerald-500/10 rounded-lg"><Coins className="text-emerald-400" size={20} /></div>
-                                Fundo de Recompensas
-                            </h3>
-                            <div className="space-y-6">
-                                <div className="bg-black/20 p-6 rounded-2xl border border-zinc-800">
-                                    <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Acumulado p/ Distribuição</p>
-                                    <p className="text-4xl font-black text-white tracking-tighter">{formatCurrency(state.profitPool)}</p>
-                                </div>
-                                <div className="space-y-4">
-                                    <input
-                                        type="text"
-                                        placeholder="Valor a adicionar (R$)"
-                                        value={newProfit}
-                                        onChange={(e) => setNewProfit(e.target.value)}
-                                        className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded-2xl px-6 py-4 text-white outline-none focus:border-emerald-500/50 font-bold"
-                                    />
-                                    <button
-                                        onClick={handleUpdateProfit}
-                                        className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-black py-4 rounded-2xl transition-all shadow-xl"
-                                    >
-                                        Lançar Excedente
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Extrato Financeiro Administrativo */}
-                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl col-span-1 md:col-span-2">
-                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
-                                <div className="p-2 bg-primary-500/10 rounded-lg"><Activity className="text-primary-400" size={20} /></div>
-                                Extrato de Movimentações Administrativas
-                            </h3>
-
-                            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-3 custom-scrollbar">
-                                {isHistoryLoading && <div className="text-center py-10 text-zinc-500 text-xs font-bold uppercase animate-pulse">Carregando extrato...</div>}
-
-                                {financeHistory.map((log) => (
-                                    <div key={log.id} className="bg-black/30 border border-zinc-800/50 p-4 rounded-2xl flex items-center justify-between gap-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className={`p-3 rounded-xl ${log.action === 'PAY_COST' ? 'bg-red-500/10 text-red-400' :
-                                                log.action === 'MANUAL_PROFIT_ADD' ? 'bg-emerald-500/10 text-emerald-400' :
-                                                    'bg-zinc-800 text-zinc-400'
-                                                }`}>
-                                                {log.action === 'PAY_COST' ? <ArrowUpRight size={18} /> :
-                                                    log.action === 'MANUAL_PROFIT_ADD' ? <ArrowDownLeft size={18} /> :
-                                                        <SettingsIcon size={18} />}
-                                            </div>
-                                            <div>
-                                                <p className="text-xs font-black text-white uppercase tracking-tight">
-                                                    {log.action === 'PAY_COST' ? 'PAGAMENTO REALIZADO' :
-                                                        log.action === 'MANUAL_PROFIT_ADD' ? 'EXCEDENTE ADICIONADO' :
-                                                            log.action.replace('_', ' ')}
-                                                </p>
-                                                <p className="text-[10px] text-zinc-500 font-bold uppercase">{new Date(log.created_at).toLocaleString('pt-BR')}</p>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className={`text-sm font-black ${log.action === 'PAY_COST' ? 'text-red-400' :
-                                                log.action === 'MANUAL_PROFIT_ADD' ? 'text-emerald-400' :
-                                                    'text-white'
-                                                }`}>
-                                                {log.action === 'PAY_COST' ? '-' : '+'}{formatCurrency(log.new_values?.amount || log.new_values?.amountToAdd || log.new_values?.addedAmount || 0)}
-                                            </p>
-                                            <p className="text-[9px] text-zinc-600 font-bold uppercase">POR: {log.admin_name}</p>
-                                        </div>
-                                    </div>
-                                ))}
-
-                                {!isHistoryLoading && financeHistory.length === 0 && (
-                                    <div className="py-20 text-center opacity-30">
-                                        <Activity size={48} className="mx-auto mb-4" />
-                                        <p className="text-xs font-bold uppercase">Nenhuma movimentação registrada</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Varredura de Inadimplência */}
-                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl col-span-1 md:col-span-2">
-                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
-                                <div className="p-2 bg-red-500/10 rounded-lg"><AlertTriangle className="text-red-400" size={20} /></div>
-                                Varredura de Atraso de Reposição
-                            </h3>
-                            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                                <p className="text-sm text-zinc-400 leading-relaxed max-w-xl">
-                                    Clique abaixo para executar manualmente a proteção de lastro. Membros com atraso superior a 5 dias terão suas licenças executadas para cobrir o compromisso social.
-                                </p>
-                                <button
-                                    onClick={handleRunLiquidation}
-                                    className="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-black border border-red-500/30 font-black px-8 py-5 rounded-2xl transition-all uppercase tracking-widest text-xs whitespace-nowrap"
-                                >
-                                    Iniciar Varredura de Garantias
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {activeTab === 'referrals' && (
-                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
-                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
-                                <div className="p-2 bg-primary-500/10 rounded-lg"><UserPlus className="text-primary-400" size={20} /></div>
-                                Criar Novo Código
-                            </h3>
-                            <div className="space-y-4">
-                                <input
-                                    type="text"
-                                    placeholder="CÓDIGO (EX: VIP2024)"
-                                    value={newReferralCode}
-                                    onChange={(e) => setNewReferralCode(e.target.value.toUpperCase())}
-                                    className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded-2xl px-6 py-4 text-white outline-none focus:border-primary-500/50 font-bold"
-                                />
-                                <input
-                                    type="number"
-                                    placeholder="Máximo de Usos (vazio = ilimitado)"
-                                    value={referralMaxUses}
-                                    onChange={(e) => setReferralMaxUses(e.target.value)}
-                                    className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded-2xl px-6 py-4 text-white outline-none focus:border-primary-500/50 font-bold"
-                                />
-                                <button
-                                    onClick={handleCreateReferralCode}
-                                    className="w-full bg-primary-500 hover:bg-primary-400 text-black font-black py-4 rounded-2xl transition-all shadow-xl"
-                                >
-                                    Gerar Código VIP
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
-                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
-                                <div className="p-2 bg-zinc-800 rounded-lg"><Users className="text-zinc-400" size={20} /></div>
-                                Códigos Administrativos
-                            </h3>
-                            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                                {referralCodes.map((rc) => (
-                                    <div key={rc.id} className="bg-black/20 border border-zinc-800 px-4 py-3 rounded-xl flex justify-between items-center">
-                                        <div>
-                                            <p className="font-black text-white tracking-widest leading-none">{rc.code}</p>
-                                            <p className="text-[10px] text-zinc-500 font-bold mt-1 uppercase">Usos: {rc.current_uses} / {rc.max_uses || '∞'}</p>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={() => handleDeleteReferralCode(rc.id)}
-                                                className="p-2 text-zinc-500 hover:text-red-500 transition-colors"
-                                                aria-label="Excluir código de indicação"
-                                                title="Excluir código de indicação"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {activeTab === 'users' && (
-                <div className="space-y-8">
-                    <AdminUserManagement onSuccess={onSuccess} onError={onError} />
-
-                    {/* Gift Quota remains available as a smaller section if needed, 
-                        but AdminUserManagement is now the main control center */}
-                    <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl max-w-2xl mx-auto opacity-50 hover:opacity-100 transition-opacity">
-                        <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
-                            <div className="p-2 bg-purple-500/10 rounded-lg"><Gift className="text-purple-400" size={20} /></div>
-                            Presentear Participações (Ação Direta)
-                        </h3>
-                        <div className="space-y-4">
-                            <input
-                                type="email"
-                                placeholder="Email do usuário"
-                                value={giftEmail}
-                                onChange={(e) => setGiftEmail(e.target.value)}
-                                className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded-2xl px-6 py-4 text-white outline-none focus:border-purple-500/50 font-bold"
-                            />
-                            <div className="grid grid-cols-2 gap-4">
-                                <input
-                                    type="number"
-                                    placeholder="Quantidade"
-                                    value={giftQuantity}
-                                    onChange={(e) => setGiftQuantity(e.target.value)}
-                                    className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded-2xl px-6 py-4 text-white outline-none focus:border-purple-500/50 font-bold"
-                                />
-                                <button
-                                    onClick={handleGiftQuota}
-                                    className="bg-purple-500 hover:bg-purple-400 text-black font-black px-6 py-4 rounded-2xl transition-all shadow-xl"
-                                >
-                                    Enviar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {activeTab === 'store' && <AdminStoreManager onSuccess={onSuccess} onError={onError} />}
-
-            {activeTab === 'governance' && (
-                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
-                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
-                                <div className="p-2 bg-primary-500/10 rounded-lg"><Plus className="text-primary-400" size={20} /></div>
-                                Nova Proposta de Votação
-                            </h3>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1">Título da Proposta</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Ex: Aquisição de novos ativos"
-                                        value={newPropTitle}
-                                        onChange={(e) => setNewPropTitle(e.target.value)}
-                                        className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded-2xl px-6 py-4 text-white outline-none focus:border-primary-500/50 font-bold"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] text-zinc-500 font-black uppercase tracking-widest ml-1">Descrição Detalhada</label>
-                                    <textarea
-                                        placeholder="Descreva o que será votado..."
-                                        rows={4}
-                                        value={newPropDesc}
-                                        onChange={(e) => setNewPropDesc(e.target.value)}
-                                        className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded-2xl px-6 py-4 text-white outline-none focus:border-primary-500/50 font-medium resize-none"
-                                    />
-                                </div>
-                                <button
-                                    onClick={handleCreateProposal}
-                                    className="w-full bg-primary-500 hover:bg-primary-400 text-black font-black py-4 rounded-2xl transition-all shadow-xl flex items-center justify-center gap-2"
-                                >
-                                    <Send size={20} /> LANÇAR PARA VOTAÇÃO
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
-                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
-                                <div className="p-2 bg-zinc-800 rounded-lg"><BarChart3 className="text-zinc-400" size={20} /></div>
-                                Propostas em Aberto / Histórico
-                            </h3>
-                            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                                {proposals.map((prop) => (
-                                    <div key={prop.id} className="bg-black/20 border border-zinc-800 p-6 rounded-2xl space-y-4">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <h4 className="text-white font-bold">{prop.title}</h4>
-                                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
-                                                    Criada em: {new Date(prop.created_at).toLocaleDateString()}
-                                                </p>
-                                            </div>
-                                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-black uppercase ${prop.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
-                                                {prop.status === 'ACTIVE' ? 'EM VOTAÇÃO' : 'ENCERRADA'}
-                                            </span>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="bg-black/40 p-3 rounded-xl border border-zinc-800">
-                                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Poder Sim</p>
-                                                <p className="text-xl font-black text-emerald-400">{prop.yes_votes}</p>
-                                            </div>
-                                            <div className="bg-black/40 p-3 rounded-xl border border-zinc-800">
-                                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Poder Não</p>
-                                                <p className="text-xl font-black text-red-400">{prop.no_votes}</p>
-                                            </div>
-                                        </div>
-
-                                        {prop.status === 'ACTIVE' && (
-                                            <button
-                                                onClick={() => handleCloseProposal(prop.id)}
-                                                className="w-full bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-black border border-red-500/20 py-2 rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2"
-                                            >
-                                                <Gavel size={14} /> ENCERRAR VOTAÇÃO
-                                            </button>
-                                        )}
-                                    </div>
-                                ))}
-                                {proposals.length === 0 && (
-                                    <div className="text-center py-20 opacity-30">
-                                        <Vote size={48} className="mx-auto mb-4" />
-                                        <p className="text-xs font-bold uppercase tracking-widest">Nenhuma proposta registrada</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* === SEÇÃO DEPOIMENTOS === */}
-            {activeTab === 'reviews' && (
-                <div className="space-y-6">
-                    <div className="bg-zinc-900 rounded-3xl p-6 border border-zinc-800">
-                        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
-                            <MessageSquare size={20} className="text-amber-400" />
-                            Avaliações de Saques
-                        </h3>
-
-                        {reviews.length === 0 ? (
-                            <div className="text-center py-20 opacity-30">
-                                <MessageSquare size={48} className="mx-auto mb-4" />
-                                <p className="text-xs font-bold uppercase tracking-widest">Nenhuma avaliação registrada</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                {reviews.map((review) => (
-                                    <div key={review.id} className={`bg-zinc-800 rounded-2xl p-5 border ${review.is_approved ? 'border-emerald-500/30' : review.is_public ? 'border-amber-500/30' : 'border-zinc-700'}`}>
-                                        <div className="flex justify-between items-start mb-3">
-                                            <div>
-                                                <p className="text-white font-bold">{review.user_name}</p>
-                                                <p className="text-zinc-500 text-xs">{review.user_email}</p>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                {[1, 2, 3, 4, 5].map((star) => (
-                                                    <span key={star} className={star <= review.rating ? 'text-amber-400' : 'text-zinc-700'}>★</span>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        {review.comment && (
-                                            <p className="text-zinc-300 text-sm mb-4 italic">"{review.comment}"</p>
-                                        )}
-
-                                        <div className="flex items-center justify-between text-xs">
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-zinc-500">
-                                                    Saque: <span className="text-white font-medium">R$ {review.transaction_amount?.toFixed(2)}</span>
-                                                </span>
-                                                {review.is_public && (
-                                                    <span className={`px-2 py-0.5 rounded-full ${review.is_approved ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                                                        {review.is_approved ? '✓ Aprovado' : 'Pendente'}
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            {review.is_public && !review.is_approved && (
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={async () => {
-                                                            try {
-                                                                await apiService.approveReview(review.id);
-                                                                onSuccess('Sucesso', 'Depoimento aprovado!');
-                                                                fetchReviews();
-                                                            } catch (e) {
-                                                                onError('Erro', 'Falha ao aprovar');
-                                                            }
-                                                        }}
-                                                        className="bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-black px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1"
-                                                    >
-                                                        <Check size={14} /> Aprovar
-                                                    </button>
-                                                    <button
-                                                        onClick={async () => {
-                                                            try {
-                                                                await apiService.rejectReview(review.id);
-                                                                onSuccess('Sucesso', 'Depoimento rejeitado.');
-                                                                fetchReviews();
-                                                            } catch (e) {
-                                                                onError('Erro', 'Falha ao rejeitar');
-                                                            }
-                                                        }}
-                                                        className="bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-black px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1"
-                                                    >
-                                                        <XIcon size={14} /> Rejeitar
-                                                    </button>
-                                                </div>
-                                            )}
-
-                                            {review.is_approved && (
-                                                <button
-                                                    onClick={async () => {
-                                                        try {
-                                                            await apiService.rejectReview(review.id);
-                                                            onSuccess('Sucesso', 'Depoimento removido da página.');
-                                                            fetchReviews();
-                                                        } catch (e) {
-                                                            onError('Erro', 'Falha ao remover');
-                                                        }
-                                                    }}
-                                                    className="bg-zinc-700 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 px-3 py-1.5 rounded-lg font-bold transition-all"
-                                                >
-                                                    Remover
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {activeTab === 'support' && <SupportAdminView />}
+            {/* Tab Content */}
+            <div className="min-h-[600px]">
+                {activeTab === 'overview' && <AdminOverview state={state} />}
+                {activeTab === 'payouts' && <AdminPayouts onSuccess={onSuccess} onError={onError} />}
+                {activeTab === 'metrics' && <AdminMetrics />}
+                {activeTab === 'system' && <AdminSystem state={state} onRefresh={onRefresh} onSuccess={onSuccess} onError={onError} />}
+                {activeTab === 'referrals' && <AdminReferrals onSuccess={onSuccess} onError={onError} />}
+                {activeTab === 'users' && <AdminUsers onSuccess={onSuccess} onError={onError} />}
+                {activeTab === 'store' && <AdminStoreManager onSuccess={onSuccess} onError={onError} />}
+                {activeTab === 'governance' && <AdminGovernance onSuccess={onSuccess} onError={onError} />}
+                {activeTab === 'reviews' && <AdminReviews onSuccess={onSuccess} onError={onError} />}
+                {activeTab === 'support' && <SupportAdminView />}
+            </div>
 
             {confirmMP && (
                 <ConfirmModal

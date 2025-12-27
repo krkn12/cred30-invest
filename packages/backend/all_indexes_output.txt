@@ -1,0 +1,89 @@
+[dotenv@17.2.3] injecting env (15) from .env -- tip: ÔÜÖ´©Å  override existing env vars with { override: true }
+
+--- Indexes for quotas ---
+[
+  {
+    "indexname": "quotas_pkey",
+    "indexdef": "CREATE UNIQUE INDEX quotas_pkey ON public.quotas USING btree (id)"
+  },
+  {
+    "indexname": "idx_quotas_user_id",
+    "indexdef": "CREATE INDEX idx_quotas_user_id ON public.quotas USING btree (user_id)"
+  },
+  {
+    "indexname": "idx_quotas_status",
+    "indexdef": "CREATE INDEX idx_quotas_status ON public.quotas USING btree (status)"
+  },
+  {
+    "indexname": "idx_quotas_purchase_date",
+    "indexdef": "CREATE INDEX idx_quotas_purchase_date ON public.quotas USING btree (purchase_date)"
+  }
+]
+
+--- Indexes for loans ---
+[
+  {
+    "indexname": "loans_pkey",
+    "indexdef": "CREATE UNIQUE INDEX loans_pkey ON public.loans USING btree (id)"
+  },
+  {
+    "indexname": "idx_loans_user_id",
+    "indexdef": "CREATE INDEX idx_loans_user_id ON public.loans USING btree (user_id)"
+  },
+  {
+    "indexname": "idx_loans_status",
+    "indexdef": "CREATE INDEX idx_loans_status ON public.loans USING btree (status)"
+  },
+  {
+    "indexname": "idx_loans_payout_pending",
+    "indexdef": "CREATE INDEX idx_loans_payout_pending ON public.loans USING btree (payout_status) WHERE ((payout_status)::text = 'PENDING_PAYMENT'::text)"
+  },
+  {
+    "indexname": "idx_loans_user_status_active",
+    "indexdef": "CREATE INDEX idx_loans_user_status_active ON public.loans USING btree (user_id, status) WHERE ((status)::text = ANY ((ARRAY['APPROVED'::character varying, 'PAYMENT_PENDING'::character varying])::text[]))"
+  },
+  {
+    "indexname": "idx_loans_created_at",
+    "indexdef": "CREATE INDEX idx_loans_created_at ON public.loans USING btree (created_at)"
+  },
+  {
+    "indexname": "idx_loans_user_status",
+    "indexdef": "CREATE INDEX idx_loans_user_status ON public.loans USING btree (user_id, status)"
+  }
+]
+
+--- Indexes for users ---
+[
+  {
+    "indexname": "users_pkey",
+    "indexdef": "CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)"
+  },
+  {
+    "indexname": "users_email_key",
+    "indexdef": "CREATE UNIQUE INDEX users_email_key ON public.users USING btree (email)"
+  },
+  {
+    "indexname": "users_referral_code_key",
+    "indexdef": "CREATE UNIQUE INDEX users_referral_code_key ON public.users USING btree (referral_code)"
+  },
+  {
+    "indexname": "idx_users_email",
+    "indexdef": "CREATE INDEX idx_users_email ON public.users USING btree (email)"
+  },
+  {
+    "indexname": "idx_users_referral_code",
+    "indexdef": "CREATE INDEX idx_users_referral_code ON public.users USING btree (referral_code)"
+  },
+  {
+    "indexname": "idx_users_is_admin",
+    "indexdef": "CREATE INDEX idx_users_is_admin ON public.users USING btree (is_admin)"
+  },
+  {
+    "indexname": "idx_users_score_desc",
+    "indexdef": "CREATE INDEX idx_users_score_desc ON public.users USING btree (score DESC)"
+  },
+  {
+    "indexname": "idx_users_balance",
+    "indexdef": "CREATE INDEX idx_users_balance ON public.users USING btree (balance DESC)"
+  }
+]

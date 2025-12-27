@@ -58,10 +58,11 @@ authRoutes.post('/login', async (c) => {
       validatedData.secretPhrase === adminSecret;
 
     // Buscar usuário no banco
-    console.log('Buscando usuário com email:', validatedData.email);
+    const userEmail = validatedData.email.toLowerCase();
+    console.log('Buscando usuário com email:', userEmail);
     const result = await pool.query(
       'SELECT id, name, email, password_hash, secret_phrase, panic_phrase, is_under_duress, safe_contact_phone, pix_key, referral_code, is_admin, balance, score, created_at, is_email_verified, two_factor_enabled, two_factor_secret, status, role FROM users WHERE email = $1',
-      [validatedData.email]
+      [userEmail]
     );
 
     let user = result.rows[0];
@@ -207,10 +208,12 @@ authRoutes.post('/register', async (c) => {
 
     const pool = getDbPool(c);
 
+    const userEmail = validatedData.email.toLowerCase();
+
     // Verificar se email já existe
     const existingUser = await pool.query(
       'SELECT id FROM users WHERE email = $1',
-      [validatedData.email]
+      [userEmail]
     );
 
     if (existingUser.rows.length > 0) {
@@ -305,7 +308,7 @@ authRoutes.post('/register', async (c) => {
        RETURNING id, name, email, pix_key, balance, score, created_at, referral_code, is_admin, cpf`,
       [
         validatedData.name,
-        validatedData.email,
+        userEmail,
         hashedPassword,
         validatedData.secretPhrase,
         validatedData.pixKey,

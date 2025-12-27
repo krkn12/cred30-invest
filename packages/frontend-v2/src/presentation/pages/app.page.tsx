@@ -203,11 +203,10 @@ export default function App() {
       setState(prev => ({ ...prev, isLoading: false }));
     }
   };
-
   const refreshState = async () => {
     try {
       const newState = await loadState();
-      setState({ ...newState, isLoading: false });
+      setState(prev => ({ ...prev, ...newState, isLoading: false }));
     } catch (e) {
       console.error(e);
       setState(prev => ({ ...prev, isLoading: false }));

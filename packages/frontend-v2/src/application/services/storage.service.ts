@@ -206,10 +206,15 @@ export const saveState = (state: AppState): void => {
 
 
 
-export const updateProfitPool = async (amountToAdd: number): Promise<void> => {
-  await apiService.addProfitToPool(amountToAdd);
-  // Limpar cache após atualização
-  clearPendingItemsCache();
+export const updateProfitPool = async (amountToAdd: number): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await apiService.addProfitToPool(amountToAdd);
+    // Limpar cache após atualização
+    clearPendingItemsCache();
+    return { success: true, message: response.message || 'Excedente adicionado com sucesso!' };
+  } catch (error: any) {
+    return { success: false, message: error.message || 'Erro ao adicionar excedente.' };
+  }
 };
 
 const CACHE_DURATION = 10000; // 10 segundos de cache (mantido para compatibilidade se necessário)
