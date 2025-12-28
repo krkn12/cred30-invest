@@ -44,9 +44,10 @@ async function main() {
 
         // 3. Git add, commit e push
         console.log('\n📤 Enviando para o repositório...');
+        const currentBranch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
         execSync('git add .', { stdio: 'inherit' });
         execSync(`git commit -m "${message}"`, { stdio: 'inherit' });
-        execSync('git push origin master', { stdio: 'inherit' });
+        execSync(`git push origin ${currentBranch}`, { stdio: 'inherit' });
 
         // 4. Build do frontend
         console.log('\n🔨 Buildando frontend...');
