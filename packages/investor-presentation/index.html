@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cred30 | Investor Deck</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              400: "#22d3ee",
+              500: "#06b6d4",
+              600: "#0891b2",
+            },
+          },
+        },
+      },
+    }
+  </script>
+</head>
+
+<body class="bg-[#050505] text-white selection:bg-cyan-500/30 overflow-x-hidden">
+  <!-- Background Aurora -->
+  <div class="fixed inset-0 pointer-events-none opacity-40">
+    <div class="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-cyan-500/10 blur-[150px] rounded-full"></div>
+    <div class="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/5 blur-[150px] rounded-full"></div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="fixed top-0 inset-x-0 z-50 p-6">
+    <div
+      class="max-w-7xl mx-auto flex justify-between items-center bg-zinc-900/40 backdrop-blur-2xl border border-white/5 p-4 rounded-3xl shadow-2xl">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <i data-lucide="rocket" class="text-black"></i>
+        </div>
+        <span class="text-2xl font-black tracking-tighter">Cred<span class="text-cyan-400">30</span><span
+            class="text-[10px] uppercase ml-2 text-zinc-500 tracking-widest font-bold">Invest</span></span>
+      </div>
+
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#vision"
+          class="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white transition-colors">Visão</a>
+        <a href="#metrics"
+          class="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white transition-colors">Métricas</a>
+        <a href="#roadmap"
+          class="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white transition-colors">Roadmap</a>
+      </div>
+
+      <button
+        class="bg-white text-black text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-2xl flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-white/5">
+        Pitch Deck <i data-lucide="download" size="14"></i>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section id="vision" class="relative pt-48 pb-24 px-6">
+    <div class="max-w-7xl mx-auto text-center space-y-12">
+      <div
+        class="reveal inline-flex items-center gap-2 bg-cyan-500/10 border border-cyan-500/20 px-6 py-2 rounded-full text-cyan-400 text-[10px] font-black uppercase tracking-[0.3em]">
+        <i data-lucide="users" class="w-3 h-3 fill-cyan-400"></i> Comunidade de Apoio Mútuo Digital
+      </div>
+
+      <h1 class="reveal text-6xl md:text-9xl font-black tracking-tighter leading-[0.85] text-white">
+        O PODER DO <br />
+        <span
+          class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent italic">COLABORATIVO.</span>
+      </h1>
+
+      <p
+        class="reveal text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed border-l-2 border-cyan-500/30 pl-8 text-left md:text-center">
+        O Cred30 é uma ecossistema de ajuda mútua e circulação de capital entre associados, focado em fortalecer a
+        economia local sem intermediários bancários.
+      </p>
+
+      <div id="metrics" class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-12">
+        <div
+          class="reveal bg-zinc-900/50 border border-white/5 p-8 rounded-[2rem] text-left group hover:border-cyan-500/30 transition-all">
+          <div
+            class="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-cyan-400 mb-6 group-hover:scale-110 transition-transform">
+            <i data-lucide="tag"></i>
+          </div>
+          <p class="text-3xl font-black mb-1">R$ 50,00</p>
+          <p class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Integralização de Cota</p>
+        </div>
+        <div
+          class="reveal bg-zinc-900/50 border border-white/5 p-8 rounded-[2rem] text-left group hover:border-cyan-500/30 transition-all">
+          <div
+            class="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-cyan-400 mb-6 group-hover:scale-110 transition-transform">
+            <i data-lucide="shield"></i>
+          </div>
+          <p class="text-3xl font-black mb-1">Mutualismo</p>
+          <p class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Proteção entre Membros</p>
+        </div>
+        <div
+          class="reveal bg-zinc-900/50 border border-white/5 p-8 rounded-[2rem] text-left group hover:border-cyan-500/30 transition-all">
+          <div
+            class="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-cyan-400 mb-6 group-hover:scale-110 transition-transform">
+            <i data-lucide="database"></i>
+          </div>
+          <p class="text-3xl font-black mb-1">Autogestão</p>
+          <p class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Governança por Cotas</p>
+        </div>
+        <div
+          class="reveal bg-zinc-900/50 border border-white/5 p-8 rounded-[2rem] text-left group hover:border-cyan-500/30 transition-all">
+          <div
+            class="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-cyan-400 mb-6 group-hover:scale-110 transition-transform">
+            <i data-lucide="bar-chart-3"></i>
+          </div>
+          <p class="text-3xl font-black mb-1">Excedentes</p>
+          <p class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Distribuição Colaborativa</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The Problem & Solution / Business Model -->
+  <section class="py-24 px-6 bg-zinc-950/50 border-y border-white/5">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-20">
+      <div class="flex-1 space-y-8">
+        <h2 class="reveal text-4xl md:text-5xl font-black tracking-tight leading-none">
+          Engenharia <span class="text-zinc-600">Associativa</span>. <br />
+          Membro é <span class="text-cyan-400">Dono</span>.
+        </h2>
+
+        <div class="space-y-4">
+          <div
+            class="reveal p-6 rounded-3xl bg-zinc-900 border border-white/10 transition-all hover:border-cyan-500/30">
+            <h3 class="text-xl font-bold mb-2 flex items-center gap-3">
+              <i data-lucide="users-2" class="text-yellow-500"></i>
+              Apoio Coletivo (Circulação)
+            </h3>
+            <p class="text-sm text-zinc-400">Não somos um banco. Somos uma associação. O capital integralizado pelos
+              membros circula dentro da comunidade para apoiar o crescimento de cada associado via apoio mútuo.</p>
+          </div>
+
+          <div
+            class="reveal p-6 rounded-3xl bg-zinc-900 border border-white/10 transition-all hover:border-cyan-500/30">
+            <h3 class="text-xl font-bold mb-2 flex items-center gap-3">
+              <i data-lucide="shuffle" class="text-emerald-500"></i>
+              Marketplace de Trocas
+            </h3>
+            <p class="text-sm text-zinc-400">Através da cessão de direitos e trocas de ativos entre membros, garantimos
+              liquidez e utilidade para as cotas sociais sem depender de mercados financeiros externos.</p>
+          </div>
+
+          <div
+            class="reveal p-6 rounded-3xl bg-zinc-900 border border-white/10 transition-all hover:border-cyan-400/30">
+            <h3 class="text-xl font-bold mb-2 flex items-center gap-3">
+              <i data-lucide="zap" class="text-cyan-400"></i>
+              Ecossistema Circular
+            </h3>
+            <p class="text-sm text-zinc-400">A sustentabilidade vem das taxas de manutenção e uso do ecossistema. Todo
+              excedente gerado é reinvestido na comunidade ou distribuído conforme a participação de cada sócio.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal flex-1 relative lg:block hidden">
+        <div class="absolute inset-0 bg-cyan-500/5 blur-[100px] rounded-full"></div>
+        <div class="relative z-10 bg-zinc-900 border border-white/10 rounded-[3rem] p-10 h-full overflow-hidden">
+          <div class="flex justify-between mb-8">
+            <div class="w-12 h-1.5 bg-zinc-800 rounded-full"></div>
+            <div class="flex gap-1">
+              <div class="w-2 h-2 rounded-full bg-zinc-800"></div>
+              <div class="w-2 h-2 rounded-full bg-zinc-800"></div>
+              <div class="w-2 h-2 rounded-full bg-zinc-800"></div>
+            </div>
+          </div>
+
+          <div class="space-y-6">
+            <div class="h-4 w-3/4 bg-zinc-800 rounded-full animate-pulse"></div>
+            <div class="h-4 w-1/2 bg-zinc-800 rounded-full animate-pulse"></div>
+            <div class="grid grid-cols-2 gap-4 py-8">
+              <div
+                class="aspect-square bg-cyan-500/20 rounded-3xl border border-cyan-500/30 flex items-center justify-center">
+                <i data-lucide="coins" class="text-cyan-400 w-12 h-12"></i>
+              </div>
+              <div class="aspect-square bg-zinc-800 rounded-3xl"></div>
+            </div>
+            <div class="h-12 w-full bg-cyan-500 rounded-2xl"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Roadmap -->
+  <section id="roadmap" class="py-24 px-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex justify-between items-end mb-16">
+        <div>
+          <p class="text-cyan-400 text-xs font-black uppercase tracking-widest mb-4">Milestones</p>
+          <h2 class="reveal text-4xl md:text-5xl font-black">Nosso Caminho para o <span class="italic">Bilhão</span>.
+          </h2>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div class="reveal bg-zinc-900/30 border border-white/5 p-8 rounded-[2rem] hover:bg-zinc-900 transition-all">
+          <p class="text-cyan-400 font-bold mb-4">Q1 2025</p>
+          <h3 class="text-xl font-bold mb-4">Validação Alpha</h3>
+          <p class="text-sm text-zinc-500 leading-relaxed">Lançamento da V2 para os primeiros 100 membros fundadores.
+            Teste real do algoritmo de apoio mútuo e marketplace.</p>
+        </div>
+        <div class="reveal bg-zinc-900/30 border border-white/5 p-8 rounded-[2rem] hover:bg-zinc-900 transition-all">
+          <p class="text-cyan-400 font-bold mb-4">Q2 2025</p>
+          <h3 class="text-xl font-bold mb-4">Efeito de Rede</h3>
+          <p class="text-sm text-zinc-500 leading-relaxed">Crescimento 100% orgânico via indicações. Foco em atingir os
+            primeiros 1.000 usuários ativos com custo zero de marketing.</p>
+        </div>
+        <div class="reveal bg-zinc-900/30 border border-white/5 p-8 rounded-[2rem] hover:bg-zinc-900 transition-all">
+          <p class="text-cyan-400 font-bold mb-4">Q3 2025</p>
+          <h3 class="text-xl font-bold mb-4">Receita de Taxas</h3>
+          <p class="text-sm text-zinc-500 leading-relaxed">Abertura do Marketplace para serviços de parceiros, gerando
+            lucro imediato para a cooperativa através de corretagem (Fees).</p>
+        </div>
+        <div class="reveal bg-zinc-900/30 border border-white/5 p-8 rounded-[2rem] hover:bg-zinc-900 transition-all">
+          <p class="text-cyan-400 font-bold mb-4">Q4 2025</p>
+          <h3 class="text-xl font-bold mb-4">Auto-Sustentação</h3>
+          <p class="text-sm text-zinc-500 leading-relaxed">Breakeven atingido. Reinvestimento do lucro operacional para
+            expansão regional sem dependência de investidores externos (Bootstrap).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Investor -->
+  <section class="py-32 px-6">
+    <div
+      class="reveal max-w-5xl mx-auto rounded-[4rem] bg-gradient-to-br from-cyan-500 to-blue-600 p-12 md:p-24 text-center relative overflow-hidden shadow-2xl shadow-cyan-500/20">
+      <div
+        class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/20 to-transparent opacity-50">
+      </div>
+
+      <div class="relative z-10 space-y-8">
+        <h2 class="text-5xl md:text-7xl font-black text-black tracking-tighter leading-none">
+          VAMOS ESCALAR <br />
+          ESSA REVOLUÇÃO?
+        </h2>
+        <p class="text-black/70 text-lg font-bold max-w-xl mx-auto">
+          Estamos selecionando parceiros estratégicos para a rodada Early Stage.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+          <button
+            class="bg-black text-white px-10 py-5 rounded-3xl font-black uppercase tracking-widest text-lg hover:scale-105 active:scale-95 transition-all">
+            Falar com Founders
+          </button>
+          <button
+            class="bg-white/20 backdrop-blur-md border border-white/30 text-black px-10 py-5 rounded-3xl font-black uppercase tracking-widest text-lg">
+            Fazer Download deck
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Investor / Lead Capture -->
+  <section id="contact" class="py-32 px-6">
+    <div
+      class="reveal max-w-5xl mx-auto rounded-[4rem] bg-gradient-to-br from-cyan-500 to-blue-600 p-12 md:p-20 text-center relative overflow-hidden shadow-2xl shadow-cyan-500/20">
+      <div
+        class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/20 to-transparent opacity-50">
+      </div>
+
+      <div class="reveal relative z-10 space-y-8">
+        <div class="space-y-4">
+          <h2 class="text-4xl md:text-6xl font-black text-black tracking-tighter leading-none">
+            QUER INVESTIR NA <br /> PRÓXIMA REVOLUÇÃO?
+          </h2>
+          <p class="text-black/70 text-lg font-bold max-w-xl mx-auto">
+            Deixe seu contato para receber o Pitch Deck completo e ser avisado sobre a abertura da nossa próxima rodada.
+          </p>
+        </div>
+
+        <!-- Formspree Integration: Gratuito e simples para captar leads sem precisar de banco de dados agora -->
+        <form action="https://formspree.io/f/mwvknrye" method="POST" class="max-w-md mx-auto space-y-4 pt-4">
+          <div class="grid grid-cols-1 gap-4">
+            <input type="text" name="name" placeholder="Seu Nome Completo" required
+              class="w-full px-6 py-4 rounded-2xl bg-white/20 border border-white/30 text-black placeholder-black/50 font-bold focus:outline-none focus:bg-white/40 transition-all">
+
+            <input type="email" name="email" placeholder="Seu melhor E-mail" required
+              class="w-full px-6 py-4 rounded-2xl bg-white/20 border border-white/30 text-black placeholder-black/50 font-bold focus:outline-none focus:bg-white/40 transition-all">
+
+            <input type="text" name="phone" placeholder="WhatsApp (DDD + Número)" required
+              class="w-full px-6 py-4 rounded-2xl bg-white/20 border border-white/30 text-black placeholder-black/50 font-bold focus:outline-none focus:bg-white/40 transition-all">
+          </div>
+
+          <button type="submit"
+            class="w-full bg-black text-white px-10 py-5 rounded-3xl font-black uppercase tracking-widest text-lg hover:scale-105 active:scale-95 transition-all shadow-2xl">
+            ENTRAR NA LISTA DE ESPERA
+          </button>
+
+          <p class="text-[10px] text-black/40 font-black uppercase tracking-widest">
+            Respeitamos sua privacidade. Seus dados estão seguros.
+          </p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer class="py-20 px-6 border-t border-white/5 text-center">
+    <p class="text-zinc-600 text-[10px] font-black uppercase tracking-[0.4em]">© 2025 Cred30 Technologies • Confidential
+      & Proprietary</p>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+
+</html>

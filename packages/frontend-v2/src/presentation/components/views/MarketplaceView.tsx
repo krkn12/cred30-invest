@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Scanner } from '@yudiel/react-qr-scanner';
+import { useLocation } from 'react-router-dom';
 import { AppState } from '../../../domain/types/common.types';
 import { apiService } from '../../../application/services/api.service';
 import { ConfirmModal } from '../ui/ConfirmModal';
@@ -97,10 +98,11 @@ export const MarketplaceView = ({ state, onRefresh, onSuccess, onError }: Market
         description: '',
         price: '',
         category: 'ELETRÔNICOS',
-        image_url: ''
+        image_url: '',
+        quotaId: null as number | null
     });
 
-    const categories = ['ELETRÔNICOS', 'VEÍCULOS', 'IMÓVEIS', 'SERVIÇOS', 'MODA', 'OUTROS'];
+    const categories = ['COTAS', 'ELETRÔNICOS', 'VEÍCULOS', 'IMÓVEIS', 'SERVIÇOS', 'MODA', 'OUTROS'];
     const [aiLoading, setAiLoading] = useState(false);
 
     const handleSaveOfflineSale = (sale: any) => {
@@ -129,6 +131,25 @@ export const MarketplaceView = ({ state, onRefresh, onSuccess, onError }: Market
             setIsLoading(false);
         }
     };
+
+    // Handle navigation state from PortfolioView (preloaded quota)
+    const location = useLocation();
+    useEffect(() => {
+        const navState = location.state as any;
+        if (navState?.view === 'create' && navState?.preloadQuota) {
+            setView('create');
+            setNewListing({
+                title: navState.preloadQuota.title || `Cota-Parte #${navState.preloadQuota.id}`,
+                description: `Cessão de cota-parte do grupo Cred30. Valor de mercado atual. Transferida automaticamente após confirmação do pagamento.`,
+                price: String(navState.preloadQuota.price || ''),
+                category: 'COTAS',
+                image_url: '',
+                quotaId: navState.preloadQuota.id
+            });
+            // Limpar o state para evitar reprocessamento
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state]);
 
     useEffect(() => {
         fetchData();
@@ -165,14 +186,25 @@ export const MarketplaceView = ({ state, onRefresh, onSuccess, onError }: Market
     const handleCreateListing = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await apiService.post<any>('/marketplace/listings', {
-                ...newListing,
-                price: parseFloat(newListing.price)
-            });
+            const payload: any = {
+                title: newListing.title,
+                description: newListing.description,
+                price: parseFloat(newListing.price),
+                category: newListing.category,
+                imageUrl: newListing.image_url || undefined
+            };
+
+            // Se for uma cota, enviar o ID
+            if (newListing.quotaId) {
+                payload.quotaId = newListing.quotaId;
+            }
+
+            const response = await apiService.post<any>('/marketplace/create', payload);
             if (response.success) {
-                onSuccess('Sucesso', 'Anúncio publicado!');
+                onSuccess('Sucesso', newListing.quotaId ? 'Sua cota-parte foi listada para repasse!' : 'Anúncio publicado!');
                 setView('browse');
-                setNewListing({ title: '', description: '', price: '', category: 'ELETRÔNICOS', image_url: '' });
+                setNewListing({ title: '', description: '', price: '', category: 'ELETRÔNICOS', image_url: '', quotaId: null });
+                onRefresh();
             }
         } catch (error: any) {
             onError('Erro', error.message || 'Falha ao publicar anúncio');

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { getDbPool } from '../../../infrastructure/database/postgresql/connection/pool';
 import { executeInTransaction, updateUserBalance, createTransaction, processTransactionApproval } from '../../../domain/services/transaction.service';
-import { WITHDRAWAL_FIXED_FEE, PRIORITY_WITHDRAWAL_FEE } from '../../../shared/constants/business.constants';
+import { WITHDRAWAL_FIXED_FEE, PRIORITY_WITHDRAWAL_FEE, ASAAS_PIX_OUT_FEE, MIN_WITHDRAWAL_AMOUNT } from '../../../shared/constants/business.constants';
 import { twoFactorService } from '../../../application/services/two-factor.service';
 import { notificationService } from '../../../application/services/notification.service';
 import { calculateUserLoanLimit } from '../../../application/services/credit-analysis.service';
@@ -31,6 +31,15 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
 
     const user = c.get('user');
     const pool = getDbPool(c);
+
+    // Verificação de valor mínimo
+    if (amount < MIN_WITHDRAWAL_AMOUNT) {
+      return c.json({
+        success: false,
+        message: `O valor mínimo para saque é de R$ ${MIN_WITHDRAWAL_AMOUNT.toFixed(2)}.`,
+        errorCode: 'MIN_AMOUNT_NOT_MET'
+      }, 400);
+    }
 
     // 0. VERIFICAÇÃO DE LOCK DE SEGURANÇA (Anti-Hack)
     const securityCheck = await pool.query('SELECT security_lock_until FROM users WHERE id = $1', [user.id]);
@@ -108,9 +117,8 @@ withdrawalRoutes.post('/request', authMiddleware, async (c) => {
     // (Ou seja, não tem dinheiro na conta do banco/digital para pagar o PIX).
 
     const realLiquidity = systemBalance;
-    // Nota: Poderíamos descontar reservas obrigatórias aqui, mas para MVP vamos confiar no saldo global.
 
-    if (amount > realLiquidity) {
+    if ((amount + ASAAS_PIX_OUT_FEE) > realLiquidity) {
       return c.json({
         success: false,
         message: 'O sistema atingiu o limite de saques diários por falta de liquidez momentânea. Tente novamente em 24h ou entre em contato com o suporte.',

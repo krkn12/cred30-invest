@@ -5,6 +5,7 @@ import { getDbPool } from '../../../infrastructure/database/postgresql/connectio
 import { checkPaymentStatus } from '../../../infrastructure/gateways/asaas.service';
 import { executeInTransaction, processTransactionApproval } from '../../../domain/services/transaction.service';
 import { logWebhook, updateWebhookStatus } from '../../../application/services/audit.service';
+import { VIDEO_QUOTA_HOLDERS_SHARE, VIDEO_SERVICE_FEE_SHARE, VIDEO_VIEWER_SHARE } from '../../../shared/constants/business.constants';
 
 const webhookRoutes = new Hono();
 
@@ -87,8 +88,19 @@ webhookRoutes.post('/asaas', async (c) => {
                         );
 
                         if (promoResult.rows.length > 0) {
-                            console.log(`[WEBHOOK ASAAS] Vídeo promocional ativado: ${promoResult.rows[0].title} (ID: ${promoResult.rows[0].id})`);
-                            return { processed: true, promoVideoId: promoResult.rows[0].id };
+                            const promo = promoResult.rows[0];
+                            const budget = parseFloat(promo.budget_gross); // Usar o valor bruto pago
+
+                            const quotaShare = budget * VIDEO_QUOTA_HOLDERS_SHARE;
+                            const systemAndViewerShare = budget * (VIDEO_SERVICE_FEE_SHARE + VIDEO_VIEWER_SHARE);
+
+                            await client.query(
+                                'UPDATE system_config SET profit_pool = profit_pool + $1, system_balance = system_balance + $2',
+                                [quotaShare, systemAndViewerShare]
+                            );
+
+                            console.log(`[WEBHOOK ASAAS] Vídeo promocional ativado: ${promo.title} (ID: ${promo.id}). Financeiro distribuído: Pool +R$${quotaShare.toFixed(2)}, System +R$${systemAndViewerShare.toFixed(2)}`);
+                            return { processed: true, promoVideoId: promo.id };
                         }
                     }
 

@@ -33,6 +33,7 @@ export const QUOTA_STATUS = {
 export const WITHDRAWAL_FEE_PERCENTAGE = 0; // Taxa percentual removida (Asaas é fixo)
 export const WITHDRAWAL_FEE_FIXED = 2.00;   // Taxa de manutenção da cooperativa por saque
 export const WELCOME_WITHDRAWAL_FIXED_FEE = 1.00; // Taxa reduzida para indicados (Boas-vindas)
+export const WITHDRAWAL_MIN_AMOUNT = 50.00; // Valor mínimo para saque
 export const LOAN_INTEREST_RATE = 0.20;
 export const PENALTY_RATE = 0.40;
 export const MARKETPLACE_ESCROW_FEE_RATE = 0.05;

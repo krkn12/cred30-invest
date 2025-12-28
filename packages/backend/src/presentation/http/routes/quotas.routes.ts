@@ -162,11 +162,9 @@ quotaRoutes.post('/buy', authMiddleware, async (c) => {
           throw new Error(updateResult.error);
         }
 
-        // Destinar taxa administrativa ao caixa operacional
-        await client.query(
-          'UPDATE system_config SET system_balance = system_balance + $1',
-          [totalAdmFee]
-        );
+        // O saldo do usuário foi reduzido, mas o CASH no banco continua o mesmo.
+        // O system_balance já inclui o cash depositado no passado, então não adicionamos novamente para não duplicar.
+        // Apenas a contabilização de lucro/manutenção é que muda futuramente nos relatórios.
 
         // Otimização: Criar cotas via Batch Insert (Uma única query para todas as cotas)
         const values: any[] = [];
@@ -384,6 +382,19 @@ quotaRoutes.post('/sell', authMiddleware, async (c) => {
     }
 
     const quota = quotaResult.rows[0];
+
+    // Verificar se a cota está listada no marketplace
+    const listingCheck = await pool.query(
+      "SELECT id FROM marketplace_listings WHERE quota_id = $1 AND status = 'ACTIVE'",
+      [quotaId]
+    );
+
+    if (listingCheck.rows.length > 0) {
+      return c.json({
+        success: false,
+        message: 'Esta cota está sendo negociada no Mercado Cred30. Remova o anúncio antes de solicitar o resgate direto.'
+      }, 400);
+    }
 
     // Calcular valor de resgate
     const now = Date.now();

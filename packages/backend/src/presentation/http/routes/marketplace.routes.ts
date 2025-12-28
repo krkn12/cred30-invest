@@ -26,6 +26,7 @@ const createListingSchema = z.object({
     price: z.number().positive('Preço deve ser maior que zero'),
     category: z.string().optional(),
     imageUrl: z.string().optional(),
+    quotaId: z.number().int().optional(),
 });
 
 const buyListingSchema = z.object({
@@ -85,14 +86,14 @@ marketplaceRoutes.get('/listings', authMiddleware, async (c) => {
             SELECT * FROM (
                 (SELECT l.id::text, l.title, l.description, l.price::float, l.image_url, l.category, 
                         u.name as seller_name, l.seller_id::text, l.is_boosted, l.created_at, l.status, 'P2P' as type,
-                        NULL as affiliate_url
+                        NULL as affiliate_url, l.quota_id
                  FROM marketplace_listings l 
                  JOIN users u ON l.seller_id = u.id 
                  WHERE l.status = 'ACTIVE')
                 UNION ALL
                 (SELECT p.id::text, p.title, p.description, p.price::float, p.image_url, p.category, 
                         'Cred30 Parceiros' as seller_name, '0' as seller_id, true as is_boosted, p.created_at, 'ACTIVE' as status, 'AFFILIATE' as type,
-                        p.affiliate_url
+                        p.affiliate_url, NULL as quota_id
                  FROM products p
                  WHERE p.active = true)
             ) as combined
@@ -128,12 +129,20 @@ marketplaceRoutes.post('/create', authMiddleware, async (c) => {
             }, 400);
         }
 
-        const { title, description, price, category, imageUrl } = parseResult.data;
+        const { title, description, price, category, imageUrl, quotaId } = parseResult.data;
+
+        // Se for uma cota, verificar se pertence ao usuário e está ativa
+        if (quotaId) {
+            const quotaCheck = await pool.query('SELECT * FROM quotas WHERE id = $1 AND user_id = $2 AND status = $3', [quotaId, user.id, 'ACTIVE']);
+            if (quotaCheck.rows.length === 0) {
+                return c.json({ success: false, message: 'Você não possui esta cota ou ela não está ativa para repasse.' }, 403);
+            }
+        }
 
         const result = await pool.query(
-            `INSERT INTO marketplace_listings (seller_id, title, description, price, category, image_url)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-            [user.id, title, description, price, category || 'OUTROS', imageUrl]
+            `INSERT INTO marketplace_listings (seller_id, title, description, price, category, image_url, quota_id)
+             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+            [user.id, title, description, price, category || (quotaId ? 'COTAS' : 'OUTROS'), imageUrl, quotaId]
         );
 
         return c.json({
@@ -574,7 +583,7 @@ marketplaceRoutes.post('/order/:id/receive', authMiddleware, async (c) => {
 
         // Buscar pedido esperando entrega
         const orderResult = await pool.query(
-            `SELECT o.*, l.title FROM marketplace_orders o 
+            `SELECT o.*, l.title, l.quota_id FROM marketplace_orders o 
        JOIN marketplace_listings l ON o.listing_id = l.id 
        WHERE o.id = $1 AND o.status IN ('WAITING_SHIPPING', 'IN_TRANSIT')
        AND (o.buyer_id = $2 OR (o.offline_token IS NOT NULL AND $3::text IS NOT NULL AND o.offline_token = $3))`,
@@ -593,6 +602,24 @@ marketplaceRoutes.post('/order/:id/receive', authMiddleware, async (c) => {
                 'UPDATE marketplace_orders SET status = $1, delivery_status = $2, updated_at = NOW() WHERE id = $3',
                 ['COMPLETED', 'DELIVERED', orderId]
             );
+
+            // 1.1 Se for uma cota, transferir propriedade
+            if (order.quota_id) {
+                const transferResult = await client.query(
+                    'UPDATE quotas SET user_id = $1 WHERE id = $2 RETURNING id',
+                    [order.buyer_id, order.quota_id]
+                );
+
+                if (transferResult.rowCount === 0) {
+                    throw new Error('Falha ao transferir a cota-parte.');
+                }
+
+                console.log(`[MARKETPLACE] Cota ${order.quota_id} transferida de ${order.seller_id} para ${order.buyer_id}`);
+
+                // Atualizar Score por aquisição (vendedor ganha por saída limpa, comprador por entrada)
+                await updateScore(client, order.buyer_id, 50, `Aquisição de cota-parte via mercado secundário #${order.quota_id}`);
+                await updateScore(client, order.seller_id, 20, `Cessão bem-sucedida de cota-parte #${order.quota_id}`);
+            }
 
             // 2. Liberar saldo para o vendedor (valor líquido)
             const sellerAmount = parseFloat(order.seller_amount);

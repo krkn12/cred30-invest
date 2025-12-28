@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { TrendingUp, X as XIcon, Lock, DollarSign, Award, Download, ShieldCheck, Calendar, Info } from 'lucide-react';
+import { TrendingUp, X as XIcon, Lock, DollarSign, Award, Download, ShieldCheck, Calendar, Info, Repeat } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Quota } from '../../../domain/types/common.types';
 import { apiService } from '../../../application/services/api.service';
 
@@ -18,6 +19,7 @@ export const PortfolioView = ({ quotas, hasLoans, onSell, onSellAll }: Portfolio
     const [showCertificate, setShowCertificate] = useState(false);
     const [loadingTitle, setLoadingTitle] = useState(false);
     const [titleInfo, setTitleInfo] = useState<any>(null);
+    const navigate = useNavigate();
 
     React.useEffect(() => {
         checkEligibility();
@@ -131,22 +133,22 @@ export const PortfolioView = ({ quotas, hasLoans, onSell, onSellAll }: Portfolio
             <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-6 text-black">
                 <div className="flex justify-between items-end mb-4">
                     <div>
-                        <h2 className="text-2xl font-bold">Participações</h2>
+                        <h2 className="text-2xl font-bold">Resumo Associativo</h2>
                         <p className="text-sm opacity-80">Gestão de Apoio à Comunidade</p>
                     </div>
                     <div className="text-right">
-                        <p className="text-sm opacity-80">Total em Licenças</p>
+                        <p className="text-sm opacity-80">Capital em Circulação</p>
                         <p className="text-3xl font-bold">{totalCurrentValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                     <div className="bg-white/20 rounded-xl p-4">
-                        <p className="text-sm opacity-80 mb-1">Valor das Licenças</p>
+                        <p className="text-sm opacity-80 mb-1">Total Integralizado</p>
                         <p className="text-xl font-bold">{totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
                     </div>
                     <div className="bg-white/20 rounded-xl p-4">
-                        <p className="text-sm opacity-80 mb-1">Bônus Acumulado</p>
+                        <p className="text-sm opacity-80 mb-1">Excedentes Gerados</p>
                         <p className="text-xl font-bold flex items-center gap-1">
                             {totalEarnings >= 0 ? '+' : ''}{totalEarnings.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                             <span className="text-xs bg-black/20 px-1.5 py-0.5 rounded-full">
@@ -155,8 +157,8 @@ export const PortfolioView = ({ quotas, hasLoans, onSell, onSellAll }: Portfolio
                         </p>
                     </div>
                     <div className="bg-white/20 rounded-xl p-4">
-                        <p className="text-sm opacity-80 mb-1">Licenças Ativas</p>
-                        <p className="text-xl font-bold">{safeQuotas.length} {safeQuotas.length === 1 ? 'licença' : 'licenças'}</p>
+                        <p className="text-sm opacity-80 mb-1">Cotas-Parte Ativas</p>
+                        <p className="text-xl font-bold">{safeQuotas.length} {safeQuotas.length === 1 ? 'cota' : 'cotas'}</p>
                     </div>
                 </div>
             </div>
@@ -258,7 +260,7 @@ export const PortfolioView = ({ quotas, hasLoans, onSell, onSellAll }: Portfolio
                 {safeQuotas.length === 0 ? (
                     <div className="text-center py-12 bg-surface/50 rounded-2xl border border-surfaceHighlight border-dashed">
                         <TrendingUp size={48} className="mx-auto text-zinc-600 mb-4" />
-                        <p className="text-zinc-500">Você ainda não possui licenças ativadas.</p>
+                        <p className="text-zinc-500">Você ainda não possui participação no capital social.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -299,6 +301,24 @@ export const PortfolioView = ({ quotas, hasLoans, onSell, onSellAll }: Portfolio
                                     >
                                         Resgatar Individual
                                     </button>
+
+                                    <button
+                                        onClick={() => navigate('/app/marketplace', {
+                                            state: {
+                                                view: 'create',
+                                                preloadQuota: {
+                                                    id: quota.id,
+                                                    price: currentValue,
+                                                    title: `Cota-Parte #${typeof quota.id === 'string' ? quota.id.substring(0, 6) : quota.id}`
+                                                }
+                                            }
+                                        })}
+                                        disabled={hasLoans}
+                                        className="w-full mt-2 border border-primary-500/30 text-primary-400 hover:bg-primary-500/10 disabled:opacity-50 disabled:cursor-not-allowed py-2 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2"
+                                    >
+                                        <Repeat size={14} />
+                                        Repassar no Mercado
+                                    </button>
                                 </div>
                             );
                         })}
@@ -312,10 +332,10 @@ export const PortfolioView = ({ quotas, hasLoans, onSell, onSellAll }: Portfolio
                     <div className="bg-surface border border-surfaceHighlight rounded-3xl p-6 w-full max-w-sm relative shadow-2xl">
                         <button title="Fechar" onClick={() => setShowConfirm(false)} className="absolute top-4 right-4 text-zinc-400 hover:text-white"><XIcon size={24} /></button>
 
-                        <h3 className="text-xl font-bold text-white mb-2">{modalTitle.replace("Cota", "Licença")}</h3>
+                        <h3 className="text-xl font-bold text-white mb-2">{modalTitle.replace("Licença", "Cota-Parte")}</h3>
                         {isPenaltyApplied && (
                             <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3 rounded-lg mb-4">
-                                Cancelamento antecipado (menos de 1 ano). Incide taxa de administração de 40% sobre o valor de compra.
+                                Descontinuidade antecipada (menos de 1 ano). Incide taxa de administração compensatória de 40% sobre o capital integralizado.
                             </div>
                         )}
 

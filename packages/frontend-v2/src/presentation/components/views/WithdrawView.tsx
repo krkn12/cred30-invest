@@ -4,7 +4,7 @@ import { ArrowUpFromLine, ShieldCheck, Clock, XCircle, TrendingUp } from 'lucide
 import { User } from '../../../domain/types/common.types';
 import { apiService } from '../../../application/services/api.service';
 import { confirmWithdrawal } from '../../../application/services/storage.service';
-import { WITHDRAWAL_FEE_FIXED, WELCOME_WITHDRAWAL_FIXED_FEE } from '../../../shared/constants/app.constants';
+import { WITHDRAWAL_FEE_FIXED, WELCOME_WITHDRAWAL_FIXED_FEE, WITHDRAWAL_MIN_AMOUNT } from '../../../shared/constants/app.constants';
 
 interface WithdrawViewProps {
     balance: number;
@@ -26,7 +26,7 @@ export const WithdrawView = ({ balance, currentUser, totalQuotaValue, onSuccess,
 
     const { isValidAmount, withdrawalAmount, isFree, fee, netAmount } = useMemo(() => {
         const amount = parseFloat(val) || 0;
-        const valid = val !== '' && amount > 0 && amount <= balance;
+        const valid = val !== '' && amount >= WITHDRAWAL_MIN_AMOUNT && amount <= balance;
         const free = totalQuotaValue >= amount;
 
         // Verifica se o usuário tem benefício de boas-vindas ativo
@@ -171,6 +171,12 @@ export const WithdrawView = ({ balance, currentUser, totalQuotaValue, onSuccess,
                                 Tudo
                             </button>
                         </div>
+
+                        {val !== '' && parseFloat(val) < WITHDRAWAL_MIN_AMOUNT && (
+                            <p className="text-red-400 text-[10px] mt-2 font-medium">
+                                * O valor mínimo para resgate é de {WITHDRAWAL_MIN_AMOUNT.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}.
+                            </p>
+                        )}
 
                         {/* Fee Information */}
                         {isValidAmount && (

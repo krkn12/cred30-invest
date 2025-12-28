@@ -7,13 +7,13 @@ import { executeInTransaction } from '../../../domain/services/transaction.servi
 import {
     ASAAS_PIX_FIXED_FEE,
     ASAAS_CARD_FEE_PERCENT,
-    ASAAS_CARD_FIXED_FEE
+    ASAAS_CARD_FIXED_FEE,
+    VIDEO_VIEWER_SHARE as VIEWER_SHARE,
+    VIDEO_QUOTA_HOLDERS_SHARE as QUOTA_HOLDERS_SHARE,
+    VIDEO_SERVICE_FEE_SHARE as SERVICE_FEE_SHARE
 } from '../../../shared/constants/business.constants';
 
-// Constantes de divisão (3 partes)
-const VIEWER_SHARE = 0.60;       // 60% para quem assiste
-const QUOTA_HOLDERS_SHARE = 0.25; // 25% para quem tem cotas (profit_pool)
-const SERVICE_FEE_SHARE = 0.15;  // 15% taxa de serviço (system_balance)
+// Constantes de conversão
 const POINTS_PER_REAL = 100;      // R$ 1,00 = 100 pontos
 const MIN_CONVERSION_POINTS = 100; // Mínimo para converter
 
@@ -142,23 +142,23 @@ promoVideosRoutes.post('/create', async (c) => {
                 await client.query('UPDATE users SET balance = balance - $1 WHERE id = $2', [data.budget, userPayload.id]);
 
                 const quotaShare = data.budget * QUOTA_HOLDERS_SHARE;
-                const systemShare = data.budget * SERVICE_FEE_SHARE;
+                const systemAndViewerShare = data.budget * (SERVICE_FEE_SHARE + VIEWER_SHARE);
                 await client.query(
                     'UPDATE system_config SET profit_pool = profit_pool + $1, system_balance = system_balance + $2',
-                    [quotaShare, systemShare]
+                    [quotaShare, systemAndViewerShare]
                 );
 
                 const videoResult = await client.query(`
                     INSERT INTO promo_videos (
                         user_id, title, description, video_url, thumbnail_url, platform, tag,
-                        duration_seconds, price_per_view, min_watch_seconds, budget, spent, 
+                        duration_seconds, price_per_view, min_watch_seconds, budget, budget_gross, spent, 
                         target_views, status, is_active, is_approved
-                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 0, $12, 'ACTIVE', TRUE, TRUE)
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 0, $13, 'ACTIVE', TRUE, TRUE)
                     RETURNING id
                 `, [
                     userPayload.id, data.title, data.description || null, data.videoUrl,
                     data.thumbnailUrl || null, data.platform, data.tag || 'OUTROS', data.durationSeconds,
-                    grossPPV, data.minWatchSeconds || 20, viewerPool, targetViews
+                    grossPPV, data.minWatchSeconds || 20, viewerPool, data.budget, targetViews
                 ]);
 
                 await client.query(`
@@ -190,9 +190,9 @@ promoVideosRoutes.post('/create', async (c) => {
             await pool.query(`
                 INSERT INTO promo_videos (
                     user_id, title, description, video_url, thumbnail_url, platform, tag,
-                    duration_seconds, price_per_view, min_watch_seconds, budget, spent, target_views, status, is_active
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 0, $12, 'PENDING', FALSE)
-            `, [userPayload.id, data.title, data.description, data.videoUrl, data.thumbnailUrl, data.platform, data.tag || 'OUTROS', data.durationSeconds, grossPPV, data.minWatchSeconds || 20, viewerPool, targetViews]);
+                    duration_seconds, price_per_view, min_watch_seconds, budget, budget_gross, spent, target_views, status, is_active
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 0, $13, 'PENDING', FALSE)
+            `, [userPayload.id, data.title, data.description, data.videoUrl, data.thumbnailUrl, data.platform, data.tag || 'OUTROS', data.durationSeconds, grossPPV, data.minWatchSeconds || 20, viewerPool, data.budget, targetViews]);
 
             return c.json({ success: true, message: 'PIX gerado!', data: paymentData });
         }
@@ -222,9 +222,9 @@ promoVideosRoutes.post('/create', async (c) => {
                 await pool.query(`
                     INSERT INTO promo_videos (
                         user_id, title, description, video_url, thumbnail_url, platform, tag,
-                        duration_seconds, price_per_view, min_watch_seconds, budget, spent, target_views, status, is_active, is_approved
-                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 0, $12, 'ACTIVE', TRUE, TRUE)
-                `, [userPayload.id, data.title, data.description, data.videoUrl, data.thumbnailUrl, data.platform, data.tag || 'OUTROS', data.durationSeconds, grossPPV, data.minWatchSeconds || 20, viewerPool, targetViews]);
+                        duration_seconds, price_per_view, min_watch_seconds, budget, budget_gross, spent, target_views, status, is_active, is_approved
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 0, $13, 'ACTIVE', TRUE, TRUE)
+                `, [userPayload.id, data.title, data.description, data.videoUrl, data.thumbnailUrl, data.platform, data.tag || 'OUTROS', data.durationSeconds, grossPPV, data.minWatchSeconds || 20, viewerPool, data.budget, targetViews]);
 
                 return c.json({ success: true, message: 'Pago e ativado!' });
             }

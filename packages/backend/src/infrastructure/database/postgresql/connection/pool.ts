@@ -633,6 +633,7 @@ export const initializeDatabase = async () => {
       CREATE TABLE IF NOT EXISTS marketplace_listings (
         id SERIAL PRIMARY KEY,
         seller_id INTEGER REFERENCES users(id),
+        quota_id INTEGER REFERENCES quotas(id), -- Referência para cota à venda no mercado secundário
         title VARCHAR(255) NOT NULL,
         description TEXT,
         price DECIMAL(10, 2) NOT NULL,
@@ -646,10 +647,11 @@ export const initializeDatabase = async () => {
       )
     `);
 
-    // Garantir que as colunas de impulsionamento existem (para bancos legados)
+    // Garantir que as colunas de impulsionamento e quota_id existem (para bancos legados)
     await client.query(`
       ALTER TABLE marketplace_listings ADD COLUMN IF NOT EXISTS is_boosted BOOLEAN DEFAULT FALSE;
       ALTER TABLE marketplace_listings ADD COLUMN IF NOT EXISTS boost_expires_at TIMESTAMP;
+      ALTER TABLE marketplace_listings ADD COLUMN IF NOT EXISTS quota_id INTEGER REFERENCES quotas(id);
     `);
 
     // Tabela de Pedidos / Escrow (Garantia Cred30)
@@ -727,8 +729,12 @@ export const initializeDatabase = async () => {
         is_approved BOOLEAN DEFAULT FALSE,
         approved_by INTEGER REFERENCES users(id),
         rejection_reason TEXT,
-        tag VARCHAR(30) DEFAULT 'OUTROS'
+        tag VARCHAR(30) DEFAULT 'OUTROS',
+        budget_gross DECIMAL(10,2) DEFAULT 0
       );
+
+      ALTER TABLE promo_videos ADD COLUMN IF NOT EXISTS budget_gross DECIMAL(10,2) DEFAULT 0;
+      ALTER TABLE promo_videos ADD COLUMN IF NOT EXISTS tag VARCHAR(30) DEFAULT 'OUTROS';
 
       CREATE TABLE IF NOT EXISTS promo_video_views (
         id SERIAL PRIMARY KEY,

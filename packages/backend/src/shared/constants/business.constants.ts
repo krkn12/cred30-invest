@@ -32,12 +32,18 @@ export const MAINTENANCE_OWNER_SHARE = 0.05;    // 5% para Seu Pró-labore (Sal�
 export const QUOTA_PURCHASE_FEE_RATE = 0.0; // Desativado (Substituído pela taxa fixa QUOTA_ADM_FEE)
 export const LOAN_ORIGINATION_FEE_RATE = 0.03; // 3% de taxa de originação (seguro)
 export const WITHDRAWAL_FIXED_FEE = 2.00; // Taxa fixa de R$ 2,00 por saque
+export const MIN_WITHDRAWAL_AMOUNT = 50.00; // Valor mínimo para saque
 export const MARKETPLACE_ESCROW_FEE_RATE = 0.05; // 5% de taxa de garantia (Escrow) no Mercado Cred30
 export const MARKET_CREDIT_INTEREST_RATE = 0.015; // 1.5% ao mês (Mais barato que o apoio mútuo padrão)
 export const MARKET_CREDIT_MAX_INSTALLMENTS = 24; // Até 24x para facilitar compras grandes
 export const MARKET_CREDIT_MIN_SCORE = 450; // Score mínimo para comprar parcelado
 export const MARKET_CREDIT_MIN_QUOTAS = 1; // Mínimo de 1 cota ativa (Skin in the Game) para parcelar
 export const LOGISTICS_SUSTAINABILITY_FEE_RATE = 0.10; // 10% de taxa administrativa sobre o valor do frete para sustentabilidade do grupo
+
+// --- Taxas de Movimentação de Vídeos (Watch to Earn) ---
+export const VIDEO_VIEWER_SHARE = 0.60;       // 60% para quem assiste
+export const VIDEO_QUOTA_HOLDERS_SHARE = 0.25; // 25% para quem tem cotas (profit_pool)
+export const VIDEO_SERVICE_FEE_SHARE = 0.15;  // 15% taxa de serviço (system_balance)
 
 // --- SISTEMA DE BENEFÍCIO DE BOAS-VINDAS (INDICAÇÃO) ---
 // Ao invés de pagar R$ 5,00 de bônus, o indicado ganha desconto nas taxas
@@ -89,7 +95,7 @@ export const ASAAS_CARD_INSTALLMENTS_FEES = {
 
 // Custos Operacionais de Movimentação (Saída)
 export const ASAAS_TED_FEE = 5.00; // R$ 5,00 por transferência TED
-export const ASAAS_PIX_OUT_FEE = 0.00; // PIX Saída é gratuito no Asaas
+export const ASAAS_PIX_OUT_FEE = 5.00; // O usuário confirmou que o Asaas cobra R$ 5,00 por saque
 
 // Notificações e Serviços Extras
 export const ASAAS_WHATSAPP_FEE = 0.55; // R$ 0,55 por notificação

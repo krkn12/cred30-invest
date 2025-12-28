@@ -1,5 +1,5 @@
 import { Pool, PoolClient } from 'pg';
-import { QUOTA_PRICE, QUOTA_SHARE_VALUE, QUOTA_ADM_FEE } from '../../shared/constants/business.constants';
+import { QUOTA_PRICE, QUOTA_SHARE_VALUE, QUOTA_ADM_FEE, ASAAS_PIX_OUT_FEE } from '../../shared/constants/business.constants';
 import { calculateGatewayCost } from '../../shared/utils/financial.utils';
 import { updateScore, SCORE_REWARDS } from '../../application/services/score.service';
 import { logAudit } from '../../application/services/audit.service';
@@ -553,13 +553,16 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
     let feeForOperational = 0;
     let feeForProfit = 0;
 
-    // 1. Subtrair o valor enviado (líquido) do saldo real do sistema
+    // 1. Subtrair o valor enviado (líquido) E o custo do gateway (Asaas Payout Fee) do saldo real do sistema
+    // A plataforma "absorve" o custo de R$ 5,00 do Asaas conforme solicitado.
+    const totalDeduction = netAmount + ASAAS_PIX_OUT_FEE;
+
     await client.query(
-      'UPDATE system_config SET system_balance = system_balance - $1',
-      [netAmount]
+      'UPDATE system_config SET system_balance = system_balance - $1, total_gateway_costs = total_gateway_costs + $2',
+      [totalDeduction, ASAAS_PIX_OUT_FEE]
     );
 
-    // 2. Se houver taxa cobrada, aplicar a regra de divisão: 85% vai pros Lucros / 15% Volta pro Caixa
+    // 2. Se houver taxa cobrada do usuário (ex: R$ 2,00), aplicar a regra de divisão: 15% Volta pro Caixa / 85% vai pros Lucros
     if (feeAmount > 0) {
       feeForProfit = feeAmount * 0.85;
       feeForOperational = feeAmount * 0.15;
@@ -575,9 +578,11 @@ export const processTransactionApproval = async (client: PoolClient, id: string,
       );
     }
 
-    console.log('DEBUG - Saque processado contabilmente (Regra 85/15):', {
+    console.log('DEBUG - Saque processado contabilmente (Regra 85/15 + Absorção Gateway):', {
       netAmount,
       feeAmount,
+      gatewayCost: ASAAS_PIX_OUT_FEE,
+      totalDeduction,
       feeForOperational,
       feeForProfit
     });
