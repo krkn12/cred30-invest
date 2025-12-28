@@ -47,6 +47,10 @@ async function main() {
         const currentBranch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
         execSync('git add .', { stdio: 'inherit' });
         execSync(`git commit -m "${message}"`, { stdio: 'inherit' });
+
+        console.log('🔄 Sincronizando com o remoto...');
+        execSync(`git pull origin ${currentBranch} --rebase`, { stdio: 'inherit' });
+
         execSync(`git push origin ${currentBranch}`, { stdio: 'inherit' });
 
         // 4. Build do frontend
