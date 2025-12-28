@@ -14,6 +14,7 @@ export interface UserContext {
   twoFactorEnabled?: boolean;
   cpf?: string | null; // CPF do usuário (opcional, obrigatório para saque)
   securityLockUntil?: number; // Timestamp em milissegundos
+  membership_type?: string;
 }
 
 // Estender o tipo de variáveis do Hono

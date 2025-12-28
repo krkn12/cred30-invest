@@ -96,20 +96,28 @@ export const AdminMetrics: React.FC = () => {
                         </h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="p-4 bg-black/20 rounded-2xl border border-zinc-800">
+                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Membros</p>
+                                <p className="text-xl font-bold text-white">{healthMetrics?.database?.total_users ?? 0}</p>
+                            </div>
+                            <div className="p-4 bg-black/20 rounded-2xl border border-zinc-800">
                                 <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Transações</p>
                                 <p className="text-xl font-bold text-white">{healthMetrics?.database?.total_transactions ?? 0}</p>
                             </div>
                             <div className="p-4 bg-black/20 rounded-2xl border border-zinc-800">
-                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Audit Logs</p>
-                                <p className="text-xl font-bold text-white">{healthMetrics?.database?.total_audit_logs ?? 0}</p>
+                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Licenças (Cotas)</p>
+                                <p className="text-xl font-bold text-white">{healthMetrics?.database?.total_quotas ?? 0}</p>
                             </div>
                             <div className="p-4 bg-black/20 rounded-2xl border border-zinc-800">
-                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Tabela: Users</p>
-                                <p className="text-xl font-bold text-white">{healthMetrics?.database?.tables?.users ?? 0}</p>
+                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Apoios (Empréstimos)</p>
+                                <p className="text-xl font-bold text-white">{healthMetrics?.database?.total_loans ?? 0}</p>
                             </div>
                             <div className="p-4 bg-black/20 rounded-2xl border border-zinc-800">
-                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Tabela: Quotas</p>
-                                <p className="text-xl font-bold text-white">{healthMetrics?.database?.tables?.quotas ?? 0}</p>
+                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Logs Administrativos</p>
+                                <p className="text-xl font-bold text-white">{healthMetrics?.database?.total_admin_logs ?? 0}</p>
+                            </div>
+                            <div className="p-4 bg-black/20 rounded-2xl border border-zinc-800">
+                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Custos Sistêmicos</p>
+                                <p className="text-xl font-bold text-white">{healthMetrics?.database?.total_system_costs ?? 0}</p>
                             </div>
                         </div>
                         <div className="mt-8 p-6 bg-primary-500/5 rounded-2xl border border-primary-500/10">
@@ -123,8 +131,8 @@ export const AdminMetrics: React.FC = () => {
                                     <span className="text-lg font-black text-white">+{healthMetrics?.activity?.new_users_24h ?? 0}</span>
                                 </div>
                                 <div className="flex justify-between items-center bg-black/40 p-3 rounded-xl">
-                                    <span className="text-[10px] text-zinc-500 font-black uppercase">Logs Registrados</span>
-                                    <span className="text-lg font-black text-white">+{healthMetrics?.activity?.audit_logs_24h ?? 0}</span>
+                                    <span className="text-[10px] text-zinc-500 font-black uppercase">Transações</span>
+                                    <span className="text-lg font-black text-white">+{healthMetrics?.activity?.trans_24h ?? 0}</span>
                                 </div>
                             </div>
                         </div>

@@ -1834,7 +1834,7 @@ adminRoutes.get('/users', adminMiddleware, async (c) => {
     const { search, role, status } = c.req.query();
 
     let query = `
-      SELECT id, name, email, role, status, balance, score, created_at, pix_key
+      SELECT id, name, email, role, status, balance, score, created_at, pix_key, membership_type
       FROM users
       WHERE 1=1
     `;

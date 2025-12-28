@@ -6,18 +6,31 @@ import { QUOTA_PRICE, LOAN_INTEREST_RATE, PENALTY_RATE, VESTING_PERIOD_MS } from
 
 // Função para converter dados da API para o formato esperado pelo frontend
 const convertApiUserToUser = (apiUser: any): User => {
+  if (!apiUser) {
+    return {
+      id: '',
+      name: 'Usuário',
+      email: '',
+      pixKey: '',
+      balance: 0,
+      joinedAt: new Date().toISOString(),
+      referralCode: '',
+      isAdmin: false,
+    };
+  }
+
   return {
-    id: apiUser.id,
-    name: apiUser.name,
-    email: apiUser.email,
+    id: String(apiUser.id || apiUser.userId || ''),
+    name: apiUser.name || 'Usuário',
+    email: apiUser.email || '',
     secretPhrase: '', // Não é retornado pela API
-    pixKey: apiUser.pixKey,
-    balance: apiUser.balance,
-    joinedAt: apiUser.joinedAt,
-    referralCode: apiUser.referralCode,
-    isAdmin: apiUser.isAdmin || false,
+    pixKey: apiUser.pixKey || apiUser.pix_key || '',
+    balance: typeof apiUser.balance === 'string' ? parseFloat(apiUser.balance) : (apiUser.balance || 0),
+    joinedAt: apiUser.joinedAt || apiUser.created_at || new Date().toISOString(),
+    referralCode: apiUser.referralCode || apiUser.referral_code || '',
+    isAdmin: apiUser.isAdmin || apiUser.is_admin || apiUser.role === 'ADMIN' || false,
     score: apiUser.score ?? 0,
-    twoFactorEnabled: apiUser.twoFactorEnabled || false,
+    twoFactorEnabled: apiUser.twoFactorEnabled || apiUser.two_factor_enabled || false,
     cpf: apiUser.cpf || null, // CPF do usuário (obrigatório para saque)
   };
 };
@@ -168,9 +181,27 @@ export const loadState = async (): Promise<AppState> => {
       }
     }
 
+    // Carregar todos os usuários se for Admin (para estatísticas do dashboard admin)
+    let allUsers: User[] = [currentUser].filter(Boolean) as User[];
+    if (currentUser?.isAdmin) {
+      try {
+        const usersResponse = await apiService.adminGetUsers();
+        if (usersResponse.success && Array.isArray(usersResponse.data)) {
+          allUsers = usersResponse.data.map(convertApiUserToUser);
+
+          // Garantir que o usuário atual está na lista (para evitar problemas de referência)
+          if (currentUser && !allUsers.some(u => u.id === currentUser.id)) {
+            allUsers.push(currentUser);
+          }
+        }
+      } catch (e) {
+        console.error('Erro ao carregar lista de usuários:', e);
+      }
+    }
+
     return {
       currentUser,
-      users: [currentUser], // Simplificado - apenas o usuário atual
+      users: allUsers,
       quotas,
       loans,
       transactions,

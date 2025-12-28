@@ -1,0 +1,40 @@
+
+packages\frontend-v2\src\presentation\components\features\admin\tabs\AdminMetrics.tsx:107:                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Tabela: Users</p>
+packages\frontend-v2\src\presentation\components\features\admin\tabs\AdminMetrics.tsx:108:                                <p className="text-xl font-bold text-white">{healthMetrics?.database?.tables?.users ?? 0}</p>
+packages\frontend-v2\src\presentation\components\features\admin\tabs\AdminOverview.tsx:2:import { PieChart, TrendingUp, DollarSign, Vote, Users } from 'lucide-react';
+packages\frontend-v2\src\presentation\components\features\admin\tabs\AdminOverview.tsx:51:                <MetricCard title="Membros" value={state.users?.length ?? 0} subtitle="Usuários Totais" icon={Users} color="blue" />
+packages\frontend-v2\src\presentation\components\features\admin\tabs\AdminReferrals.tsx:2:import { UserPlus, Users, Trash2 } from 'lucide-react';
+packages\frontend-v2\src\presentation\components\features\admin\tabs\AdminReferrals.tsx:97:                        <div className="p-2 bg-zinc-800 rounded-lg"><Users className="text-zinc-400" size={20} /></div>
+packages\frontend-v2\src\presentation\components\features\admin\tabs\AdminReferrals.tsx:121:                                <Users size={48} className="mx-auto mb-4" />
+packages\frontend-v2\src\presentation\components\features\admin\tabs\AdminUsers.tsx:21:            const response = await apiService.post<any>('/admin/users/add-quota', {
+packages\frontend-v2\src\presentation\components\features\admin\AdminUserManagement.tsx:18:    const [users, setUsers] = useState<User[]>([]);
+packages\frontend-v2\src\presentation\components\features\admin\AdminUserManagement.tsx:140:                            ) : users.length === 0 ? (
+packages\frontend-v2\src\presentation\components\features\admin\AdminUserManagement.tsx:145:                                users.map(user => (
+packages\frontend-v2\src\presentation\components\ui\PromoVideoPlayer.tsx:2:import { TrendingUp, Users, ShieldCheck, DollarSign, Play } from 'lucide-react';
+packages\frontend-v2\src\presentation\components\ui\PromoVideoPlayer.tsx:21:            icon: <Users size={64} className="text-primary-400" />,
+packages\frontend-v2\src\presentation\components\views\AdminView.tsx:34:type TabType = 'overview' | 'payouts' | 'system' | 'store' | 'referrals' | 'support' | 'users' | 'metrics' | 'governance' | 'reviews' | 'bugs';
+packages\frontend-v2\src\presentation\components\views\AdminView.tsx:105:        { id: 'users', name: 'Usuários', icon: ShieldCheck, roles: ['ADMIN'] },
+packages\frontend-v2\src\presentation\components\views\AdminView.tsx:185:                {activeTab === 'users' && <AdminUsers onSuccess={onSuccess} onError={onError} />}
+packages\frontend-v2\src\presentation\components\views\AuthScreen.tsx:3:import { Users, KeyRound, Lock, QrCode, Repeat, ArrowLeft, Mail, ShieldCheck, XCircle, ChevronRight, Check, Copy } from 'lucide-react';
+packages\frontend-v2\src\presentation\components\views\AuthScreen.tsx:224:                                    <Users className="absolute left-3 top-3 text-zinc-500" size={20} />
+packages\frontend-v2\src\presentation\components\views\AuthScreen.tsx:286:                                    <Users className="absolute left-3 top-3 text-zinc-500" size={20} />
+packages\frontend-v2\src\presentation\components\views\AuthScreen.tsx:344:                                    <Users className="absolute left-3 top-2.5 sm:top-3 text-zinc-500" size={18} />
+packages\frontend-v2\src\presentation\components\views\AuthScreen.tsx:358:                                <Users className="absolute left-3 top-2.5 sm:top-3 text-zinc-500" size={18} />
+packages\frontend-v2\src\presentation\components\views\Dashboard.tsx:5:    Users, Gamepad2, TrendingUp, DollarSign, ArrowUpFromLine, BookOpen,
+packages\frontend-v2\src\presentation\components\views\Dashboard.tsx:386:                            { icon: Users, color: 'primary', label: 'Indicar', sub: 'Invite', act: onRefer, bg: 'bg-primary-500/10', text: 'text-primary-400', subText: 'text-primary-500/60', shadow: 'hover:shadow-primary-900/20' },
+packages\frontend-v2\src\presentation\components\views\EarnView.tsx:5:    ChevronRight, Sparkles, Wand2, Lightbulb, RefreshCw, Users, Play, X as XIcon, Clock,
+packages\frontend-v2\src\presentation\components\views\EarnView.tsx:208:                            { icon: <Users size={14} />, text: "Contribui para os Excedentes Mútuos" }
+packages\frontend-v2\src\presentation\components\views\FaqView.tsx:2:import { ChevronDown, ChevronUp, HelpCircle, MessageCircle, ShieldCheck, TrendingUp, DollarSign, Users } from 'lucide-react';
+packages\frontend-v2\src\presentation\components\views\FaqView.tsx:54:            icon: <Users size={18} />,
+packages\frontend-v2\src\presentation\components\views\InvestView.tsx:2:import { TrendingUp, X as XIcon, Users } from 'lucide-react';
+packages\frontend-v2\src\presentation\components\views\InvestView.tsx:32:                <Users size={48} className="mx-auto text-emerald-400 mb-4" />
+packages\frontend-v2\src\presentation\components\views\VotingView.tsx:2:import { CheckCircle2, XCircle, Info, Trophy, BarChart3, Clock, AlertTriangle, FileText, Download, Users, ShieldCheck } from 'lucide-react';
+packages\frontend-v2\src\presentation\components\views\VotingView.tsx:22:    const totalCommunityMembers = appState?.users?.length ?? 0;
+packages\frontend-v2\src\presentation\components\views\VotingView.tsx:170:                            <Users size={20} />
+packages\frontend-v2\src\presentation\pages\app.page.tsx:10:import { Check, X as XIcon, RefreshCw, AlertTriangle, Users, Copy, Wallet, TrendingUp, ArrowUpFromLine, Lock, Download } from 'lucide-react';
+packages\frontend-v2\src\presentation\pages\app.page.tsx:65:    users: [],
+packages\frontend-v2\src\presentation\pages\app.page.tsx:562:                        <Users size={40} strokeWidth={2.5} />
+packages\frontend-v2\src\presentation\pages\terms.page.tsx:3:import { ArrowLeft, ScrollText, ShieldCheck, Scale, Users, Gavel, AlertTriangle, CreditCard, ClockIcon, FileText, Zap, ShoppingBag, Tag, Lock, CheckCircle2 } from 'lucide-react';
+packages\frontend-v2\src\presentation\pages\terms.page.tsx:99:                                <Users size={14} className="text-emerald-400" />
+packages\frontend-v2\src\presentation\pages\terms.page.tsx:178:                            <Users size={24} /> 5. Elegibilidade e Capacidade
+
