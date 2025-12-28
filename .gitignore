@@ -138,3 +138,6 @@ test-*.js
 
 # Ngrok
 .last_ngrok_url
+
+# Repositórios Externos (Separate projects)
+landing_github/
