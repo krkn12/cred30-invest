@@ -22,15 +22,15 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ appState }) => {
       }
 
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      
+
       const userContext = {
-        name: appState.currentUser?.name,
-        balance: appState.currentUser?.balance,
-        quotas: appState.quotas.length,
-        totalInvested: appState.quotas.reduce((acc, q) => acc + q.purchasePrice, 0),
-        currentValue: appState.quotas.reduce((acc, q) => acc + q.currentValue, 0),
-        activeLoans: appState.loans.filter(l => l.status === 'APPROVED').length,
-        loanDebt: appState.loans.filter(l => l.status === 'APPROVED').reduce((acc, l) => acc + l.totalRepayment, 0)
+        name: appState?.currentUser?.name,
+        balance: appState?.currentUser?.balance,
+        quotas: appState?.quotas?.length ?? 0,
+        totalInvested: appState?.quotas?.reduce((acc, q) => acc + q.purchasePrice, 0) ?? 0,
+        currentValue: appState?.quotas?.reduce((acc, q) => acc + q.currentValue, 0) ?? 0,
+        activeLoans: appState?.loans?.filter(l => l.status === 'APPROVED').length ?? 0,
+        loanDebt: appState?.loans?.filter(l => l.status === 'APPROVED').reduce((acc, l) => acc + l.totalRepayment, 0) ?? 0
       };
 
       const prompt = `
@@ -91,7 +91,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ appState }) => {
           <X size={20} />
         </button>
       </div>
-      
+
       <div className="flex-1 overflow-y-auto p-4">
         {loading ? (
           <div className="flex items-center justify-center h-full">
@@ -103,7 +103,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ appState }) => {
           </div>
         )}
       </div>
-      
+
       <div className="p-4 border-t">
         <button
           onClick={getAdvice}

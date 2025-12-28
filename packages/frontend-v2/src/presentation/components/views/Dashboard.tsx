@@ -34,13 +34,18 @@ interface DashboardProps {
 }
 
 export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onReinvest, onRefer, onVip, onLogout, onSuccess, onError, onChangePassword, onClaimReward, onMarketplace, onEarn, onEducation, onVoting }: DashboardProps) => {
-    const user = state.currentUser!;
+    const user = state?.currentUser;
+
+    // Guard clause: prevent crash if state or user is not loaded yet
+    if (!state || !user) {
+        return <div className="flex justify-center items-center min-h-[60vh] text-zinc-500">Carregando...</div>;
+    }
 
     // Usuários PRO não veem anúncios
     const isPro = user?.membership_type === 'PRO';
 
     const { userQuotas, totalInvested, totalCurrentValue, totalEarnings, earningsPercentage } = useMemo(() => {
-        const quotas = state.quotas.filter((q: any) => q.userId === user.id);
+        const quotas = state.quotas?.filter((q: any) => q.userId === user.id) ?? [];
         const invested = quotas.reduce((acc: number, q: any) => acc + q.purchasePrice, 0);
         const current = quotas.reduce((acc: number, q: any) => acc + (q.currentValue || q.purchasePrice), 0);
         const earnings = current - invested;
@@ -49,7 +54,7 @@ export const Dashboard = ({ state, onBuyQuota, onGames, onLoans, onWithdraw, onR
     }, [state.quotas, user.id]);
 
     const { userLoans, totalDebt } = useMemo(() => {
-        const loans = state.loans.filter((l: any) => l.userId === user.id && l.status === 'APPROVED');
+        const loans = state.loans?.filter((l: any) => l.userId === user.id && l.status === 'APPROVED') ?? [];
         const debt = loans.reduce((acc: number, l: any) => acc + l.totalRepayment, 0);
         return { userLoans: loans, totalDebt: debt };
     }, [state.loans, user.id]);
