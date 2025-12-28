@@ -40,6 +40,11 @@ export const AdminOverview: React.FC<AdminOverviewProps> = ({ state }) => {
         return numVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     };
 
+    // Guard clause: prevent crash if state is not loaded yet
+    if (!state) {
+        return <div className="text-center py-12 text-zinc-500">Carregando...</div>;
+    }
+
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
